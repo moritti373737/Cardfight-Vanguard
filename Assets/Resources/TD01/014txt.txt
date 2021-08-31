@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,世界樹の巫女 エレイン
+type,トリガーユニット
+group,ロイヤルパラディン
+race,エルフ
+nation,ユナイテッドサンクチュアリ
+grade,0
+power,5000
+critical,1
+shield,10000
+skill,ブースト
+gift,ヒールトリガー+5000
+effect,-
+flavor,大丈夫、あなたはまだ戦える。
+number,TD01/014
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_014.png

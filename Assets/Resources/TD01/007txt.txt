@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,盟約の騎士 ランドルフ
+type,ノーマルユニット
+group,ロイヤルパラディン
+race,ヒューマン
+nation,ユナイテッドサンクチュアリ
+grade,2
+power,8000
+critical,1
+shield,5000
+skill,インターセプト
+gift,-
+effect,【自】【(V)/(R)】：このユニットがアタックした時、あなたの手札が相手の手札より多いなら、そのバトル中、このユニットのパワー＋3000。
+flavor,おらおらぁっ！　吹っ飛びやがれっ！
+number,TD01/007
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_007.png

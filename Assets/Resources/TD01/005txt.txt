@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,ブラスター・ブレード
+type,ノーマルユニット
+group,ロイヤルパラディン
+race,ヒューマン
+nation,ユナイテッドサンクチュアリ
+grade,2
+power,9000
+critical,1
+shield,5000
+skill,インターセプト
+gift,-
+effect,【自】：[【カウンターブラスト】(2)]　このユニットが(V)に登場した時、コストを払ってよい。払ったら、相手のリアガードを１枚選び、退却させる。<br/>【自】：[カウンターブラスト(2)]　このユニットが(R)に登場した時、あなたの《ロイヤルパラディン》のヴァンガードがいるなら、コストを払ってよい。払ったら、相手のグレード２以上のリアガードを１枚選び、退却させる。
+flavor,弱きを守る勇気の剣、輝け、ブラスター・ブレード！
+number,TD01/005
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_005.png

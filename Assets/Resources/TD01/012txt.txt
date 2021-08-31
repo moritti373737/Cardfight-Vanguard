@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,スターダスト・トランペッター
+type,ノーマルユニット
+group,ロイヤルパラディン
+race,エンジェル
+nation,ユナイテッドサンクチュアリ
+grade,0
+power,6000
+critical,1
+shield,10000
+skill,ブースト
+gift,-
+effect,-
+flavor,トランペットを吹きならせ！　さあ戦いの始まりだ！
+number,TD01/012
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_012.png

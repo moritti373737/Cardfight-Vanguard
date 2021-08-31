@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,断罪の騎士 ボールス
+type,ノーマルユニット
+group,ロイヤルパラディン
+race,ヒューマン
+nation,ユナイテッドサンクチュアリ
+grade,3
+power,10000
+critical,1
+shield,-
+skill,ツインドライブ
+gift,-
+effect,【自】【(V)/(R)】：[【カウンターブラスト】(1)]　このユニットがアタックした時、コストを払ってよい。払ったら、そのバトル中、このユニットのパワー＋3000。
+flavor,その罪、万死に値する！
+number,TD01/002
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_002.png

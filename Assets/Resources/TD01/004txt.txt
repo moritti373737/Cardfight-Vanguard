@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,沈黙の騎士 ギャラティン
+type,ノーマルユニット
+group,ロイヤルパラディン
+race,ヒューマン
+nation,ユナイテッドサンクチュアリ
+grade,2
+power,10000
+critical,1
+shield,5000
+skill,インターセプト
+gift,-
+effect,-
+flavor,沈黙は、全てを物語る。
+number,TD01/004
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_004.png

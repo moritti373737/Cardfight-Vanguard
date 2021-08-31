@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,小さな賢者 マロン
+type,ノーマルユニット
+group,ロイヤルパラディン
+race,ジャイアント
+nation,ユナイテッドサンクチュアリ
+grade,1
+power,8000
+critical,1
+shield,5000
+skill,ブースト
+gift,-
+effect,-
+flavor,世界中の不思議を体験するのが、ボクの夢なんだ。
+number,TD01/008
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_008.png

@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,孤高の騎士 ガンスロッド
+type,ノーマルユニット
+group,ロイヤルパラディン
+race,エルフ
+nation,ユナイテッドサンクチュアリ
+grade,3
+power,9000
+critical,1
+shield,-
+skill,ツインドライブ
+gift,-
+effect,【起】【(V)】：[【カウンターブラスト】(2)]　あなたのソウルに「ブラスター・ブレード」があるなら、そのターン中、このユニットのパワー＋5000/クリティカル＋1。<br/>【起】【手札】：[このカードを相手に見せ、山札の上に置く]　あなたの山札から「ブラスター・ブレード」を１枚まで探し、相手に見せ、手札に加える。その山札をシャッフルする。
+flavor,気高き誇りの白き翼。孤高の騎士は、勇気を受け継ぐ。
+number,TD01/003
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_003.png

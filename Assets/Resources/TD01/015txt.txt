@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,武器商人 ゴヴァノン
+type,トリガーユニット
+group,ロイヤルパラディン
+race,ノーム
+nation,ユナイテッドサンクチュアリ
+grade,0
+power,5000
+critical,1
+shield,5000
+skill,ブースト
+gift,ドロートリガー+5000
+effect,-
+flavor,へい、まいど！　お１つサービスしときますぜ。
+number,TD01/015
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_015.png

@@ -1,0 +1,17 @@
+style-h3,【TD01】「聖域の光剣士（ブラスター・ブレード）」
+name,ふろうがる
+type,トリガーユニット
+group,ロイヤルパラディン
+race,ハイビースト
+nation,ユナイテッドサンクチュアリ
+grade,0
+power,5000
+critical,1
+shield,10000
+skill,ブースト
+gift,スタンドトリガー+5000
+effect,-
+flavor,起きなさい、ねぼすけ！
+number,TD01/016
+rarity,TD
+url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_016.png
