@@ -56,4 +56,9 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         // ‘Ò‚Â
         yield return new WaitForSeconds(0.0f);
     }
+
+    public IEnumerator RotateCard(Card card)
+    {
+        yield return StartCoroutine(AnimationManager.Instance.RotateFieldCard(card));
+    }
 }

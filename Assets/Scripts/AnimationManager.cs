@@ -61,4 +61,40 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         }
     }
 
+    public IEnumerator RotateFieldCard(Card card)
+    {
+        //List<Coroutine> parallel = new List<Coroutine>();
+
+        //parallel.Add(StartCoroutine(RotateCard(card, 60)));
+        //parallel.Add(StartCoroutine(MoveCard(card, 0.01F, 20)));
+
+        //// 全てのコルーチンが終了するのを待機
+        //foreach (var c in parallel)
+        //    yield return c;
+
+        StartCoroutine(RotateCard(card, 60));
+        yield return MoveCard(card, 0.01F, 20);
+        yield return MoveCard(card, -0.01F, 40);
+    }
+
+    IEnumerator RotateCard(Card card, int frame)
+    {
+        for (int i = 0; i < frame; i++)
+        {
+            card.transform.Rotate(0, -3, 0);
+            yield return null;
+        }
+    }
+
+    IEnumerator MoveCard(Card card, float target, int frame)
+    {
+        Vector3 startPosition = card.transform.position;
+        Vector3 endPosition = new Vector3(startPosition.x, startPosition.y + target, startPosition.z);
+        for (int i = 0; i <= frame; i++)
+        {
+            card.transform.position = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
+            Debug.Log(i);
+            yield return null;
+        }
+    }
 }

@@ -24,6 +24,7 @@ public class Player : MonoBehaviour
             if (childTransform.tag.Contains("Vanguard"))
                 vanguard = childTransform.GetComponent<Vanguard>();
         }
+
         //this.UpdateAsObservable()
         //    .Where(_ => FirstStateController.Instance.firstState == FirstState.Draw);
         //.Subscribe(_ => Debug.Log("draw"));
@@ -42,8 +43,13 @@ public class Player : MonoBehaviour
 
     public IEnumerator SetFirstVanguard()
     {
-        Test.Line();
         yield return StartCoroutine(CardManager.Instance.DeckToCircle(deck, vanguard, 0));
+    }
+
+    public IEnumerator StandUpVanguard()
+    {
+        yield return StartCoroutine(CardManager.Instance.RotateCard(vanguard.transform.Find("Card0").GetComponent<Card>()));
+
     }
 
     public IEnumerator DrawCard()

@@ -94,6 +94,11 @@ public class GameMaster : MonoBehaviour
 
         }
 
+        yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
+
+        yield return StartCoroutine(player1.StandUpVanguard());
+
+        yield return null;
         //while (true)
         //{
         //yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
