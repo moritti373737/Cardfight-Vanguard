@@ -19,8 +19,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     public IEnumerator DeckToCard(Card card)
     {
 
-        Vector3 startPosition = card.transform.localPosition;
-        Vector3 endPosition = new Vector3(startPosition.x, startPosition.y - 1, startPosition.z);
+        StartCoroutine(MoveCardLocal(card, 50, targetY:-1));
         for (int i = 0; i <= 50; i++)
         {
             MeshRenderer[] meshRenderer = card.transform.GetComponentsInChildren<MeshRenderer>();
@@ -31,9 +30,6 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
                 mesh.material.color = color;
 
             }
-            //Vector3 position = card.transform.localPosition;
-            //position.y -= 0.01F;
-            card.transform.localPosition = Vector3.Lerp(startPosition, endPosition, i / 50F);
             yield return null;
         }
     }
@@ -73,8 +69,8 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         //    yield return c;
 
         StartCoroutine(RotateCard(card, 60));
-        yield return MoveCard(card, 0.01F, 20);
-        yield return MoveCard(card, -0.01F, 40);
+        yield return MoveCardGlobal(card, 20, targetY:0.01F);
+        yield return MoveCardGlobal(card, 40, targetY:-0.01F);
     }
 
     IEnumerator RotateCard(Card card, int frame)
@@ -86,13 +82,24 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         }
     }
 
-    IEnumerator MoveCard(Card card, float target, int frame)
+    IEnumerator MoveCardGlobal(Card card, int frame, float targetX = 0, float targetY = 0, float targetZ = 0)
     {
         Vector3 startPosition = card.transform.position;
-        Vector3 endPosition = new Vector3(startPosition.x, startPosition.y + target, startPosition.z);
+        Vector3 endPosition = new Vector3(startPosition.x + targetX, startPosition.y + targetY, startPosition.z + targetZ);
         for (int i = 0; i <= frame; i++)
         {
             card.transform.position = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
+            Debug.Log(i);
+            yield return null;
+        }
+    }
+    IEnumerator MoveCardLocal(Card card, int frame, float targetX = 0, float targetY = 0, float targetZ = 0)
+    {
+        Vector3 startPosition = card.transform.localPosition;
+        Vector3 endPosition = new Vector3(startPosition.x + targetX, startPosition.y + targetY, startPosition.z + targetZ);
+        for (int i = 0; i <= frame; i++)
+        {
+            card.transform.localPosition = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
             Debug.Log(i);
             yield return null;
         }
