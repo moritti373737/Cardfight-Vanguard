@@ -12,6 +12,9 @@ public enum Tag
     Soul,
     Circle,
     Drop,
+    Damage,
+    Order,
+    Guardian,
 }
 
 public class EnumManager : MonoBehaviour

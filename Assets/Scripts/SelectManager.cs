@@ -10,7 +10,9 @@ public class SelectManager : MonoBehaviour
 {
     private GameObject SelectBox;   // カーソル
     private GameObject SelectedBox; // 選択中のカードを占めるカーソル
-    public Hand hand;
+    public Hand hand1;
+    public GameObject Field1;
+    public GameObject Field2;
 
     public GameObject SelectBoxPrefab;
     public GameObject SelectedBoxPrefab;
@@ -32,15 +34,14 @@ public class SelectManager : MonoBehaviour
     /// <summary>
     /// 現在地のマス目、インデックス
     /// </summary>
-    private ReactiveCollection<int> selectZoneIndex = new ReactiveCollection<int>() { 0, 2 };
+    private ReactiveCollection<int> selectZoneIndex = new ReactiveCollection<int>() { 5, 2 };
 
     /// <summary>
     /// 一つのマス目内で移動可能な場合用のインデックス
     /// </summary>
     private int MultiSelectIndex = 0;
 
-    //private List<List<Zone>> SelectList = new List<List<Zone>>();
-    private List<List<GameObject>> SelectObjList = new List<List<GameObject>>();
+    private List<List<GameObject>> SelectObjList;
     public List<GameObject> SelectObjList1 = new List<GameObject>();
     public List<GameObject> SelectObjList2 = new List<GameObject>();
     public List<GameObject> SelectObjList3 = new List<GameObject>();
@@ -48,6 +49,74 @@ public class SelectManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        SelectObjList = new List<List<GameObject>>()
+        {
+            new List<GameObject>()
+            {
+                hand1.gameObject,
+                hand1.gameObject,
+                hand1.gameObject,
+                hand1.gameObject,
+                hand1.gameObject,
+            },
+            new List<GameObject>()
+            {
+                Field2.FindWithChildTag(Tag.Drop),
+                Field2.transform.Find("Rearguard2-3").gameObject,
+                Field2.transform.Find("Rearguard2-2").gameObject,
+                Field2.transform.Find("Rearguard2-1").gameObject,
+                Field2.FindWithChildTag(Tag.Damage),
+            },
+            new List<GameObject>()
+            {
+                Field2.FindWithChildTag(Tag.Deck),
+                Field2.transform.Find("Rearguard1-3").gameObject,
+                Field2.FindWithChildTag(Tag.Vanguard),
+                Field2.transform.Find("Rearguard1-1").gameObject,
+                Field2.FindWithChildTag(Tag.Order),
+            },
+            new List<GameObject>()
+            {
+                Field2.FindWithChildTag(Tag.Guardian),
+                Field2.FindWithChildTag(Tag.Guardian),
+                Field2.FindWithChildTag(Tag.Guardian),
+                Field2.FindWithChildTag(Tag.Guardian),
+                Field2.FindWithChildTag(Tag.Guardian),
+            },
+            new List<GameObject>()
+            {
+                Field1.FindWithChildTag(Tag.Guardian),
+                Field1.FindWithChildTag(Tag.Guardian),
+                Field1.FindWithChildTag(Tag.Guardian),
+                Field1.FindWithChildTag(Tag.Guardian),
+                Field1.FindWithChildTag(Tag.Guardian),
+            },
+            new List<GameObject>()
+            {
+                Field1.FindWithChildTag(Tag.Order),
+                Field1.transform.Find("Rearguard1-1").gameObject,
+                Field1.FindWithChildTag(Tag.Vanguard),
+                Field1.transform.Find("Rearguard1-3").gameObject,
+                Field1.FindWithChildTag(Tag.Deck),
+            },
+            new List<GameObject>()
+            {
+                Field1.FindWithChildTag(Tag.Damage),
+                Field1.transform.Find("Rearguard2-1").gameObject,
+                Field1.transform.Find("Rearguard2-2").gameObject,
+                Field1.transform.Find("Rearguard2-3").gameObject,
+                Field1.FindWithChildTag(Tag.Drop),
+            },
+            new List<GameObject>()
+            {
+                hand1.gameObject,
+                hand1.gameObject,
+                hand1.gameObject,
+                hand1.gameObject,
+                hand1.gameObject,
+            },
+        };
+
         SelectBox = Instantiate(SelectBoxPrefab);
         SelectBox.name = "SelectBox";
         SelectBox.ChangeParent(SelectObjList1[2].transform, true, true, true);
@@ -63,11 +132,11 @@ public class SelectManager : MonoBehaviour
         //    }
         //}
 
-        SelectObjList.Add(SelectObjList1);
-        SelectObjList.Add(SelectObjList2);
-        SelectObjList.Add(SelectObjList3);
+        //SelectObjList.Add(SelectObjList1);
+        //SelectObjList.Add(SelectObjList2);
+        //SelectObjList.Add(SelectObjList3);
 
-        hand.cardList.ObserveCountChanged().Subscribe(count => ChangeHandCount(count));
+        hand1.cardList.ObserveCountChanged().Subscribe(count => ChangeHandCount(count));
 
     }
 
@@ -127,8 +196,8 @@ public class SelectManager : MonoBehaviour
         if (changeSelectBox)
         {
             // エリア移動したとき
-            if (IsHand() && hand.transform.CountWithChildTag(Tag.Card) > 0)
-                SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex).GetChild(0), p: true);
+            if (IsHand() && hand1.transform.CountWithChildTag(Tag.Card) > 0)
+                SelectBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex).GetChild(0), p: true);
             else
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
 
@@ -138,10 +207,12 @@ public class SelectManager : MonoBehaviour
             //    Debug.Log(childTransform.gameObject.name);
             //}
         }
+
+        // カーソルが手札上にある時
         if (IsHand())
         {
-            // カーソルが手札上にある時
-            if (right && hand.transform.childCount - 1 > MultiSelectIndex)
+            // カーソルを左右に移動させる
+            if (right && hand1.transform.childCount - 1 > MultiSelectIndex)
             {
                 MultiSelectIndex++;
 
@@ -151,10 +222,10 @@ public class SelectManager : MonoBehaviour
                 MultiSelectIndex--;
             }
 
-            if (hand.transform.CountWithChildTag(Tag.Card) == 0)
+            if (hand1.transform.CountWithChildTag(Tag.Card) > 0) // 手札のカードにカーソルを移動させる
+                SelectBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex).GetChild(0), p: true);
+            else // 手札がないとき
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
-            else
-                SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex).GetChild(0), p: true);
             //Debug.Log("hand!");
             //Debug.Log(MultiSelectIndex);
         }
@@ -164,15 +235,16 @@ public class SelectManager : MonoBehaviour
     /// <summary>
     /// 1つだけ選択可能なカーソル選択し、選択中を示すオブジェクトを配置
     /// </summary>
+    /// <param name="tag">選択可能なマス</param>
     /// <returns>実際に選択したか</returns>
-    public bool SingleSelected()
+    public bool SingleSelected(Tag tag)
     {
-        if (!IsHand() || hand.transform.CountWithChildTag(Tag.Card) == 0) return false;
+        if (!IsHand() || hand1.transform.CountWithChildTag(Tag.Card) == 0) return false;
         //Debug.Log(hand.transform.childCount);
         //Debug.Log(hand.transform.CountWithChildTag(Tag.Card));
         SelectedBox = Instantiate(SelectedBoxPrefab);
         SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
-        SelectedBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex).GetChild(0), true, true, true);
+        SelectedBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex).GetChild(0), true, true, true);
         return true;
     }
 
@@ -185,11 +257,11 @@ public class SelectManager : MonoBehaviour
     {
         if (!HasTag(tag)) return false;
         int i = 0;
-        int cardCount = hand.transform.CountWithChildTag(Tag.Card);
+        int cardCount = hand1.transform.CountWithChildTag(Tag.Card);
         int selectedIndex = -1;
         while (i < cardCount)
         {
-            if (!ReferenceEquals(hand.transform.GetChild(i).Find("Face/SelectedBox"), null))
+            if (!ReferenceEquals(hand1.transform.GetChild(i).Find("Face/SelectedBox"), null))
             {
                 selectedIndex = i;
                 break;
@@ -197,7 +269,7 @@ public class SelectManager : MonoBehaviour
             i++;
         }
 
-        StartCoroutine(CardManager.Instance.HandToField(hand, SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selectedIndex));
+        StartCoroutine(CardManager.Instance.HandToField(hand1, SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selectedIndex));
         Destroy(SelectedBox);
         return true;
 
@@ -218,9 +290,9 @@ public class SelectManager : MonoBehaviour
 
     private void ChangeHandCount(int count)
     {
-        if (hand.cardList.Count <= MultiSelectIndex)
+        if (hand1.cardList.Count <= MultiSelectIndex)
         {
-            MultiSelectIndex = hand.cardList.Count - 1;
+            MultiSelectIndex = hand1.cardList.Count - 1;
         }
     }
 

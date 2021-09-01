@@ -41,6 +41,22 @@ public static class Extensions
         return null;
     }
 
+    /// <summary>
+    /// 指定したタグ名を含む子のGameObjectを探す
+    /// </summary>
+    /// <param name="parentGameObject">親のGameObject</param>
+    /// <param name="tag">検索したいタグ名</param>
+    /// <returns>子のGameObject</returns>
+    public static GameObject FindWithChildTag(this GameObject parentGameObject, Tag tag)
+    {
+        foreach (Transform childTransform in parentGameObject.transform)
+        {
+            if (childTransform.tag.Contains(tag.ToString()))
+                return childTransform.gameObject;
+        }
+        return null;
+    }
+
     //public static int CountWithChildTag(this Transform parentTransform, string tag)
     //{
     //    int count = 0;

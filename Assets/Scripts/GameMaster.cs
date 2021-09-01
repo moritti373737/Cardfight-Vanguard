@@ -167,7 +167,7 @@ public class GameMaster : MonoBehaviour
     {
         TextManager.Instance.SetPhaseText("ライドフェイズ");
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected());
+        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected(Tag.Hand));
         yield return null;
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard.ToString()));
@@ -205,7 +205,7 @@ public class GameMaster : MonoBehaviour
         {
             if (Input.GetButtonDown("Enter"))
             {
-                if(selectManager.SingleSelected())
+                if(selectManager.SingleSelected(Tag.Hand))
                     yield return StartCoroutine(Call());
             }
             if (Input.GetButtonDown("Submit"))
