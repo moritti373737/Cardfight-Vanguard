@@ -2,24 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// アニメーション（移動や透過など）の処理全般
+/// </summary>
 public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
+    /// <summary>
+    /// デッキからカードを引くアニメーション
+    /// </summary>
+    /// <param name="card">アニメ対象のカード</param>
+    /// <returns></returns>
     public IEnumerator DeckToCard(Card card)
     {
 
-        StartCoroutine(MoveCardLocal(card, 50, targetY:-1));
+        StartCoroutine(MoveCard(card, 50, true, targetY:-1));
         for (int i = 0; i <= 50; i++)
         {
             MeshRenderer[] meshRenderer = card.transform.GetComponentsInChildren<MeshRenderer>();
@@ -34,6 +30,11 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         }
     }
 
+    /// <summary>
+    /// カードを手札に加えるアニメーション
+    /// </summary>
+    /// <param name="card">アニメ対象のカード</param>
+    /// <returns></returns>
     public IEnumerator CardToHand(Card card)
     {
 
@@ -57,6 +58,12 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         }
     }
 
+    /// <summary>
+    /// フィールド上のカードをめくるアニメーション
+    /// その場でめくるとフィールドにめり込むため少し浮かす
+    /// </summary>
+    /// <param name="card">アニメ対象のカード</param>
+    /// <returns></returns>
     public IEnumerator RotateFieldCard(Card card)
     {
         //List<Coroutine> parallel = new List<Coroutine>();
@@ -69,8 +76,8 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         //    yield return c;
 
         StartCoroutine(RotateCard(card, 60));
-        yield return MoveCardGlobal(card, 20, targetY:0.01F);
-        yield return MoveCardGlobal(card, 40, targetY:-0.01F);
+        yield return MoveCard(card, 20, false, targetY:0.01F);
+        yield return MoveCard(card, 40, false, targetY:-0.01F);
     }
 
     IEnumerator RotateCard(Card card, int frame)
@@ -82,24 +89,26 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         }
     }
 
-    IEnumerator MoveCardGlobal(Card card, int frame, float targetX = 0, float targetY = 0, float targetZ = 0)
+    /// <summary>
+    /// カード直線移動させるアニメーション
+    /// </summary>
+    /// <param name="card">アニメ対象のカード</param>
+    /// <param name="frame">アニメの総フレーム数</param>
+    /// <param name="local">ローカル座標で計算する</param>
+    /// <param name="targetX">X方向の移動量</param>
+    /// <param name="targetY">Y方向の移動量</param>
+    /// <param name="targetZ">Z方向の移動量</param>
+    /// <returns></returns>
+    IEnumerator MoveCard(Card card, int frame, bool local, float targetX = 0, float targetY = 0, float targetZ = 0)
     {
-        Vector3 startPosition = card.transform.position;
+        Vector3 startPosition = local ? card.transform.localPosition : card.transform.position;
         Vector3 endPosition = new Vector3(startPosition.x + targetX, startPosition.y + targetY, startPosition.z + targetZ);
         for (int i = 0; i <= frame; i++)
         {
-            card.transform.position = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
-            //Debug.Log(i);
-            yield return null;
-        }
-    }
-    IEnumerator MoveCardLocal(Card card, int frame, float targetX = 0, float targetY = 0, float targetZ = 0)
-    {
-        Vector3 startPosition = card.transform.localPosition;
-        Vector3 endPosition = new Vector3(startPosition.x + targetX, startPosition.y + targetY, startPosition.z + targetZ);
-        for (int i = 0; i <= frame; i++)
-        {
-            card.transform.localPosition = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
+            if(local)
+                card.transform.localPosition = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
+            else
+                card.transform.position = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
             //Debug.Log(i);
             yield return null;
         }

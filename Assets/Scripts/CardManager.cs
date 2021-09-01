@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// カードを管理する
+/// </summary>
 public class CardManager : SingletonMonoBehaviour<CardManager>
 {
     public GameObject Field;
@@ -9,19 +12,19 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     private Soul soul;
     private Drop drop;
 
-    // Start is called before the first frame update
     void Start()
     {
         soul = Field.transform.FindWithChildTag(Tag.Soul).GetComponent<Soul>();
         drop = Field.transform.FindWithChildTag(Tag.Drop).GetComponent<Drop>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
+    /// <summary>
+    /// カードをデッキから手札に移動
+    /// </summary>
+    /// <param name="deck"></param>
+    /// <param name="hand"></param>
+    /// <param name="index">デッキから取り出すためのインデックス</param>
+    /// <returns>コルーチン</returns>
     public IEnumerator DeckToHand(Deck deck, Hand hand, int index)
     {
         // ログ出力
@@ -39,6 +42,13 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.1f);
     }
 
+    /// <summary>
+    /// カードを手札から各種カードサークル(V,R,G)に移動
+    /// </summary>
+    /// <param name="hand"></param>
+    /// <param name="cardCircle"></param>
+    /// <param name="index">手札から取り出すためのインデックス</param>
+    /// <returns>コルーチン</returns>
     public IEnumerator HandToField(Hand hand, ICardCircle cardCircle, int index)
     {
         // ログ出力
@@ -59,6 +69,13 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
+    /// <summary>
+    /// カードをデッキから各種カードサークル(V,R,G)に移動
+    /// </summary>
+    /// <param name="deck"></param>
+    /// <param name="cardCircle"></param>
+    /// <param name="index">デッキから取り出すためのインデックス</param>
+    /// <returns>コルーチン</returns>
     public IEnumerator DeckToCircle(Deck deck, ICardCircle cardCircle, int index)
     {
         // ログ出力
@@ -71,6 +88,11 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
+    /// <summary>
+    /// カードをソウルに移動
+    /// </summary>
+    /// <param name="card">移動させるカード</param>
+    /// <returns>コルーチン</returns>
     public IEnumerator CardToSoul(Card card)
     {
         soul.Add(card);
@@ -79,6 +101,11 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
+    /// <summary>
+    /// カードをドロップゾーンに移動
+    /// </summary>
+    /// <param name="card">移動させるカード</param>
+    /// <returns>コルーチン</returns>
     public IEnumerator CardToDrop(Card card)
     {
         drop.Add(card);
@@ -87,6 +114,11 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
+    /// <summary>
+    /// カードを裏返す
+    /// </summary>
+    /// <param name="card">カード</param>
+    /// <returns>コルーチン</returns>
     public IEnumerator RotateCard(Card card)
     {
         yield return StartCoroutine(AnimationManager.Instance.RotateFieldCard(card));

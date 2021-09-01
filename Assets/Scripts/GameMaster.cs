@@ -10,7 +10,7 @@ public class GameMaster : MonoBehaviour
     public DeckGenerater deckGenerater;
     public SelectManager selectManager;
 
-    [SerializeField] Animator animator;
+    //[SerializeField] Animator animator;
 
     public void ResetScene()
     {
@@ -46,7 +46,7 @@ public class GameMaster : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.Return))
         {
-            SceneManager.LoadScene("MainScene");
+            ResetScene();
         }
 
 
@@ -103,7 +103,7 @@ public class GameMaster : MonoBehaviour
         //yield return null;
         //}
 
-        yield return StartCoroutine(MainPhase());
+        yield return StartCoroutine(StandPhase());
         //phase = Phase.DRAW;
         TextManager.Instance.SetPhaseText("エンドフェイズ");
 
