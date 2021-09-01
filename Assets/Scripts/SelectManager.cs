@@ -114,7 +114,7 @@ public class SelectManager : MonoBehaviour
         {
             Debug.Log("changeSelectBox");
             //ChangeParent(SelectObjList[selectZoneIndex.Item1][selectZoneIndex.Item2].transform, SelectBox, p: true);
-            if (IsHand() && CountChildAndTag(hand.transform, "Card") > 0)
+            if (IsHand() && hand.transform.CountWithChildTag("Card") > 0)
                 ChangeParent(hand.transform.GetChild(MultiSelectIndex).GetChild(0), SelectBox, p: true);
             else
                 ChangeParent(SelectObjList[selectZoneIndex.Item1][selectZoneIndex.Item2].transform, SelectBox, p: true);
@@ -145,7 +145,7 @@ public class SelectManager : MonoBehaviour
                 MultiSelectIndex--;
             }
 
-            if (CountChildAndTag(hand.transform, "Card") == 0)
+            if (hand.transform.CountWithChildTag("Card") == 0)
                 ChangeParent(SelectObjList[selectZoneIndex.Item1][selectZoneIndex.Item2].transform, SelectBox, p: true);
             else
                 ChangeParent(hand.transform.GetChild(MultiSelectIndex).GetChild(0), SelectBox, p: true);
@@ -158,8 +158,8 @@ public class SelectManager : MonoBehaviour
     public bool SingleSelected()
     {
         if (!IsHand()) return false;
-        Debug.Log(hand.transform.childCount);
-        Debug.Log(CountChildAndTag(hand.transform, "Card"));
+        //Debug.Log(hand.transform.childCount);
+        Debug.Log(hand.transform.CountWithChildTag("Card"));
         SelectedBox = Instantiate(SelectedBoxPrefab);
         SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)ÇÃïîï™ÇçÌèú
         ChangeParent(hand.transform.GetChild(MultiSelectIndex).GetChild(0), SelectedBox, true, true, true);
@@ -170,7 +170,7 @@ public class SelectManager : MonoBehaviour
     {
         if (!HasTag(tag)) return false;
         int i = 0;
-        int cardCount = CountChildAndTag(hand.transform, "Card");
+        int cardCount = hand.transform.CountWithChildTag("Card");
         int selectedIndex = -1;
         while (i < cardCount)
         {
@@ -225,16 +225,5 @@ public class SelectManager : MonoBehaviour
     private bool HasTag(string tag) => SelectObjList[selectZoneIndex.Item1][selectZoneIndex.Item2].tag.Contains(tag);
 
 
-    private int CountChildAndTag(Transform parentObject, string tag)
-    {
-        int count = 0;
-
-        foreach (Transform child in parentObject)
-        {
-            if (child.tag == tag) count++;
-        }
-
-        return count;
-    }
 
 }

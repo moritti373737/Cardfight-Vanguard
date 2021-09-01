@@ -48,7 +48,7 @@ public class Player : MonoBehaviour
 
     public IEnumerator StandUpVanguard()
     {
-        yield return StartCoroutine(CardManager.Instance.RotateCard(vanguard.transform.Find("Card0").GetComponent<Card>()));
+        yield return StartCoroutine(CardManager.Instance.RotateCard(vanguard.transform.FindWithChildTag("Card").GetComponent<Card>()));
 
     }
 
