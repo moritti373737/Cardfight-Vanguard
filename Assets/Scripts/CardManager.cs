@@ -11,7 +11,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     // Start is called before the first frame update
     void Start()
     {
-        soul = Field.transform.FindWithChildTag("Soul").GetComponent<Soul>();
+        soul = Field.transform.FindWithChildTag(Tag.Soul).GetComponent<Soul>();
     }
 
     // Update is called once per frame
@@ -44,7 +44,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         Card card = hand.Pull(index);
         //card.TurnOver();
         Card removeCard = cardCircle.GetCard();
-        if (cardCircle.GetTransform().tag.Contains("Vanguard") && cardCircle.GetTransform().FindWithChildTag("Card"))
+        if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()) && cardCircle.GetTransform().FindWithChildTag(Tag.Card))
         {
             yield return StartCoroutine(CardToSoul(removeCard));
         }

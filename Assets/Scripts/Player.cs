@@ -25,7 +25,7 @@ public class Player : MonoBehaviour
         //        vanguard = childTransform.GetComponent<Vanguard>();
         //}
 
-        vanguard = field.transform.FindWithChildTag("Vanguard").GetComponent<Vanguard>();
+        vanguard = field.transform.FindWithChildTag(Tag.Vanguard).GetComponent<Vanguard>();
 
         //this.UpdateAsObservable()
         //    .Where(_ => FirstStateController.Instance.firstState == FirstState.Draw);
@@ -50,7 +50,7 @@ public class Player : MonoBehaviour
 
     public IEnumerator StandUpVanguard()
     {
-        yield return StartCoroutine(CardManager.Instance.RotateCard(vanguard.transform.FindWithChildTag("Card").GetComponent<Card>()));
+        yield return StartCoroutine(CardManager.Instance.RotateCard(vanguard.transform.FindWithChildTag(Tag.Card).GetComponent<Card>()));
 
     }
 

@@ -16,5 +16,5 @@ public class Vanguard : MonoBehaviour, ICardCircle
 
     public Transform GetTransform() => transform;
 
-    public Card GetCard() => transform.FindWithChildTag("Card").GetComponent<Card>();
+    public Card GetCard() => transform.FindWithChildTag(Tag.Card).GetComponent<Card>();
 }
