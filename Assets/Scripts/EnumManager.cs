@@ -10,6 +10,7 @@ public enum Tag
     Deck,
     Hand,
     Soul,
+    Circle,
 }
 
 public class EnumManager : MonoBehaviour

@@ -56,26 +56,24 @@ public class GameMaster : MonoBehaviour
         }
 
 
-        switch (phase)
-        {
-            case Phase.INIT:
-                //InitPhase();
-                break;
-            case Phase.STAND:
-                DrawPhase();
-                break;
-            case Phase.DRAW:
-                StandPhase();
-                break;
-                /*
-            case Phase.BATTLE:
-                BattlePhase();
-                break;
-            case Phase.END:
-                EndPhase();
-                break;
-                */
-        }
+        //switch (phase)
+        //{
+        //    case Phase.INIT:
+        //        //InitPhase();
+        //        break;
+        //    case Phase.STAND:
+        //        DrawPhase();
+        //        break;
+        //    case Phase.DRAW:
+        //        StandPhase();
+        //        break;
+        //    case Phase.BATTLE:
+        //        BattlePhase();
+        //        break;
+        //    case Phase.END:
+        //        EndPhase();
+        //        break;
+        //}
     }
 
     private IEnumerator InitPhase()
@@ -178,7 +176,41 @@ public class GameMaster : MonoBehaviour
         yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected());
         yield return null;
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm("Vanguard"));
+        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard.ToString()));
+        yield return null;
+
+        yield return StartCoroutine(MainPhase());
+    }
+
+    IEnumerator MainPhase()
+    {
+        bool CanNext = true;
+
+        IEnumerator Call()
+        {
+            while (true)
+            {
+                yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected());
+                CanNext = false;
+                yield return null;
+
+                yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard.ToString()));
+                CanNext = true;
+                yield return null;
+            }
+
+        }
+
+        TextManager.Instance.SetPhaseText("メインフェイズ");
+
+        Coroutine call = StartCoroutine(Call());
+
+
+        yield return new WaitUntil(() => CanNext && Input.GetButtonDown("Submit"));
+        StopCoroutine(call);
+
+        yield return null;
+
     }
 
     //void StandbyPhase()

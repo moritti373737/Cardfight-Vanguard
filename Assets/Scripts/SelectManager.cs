@@ -112,7 +112,7 @@ public class SelectManager : MonoBehaviour
 
         if (changeSelectBox)
         {
-            Debug.Log("changeSelectBox");
+            //Debug.Log("changeSelectBox");
             //ChangeParent(SelectObjList[selectZoneIndex.Item1][selectZoneIndex.Item2].transform, SelectBox, p: true);
             if (IsHand() && hand.transform.CountWithChildTag(Tag.Card) > 0)
                 ChangeParent(hand.transform.GetChild(MultiSelectIndex).GetChild(0), SelectBox, p: true);
@@ -157,7 +157,7 @@ public class SelectManager : MonoBehaviour
 
     public bool SingleSelected()
     {
-        if (!IsHand()) return false;
+        if (!IsHand() || hand.transform.CountWithChildTag(Tag.Card) == 0) return false;
         //Debug.Log(hand.transform.childCount);
         Debug.Log(hand.transform.CountWithChildTag(Tag.Card));
         SelectedBox = Instantiate(SelectedBoxPrefab);
