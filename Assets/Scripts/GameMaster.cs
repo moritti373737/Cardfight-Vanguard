@@ -170,7 +170,7 @@ public class GameMaster : MonoBehaviour
         yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected(Tag.Hand));
         yield return null;
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard.ToString()));
+        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard));
         yield return null;
 
         yield return StartCoroutine(MainPhase());
@@ -180,9 +180,26 @@ public class GameMaster : MonoBehaviour
     {
         IEnumerator Call()
         {
+            yield return null;
             while (true)
             {
-                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard.ToString()))
+                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard))
+                    yield break;
+                else if (Input.GetButtonDown("Cancel"))
+                {
+                    selectManager.SingleCansel();
+                    yield break;
+                }
+                yield return null;
+            }
+        }
+
+        IEnumerator Move()
+        {
+            yield return null;
+            while (true)
+            {
+                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard))
                     yield break;
                 else if (Input.GetButtonDown("Cancel"))
                 {
@@ -207,6 +224,8 @@ public class GameMaster : MonoBehaviour
             {
                 if(selectManager.SingleSelected(Tag.Hand))
                     yield return StartCoroutine(Call());
+                else if (selectManager.SingleSelected(Tag.Rearguard))
+                    yield return StartCoroutine(Move());
             }
             if (Input.GetButtonDown("Submit"))
             {

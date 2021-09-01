@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum Tag
 {
+    None,
     Card,
     Vanguard,
     Rearguard,

@@ -57,6 +57,24 @@ public static class Extensions
         return null;
     }
 
+    /// <summary>
+    /// 指定したタグ名を含む全ての子のtransformを探す
+    /// </summary>
+    /// <param name="parentTransform">親のtransform</param>
+    /// <param name="tag">検索したいタグ名</param>
+    /// <returns>子のtransformリスト</returns>
+    public static List<Transform> FindWithAllChildTag(this Transform parentTransform, Tag tag)
+    {
+        List<Transform> children = new List<Transform>();
+        foreach (Transform childTransform in parentTransform)
+        {
+            if (childTransform.tag.Contains(tag.ToString()))
+                children.Add(childTransform);
+        }
+        return children;
+    }
+
+
     //public static int CountWithChildTag(this Transform parentTransform, string tag)
     //{
     //    int count = 0;
@@ -110,5 +128,27 @@ public static class Extensions
         if (s)
             childObject.transform.localScale = locals;
 
+    }
+
+    /// <summary>
+    /// 特定の孫オブジェクトが存在するインデックスを探す
+    /// </summary>
+    /// <param name="parentTransform">親のtransform</param>
+    /// <returns>検索したインデックス</returns>
+    public static int FindWithGrandchildCard(this Transform parentTransform)
+    {
+        int i = 0;
+        int cardCount = parentTransform.transform.CountWithChildTag(Tag.Card);
+        int selectedIndex = -1;
+        while (i < cardCount)
+        {
+            if (!ReferenceEquals(parentTransform.transform.GetChild(i).Find("Face/SelectedBox"), null))
+            {
+                selectedIndex = i;
+                return selectedIndex;
+            }
+            i++;
+        }
+        return selectedIndex;
     }
 }

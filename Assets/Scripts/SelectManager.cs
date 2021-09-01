@@ -46,6 +46,8 @@ public class SelectManager : MonoBehaviour
     public List<GameObject> SelectObjList2 = new List<GameObject>();
     public List<GameObject> SelectObjList3 = new List<GameObject>();
 
+    private Tag SingleSelectedTag = Tag.None;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -239,13 +241,24 @@ public class SelectManager : MonoBehaviour
     /// <returns>実際に選択したか</returns>
     public bool SingleSelected(Tag tag)
     {
-        if (!IsHand() || hand1.transform.CountWithChildTag(Tag.Card) == 0) return false;
-        //Debug.Log(hand.transform.childCount);
-        //Debug.Log(hand.transform.CountWithChildTag(Tag.Card));
-        SelectedBox = Instantiate(SelectedBoxPrefab);
-        SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
-        SelectedBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex).GetChild(0), true, true, true);
-        return true;
+        if (!HasTag(tag)) return false;
+        if (HasTag(Tag.Hand) && hand1.transform.CountWithChildTag(Tag.Card) > 0)
+        {
+            SelectedBox = Instantiate(SelectedBoxPrefab);
+            SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
+            SelectedBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex).GetChild(0), true, true, true);
+            SingleSelectedTag = Tag.Hand;
+            return true;
+        }
+        if (HasTag(Tag.Rearguard) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
+        {
+            SelectedBox = Instantiate(SelectedBoxPrefab);
+            SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
+            SelectedBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, true, true, true);
+            SingleSelectedTag = Tag.Rearguard;
+            return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -253,25 +266,35 @@ public class SelectManager : MonoBehaviour
     /// </summary>
     /// <param name="tag">決定可能なマス</param>
     /// <returns>実際に決定したか</returns>
-    public bool SingleConfirm(string tag)
+    public bool SingleConfirm(Tag tag)
     {
         if (!HasTag(tag)) return false;
-        int i = 0;
-        int cardCount = hand1.transform.CountWithChildTag(Tag.Card);
-        int selectedIndex = -1;
-        while (i < cardCount)
+        if (SingleSelectedTag == Tag.Hand && HasTag(Tag.Circle))
         {
-            if (!ReferenceEquals(hand1.transform.GetChild(i).Find("Face/SelectedBox"), null))
+            int selectedIndex = hand1.transform.FindWithGrandchildCard();
+            StartCoroutine(CardManager.Instance.HandToField(hand1, SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selectedIndex));
+            SingleSelectedTag = Tag.None;
+            Destroy(SelectedBox);
+            return true;
+        }
+        else if (SingleSelectedTag == Tag.Rearguard && HasTag(Tag.Rearguard))
+        {
+            List<Transform> fieldList = Field1.transform.FindWithAllChildTag(Tag.Rearguard);
+            foreach (var rearguard in fieldList)
             {
-                selectedIndex = i;
-                break;
+                if(rearguard.FindWithChildTag(Tag.Card) != null)
+                {
+                    StartCoroutine(CardManager.Instance.RearToRear(rearguard.GetComponent<ICardCircle>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>()));
+                    break;
+                }
             }
-            i++;
+            SingleSelectedTag = Tag.None;
+            Destroy(SelectedBox);
+            return true;
         }
 
-        StartCoroutine(CardManager.Instance.HandToField(hand1, SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selectedIndex));
-        Destroy(SelectedBox);
-        return true;
+
+        return false;
 
     }
 
@@ -280,6 +303,7 @@ public class SelectManager : MonoBehaviour
     /// </summary>
     public void SingleCansel()
     {
+        SingleSelectedTag = Tag.None;
         Destroy(SelectedBox);
     }
 
@@ -301,7 +325,7 @@ public class SelectManager : MonoBehaviour
     //private bool IsCardCircle() => SelectObjList[selectZoneIndex.Item1][selectZoneIndex[1]].tag.Contains("Circle");
 
     //private bool IsVanguard() => SelectObjList[selectZoneIndex.Item1][selectZoneIndex[1]].tag.Contains("Vanguard");
-    private bool HasTag(string tag) => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].tag.Contains(tag);
+    private bool HasTag(Tag tag) => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].tag.Contains(tag.ToString());
 
 
 

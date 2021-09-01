@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Vanguard : MonoBehaviour, ICardCircle
 {
-    // Start is called before the first frame update
     public void Add(Card card)
     {
         var localr = card.transform.localRotation;

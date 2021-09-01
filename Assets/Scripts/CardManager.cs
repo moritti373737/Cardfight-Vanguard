@@ -88,6 +88,19 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
+    public IEnumerator RearToRear(ICardCircle cardCircle, ICardCircle targetCircle)
+    {
+        // ログ出力
+        //Debug.Log("1second");
+        //Card card = deck.Pull(index);
+        //card.TurnOver();
+        Card card = cardCircle.GetTransform().FindWithChildTag(Tag.Card).GetComponent<Card>();
+        targetCircle.Add(card);
+
+        // 待つ
+        yield return new WaitForSeconds(0.0f);
+    }
+
     /// <summary>
     /// カードをソウルに移動
     /// </summary>
