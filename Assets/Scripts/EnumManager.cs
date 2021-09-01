@@ -11,6 +11,7 @@ public enum Tag
     Hand,
     Soul,
     Circle,
+    Drop,
 }
 
 public class EnumManager : MonoBehaviour

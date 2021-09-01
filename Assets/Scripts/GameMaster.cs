@@ -31,13 +31,13 @@ public class GameMaster : MonoBehaviour
         END,
     };
 
-    Phase phase;
+    //Phase phase;
 
 
     void Start()
     {
         deckGenerater = GetComponent<DeckGenerater>();
-        phase = Phase.INIT;
+        //phase = Phase.INIT;
         deckGenerater.Generate(player1.deck);
         StartCoroutine(InitPhase());
     }

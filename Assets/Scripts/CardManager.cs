@@ -7,11 +7,13 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     public GameObject Field;
 
     private Soul soul;
+    private Drop drop;
 
     // Start is called before the first frame update
     void Start()
     {
         soul = Field.transform.FindWithChildTag(Tag.Soul).GetComponent<Soul>();
+        drop = Field.transform.FindWithChildTag(Tag.Drop).GetComponent<Drop>();
     }
 
     // Update is called once per frame
@@ -44,9 +46,12 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         Card card = hand.Pull(index);
         //card.TurnOver();
         Card removeCard = cardCircle.GetCard();
-        if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()) && cardCircle.GetTransform().FindWithChildTag(Tag.Card))
+        if (cardCircle.GetTransform().FindWithChildTag(Tag.Card))
         {
-            yield return StartCoroutine(CardToSoul(removeCard));
+            if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()))
+                yield return StartCoroutine(CardToSoul(removeCard));
+            else if (cardCircle.GetTransform().tag.Contains(Tag.Rearguard.ToString()))
+                yield return StartCoroutine(CardToDrop(removeCard));
         }
         cardCircle.Add(card);
 
@@ -69,6 +74,14 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     public IEnumerator CardToSoul(Card card)
     {
         soul.Add(card);
+
+        // ‘Ò‚Â
+        yield return new WaitForSeconds(0.0f);
+    }
+
+    public IEnumerator CardToDrop(Card card)
+    {
+        drop.Add(card);
 
         // ‘Ò‚Â
         yield return new WaitForSeconds(0.0f);
