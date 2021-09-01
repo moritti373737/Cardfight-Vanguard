@@ -16,7 +16,7 @@ public static class Extensions
     {
         foreach (Transform childTransform in transform)
         {
-            if (childTransform.CompareTag(tag))
+            if (childTransform.tag.Contains(tag))
                 return childTransform;
         }
         return null;

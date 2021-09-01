@@ -19,11 +19,13 @@ public class Player : MonoBehaviour
     private void Start()
     {
         //子オブジェクトを全て取得する
-        foreach (Transform childTransform in field.transform)
-        {
-            if (childTransform.tag.Contains("Vanguard"))
-                vanguard = childTransform.GetComponent<Vanguard>();
-        }
+        //foreach (Transform childTransform in field.transform)
+        //{
+        //    if (childTransform.tag.Contains("Vanguard"))
+        //        vanguard = childTransform.GetComponent<Vanguard>();
+        //}
+
+        vanguard = field.transform.FindWithChildTag("Vanguard").GetComponent<Vanguard>();
 
         //this.UpdateAsObservable()
         //    .Where(_ => FirstStateController.Instance.firstState == FirstState.Draw);

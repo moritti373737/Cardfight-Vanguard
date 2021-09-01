@@ -5,4 +5,7 @@ using UnityEngine;
 public interface ICardCircle
 {
     void Add(Card card);
+
+    Transform GetTransform();
+    Card GetCard();
 }

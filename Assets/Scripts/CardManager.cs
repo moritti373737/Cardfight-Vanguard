@@ -4,10 +4,14 @@ using UnityEngine;
 
 public class CardManager : SingletonMonoBehaviour<CardManager>
 {
+    public GameObject Field;
+
+    private Soul soul;
+
     // Start is called before the first frame update
     void Start()
     {
-
+        soul = Field.transform.FindWithChildTag("Soul").GetComponent<Soul>();
     }
 
     // Update is called once per frame
@@ -20,7 +24,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         // ログ出力
         //Debug.Log("1second");
-        var card = deck.Pull(index);
+        Card card = deck.Pull(index);
 
         //yield return StartCoroutine(AnimationManager.Instance.DeckToCard(card));
 
@@ -37,8 +41,13 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         // ログ出力
         //Debug.Log("1second");
-        var card = hand.Pull(index);
+        Card card = hand.Pull(index);
         //card.TurnOver();
+        Card removeCard = cardCircle.GetCard();
+        if (cardCircle.GetTransform().tag.Contains("Vanguard") && cardCircle.GetTransform().FindWithChildTag("Card"))
+        {
+            yield return StartCoroutine(CardToSoul(removeCard));
+        }
         cardCircle.Add(card);
 
         // 待つ
@@ -49,9 +58,17 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         // ログ出力
         //Debug.Log("1second");
-        var card = deck.Pull(index);
+        Card card = deck.Pull(index);
         //card.TurnOver();
         cardCircle.Add(card);
+
+        // 待つ
+        yield return new WaitForSeconds(0.0f);
+    }
+
+    public IEnumerator CardToSoul(Card card)
+    {
+        soul.Add(card);
 
         // 待つ
         yield return new WaitForSeconds(0.0f);

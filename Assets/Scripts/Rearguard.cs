@@ -13,4 +13,6 @@ public class Rearguard : MonoBehaviour, ICardCircle
         card.transform.localRotation = localr;
         card.transform.localRotation = localr;
     }
+    public Transform GetTransform() => transform;
+    public Card GetCard() => transform.FindWithChildTag("Card").GetComponent<Card>();
 }
