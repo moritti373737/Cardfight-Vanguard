@@ -89,7 +89,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         for (int i = 0; i <= frame; i++)
         {
             card.transform.position = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
-            Debug.Log(i);
+            //Debug.Log(i);
             yield return null;
         }
     }
@@ -100,7 +100,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         for (int i = 0; i <= frame; i++)
         {
             card.transform.localPosition = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
-            Debug.Log(i);
+            //Debug.Log(i);
             yield return null;
         }
     }

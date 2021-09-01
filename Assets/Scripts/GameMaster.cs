@@ -44,12 +44,6 @@ public class GameMaster : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetButtonDown("Enter"))
-        {
-
-            Debug.Log("Enter");
-        }
-
         if (Input.GetKey(KeyCode.Return))
         {
             SceneManager.LoadScene("MainScene");
@@ -109,7 +103,7 @@ public class GameMaster : MonoBehaviour
         //yield return null;
         //}
 
-        yield return StartCoroutine(StandPhase());
+        yield return StartCoroutine(MainPhase());
         //phase = Phase.DRAW;
         TextManager.Instance.SetPhaseText("エンドフェイズ");
 
@@ -184,30 +178,43 @@ public class GameMaster : MonoBehaviour
 
     IEnumerator MainPhase()
     {
-        bool CanNext = true;
-
         IEnumerator Call()
         {
             while (true)
             {
-                yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected());
-                CanNext = false;
-                yield return null;
-
-                yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard.ToString()));
-                CanNext = true;
+                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard.ToString()))
+                    yield break;
+                else if (Input.GetButtonDown("Cancel"))
+                {
+                    selectManager.SingleCansel();
+                    yield break;
+                }
                 yield return null;
             }
-
         }
 
         TextManager.Instance.SetPhaseText("メインフェイズ");
 
-        Coroutine call = StartCoroutine(Call());
+        //Coroutine call = StartCoroutine(Call());
 
 
-        yield return new WaitUntil(() => CanNext && Input.GetButtonDown("Submit"));
-        StopCoroutine(call);
+        //yield return new WaitUntil(() => CanNext && Input.GetButtonDown("Submit"));
+        //StopCoroutine(call);
+
+        while (true)
+        {
+            if (Input.GetButtonDown("Enter"))
+            {
+                if(selectManager.SingleSelected())
+                    yield return StartCoroutine(Call());
+            }
+            if (Input.GetButtonDown("Submit"))
+            {
+                break;
+
+            }
+            yield return null;
+        }
 
         yield return null;
 

@@ -188,6 +188,11 @@ public class SelectManager : MonoBehaviour
 
     }
 
+    public void SingleCansel()
+    {
+        Destroy(SelectedBox);
+    }
+
     public void MultSelected()
     {
 
