@@ -185,7 +185,7 @@ public class GameMaster : MonoBehaviour
         yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected(Tag.Hand, AttackFighter.ID));
         yield return null;
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard));
+        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard, AttackFighter.ID, Action.MOVE));
         yield return null;
 
         yield return StartCoroutine(MainPhase());
@@ -198,7 +198,7 @@ public class GameMaster : MonoBehaviour
             yield return null;
             while (true)
             {
-                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard))
+                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard, AttackFighter.ID, Action.MOVE))
                     yield break;
                 else if (Input.GetButtonDown("Cancel"))
                 {
@@ -214,7 +214,7 @@ public class GameMaster : MonoBehaviour
             yield return null;
             while (true)
             {
-                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard))
+                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard, AttackFighter.ID, Action.MOVE))
                     yield break;
                 else if (Input.GetButtonDown("Cancel"))
                 {
@@ -252,6 +252,23 @@ public class GameMaster : MonoBehaviour
 
         yield return null;
 
+        yield return StartCoroutine(ButtlePhase());
+    }
+
+    IEnumerator ButtlePhase()
+    {
+        TextManager.Instance.SetPhaseText("バトルフェイズ");
+
+        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected(Tag.Circle, AttackFighter.ID));
+        yield return null;
+
+        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Circle, DefenceFighter.ID, Action.ATTACK));
+        yield return null;
+
+        TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+        TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+
+        yield return StartCoroutine(MainPhase());
     }
 
     //void StandbyPhase()

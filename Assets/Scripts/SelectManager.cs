@@ -280,8 +280,16 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
             SelectedCardList.Add(selectedRearguard.FindWithChildTag(Tag.Card).transform);
         }
+        // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
+        else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
+        {
+            var selectedRearguard = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]];
+            SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
+            SelectedCardList.Add(selectedRearguard.FindWithChildTag(Tag.Card).transform);
+        }
         else
         {
+            SingleCansel();
             return false;
         }
         return true;
@@ -292,34 +300,56 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// </summary>
     /// <param name="tag">決定可能なマス</param>
     /// <param name="fighterID">決定可能なファイターID</param>
+    /// <param name="action">選択、決定したカードに対しとる行動</param>
     /// <returns>実際に決定したか</returns>
-    public bool SingleConfirm(Tag tag, FighterID fighterID=FighterID.One)
+    public bool SingleConfirm(Tag tag, FighterID fighterID, Action action)
     {
-        Fighter fighter = GetFighter(fighterID);
-
         if (!HasTag(tag)) return false;
 
-        foreach (var selected in SelectedCardList) // ループが一周だけ
+        Fighter fighter = GetFighter(fighterID);
+
+
+        foreach (var selected in SelectedCardList)
         {
-            // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
-            if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
+            if (action == Action.MOVE)
             {
-                StartCoroutine(CardManager.Instance.HandToField(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
-                SelectedCardList.Clear();
-                Destroy(SelectedBox);
-                return true;
+
+                // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
+                if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
+                {
+                    StartCoroutine(CardManager.Instance.HandToField(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
+                }
+                // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
+                else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
+                    && selected.parent.GetComponent<Rearguard>().IsSameColumn(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>()))
+                {
+                    StartCoroutine(CardManager.Instance.RearToRear(selected.parent.GetComponent<Rearguard>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>(), selected.GetComponent<Card>()));
+                }
+                else
+                {
+                    return false;
+                }
             }
-            // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
-            else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
-                && selected.parent.GetComponent<Rearguard>().IsSameColumn(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>()))
+            else if (action == Action.ATTACK)
             {
-                StartCoroutine(CardManager.Instance.RearToRear(selected.parent.GetComponent<Rearguard>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>(), selected.GetComponent<Card>()));
-                SelectedCardList.Clear();
-                Destroy(SelectedBox);
-                return true;
+                // 選択したカーソル位置がサークル かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
+                if (selected.parent.ExistTag(Tag.Circle) && HasTag(Tag.Vanguard) && IsFighter(fighterID))
+                {
+                    Debug.Log("Vにアタック");
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
-        return false;
+        SelectedCardList.Clear();
+        Destroy(SelectedBox);
+        return true;
 
     }
 

@@ -20,8 +20,15 @@ public enum Tag
 
 public enum FighterID
 {
-    One,
-    Two,
+    ONE,
+    TWO,
+}
+
+public enum Action
+{
+    MOVE,
+    ATTACK,
+    GUARD,
 }
 
 public class EnumManager : MonoBehaviour
