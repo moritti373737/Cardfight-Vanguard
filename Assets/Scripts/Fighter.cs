@@ -11,6 +11,7 @@ public class Fighter : MonoBehaviour
     public Hand hand;
     //private Card card;
     private Vanguard vanguard;
+    private Drive drive;
 
     //private bool isDraw = true;
     //public Field field;
@@ -27,6 +28,7 @@ public class Fighter : MonoBehaviour
 
         deck = field.transform.FindWithChildTag(Tag.Deck).GetComponent<Deck>();
         vanguard = field.transform.FindWithChildTag(Tag.Vanguard).GetComponent<Vanguard>();
+        drive = field.transform.FindWithChildTag(Tag.Drive).GetComponent<Drive>();
 
         //this.UpdateAsObservable()
         //    .Where(_ => FirstStateController.Instance.firstState == FirstState.Draw);
@@ -98,6 +100,13 @@ public class Fighter : MonoBehaviour
 
         //hand.Add(card);
     }
+
+    public IEnumerator DriveTriggerCheck()
+    {
+        yield return StartCoroutine(CardManager.Instance.DeckToDrive(deck, drive));
+        //yield return StartCoroutine(CardManager.Instance.DriveToHand(drive, hand));
+    }
+
     /*
     public void onDamage(int _at)
     {

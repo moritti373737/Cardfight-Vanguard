@@ -293,15 +293,43 @@ public class GameMaster : MonoBehaviour
 
     IEnumerator ButtlePhase()
     {
+        IEnumerator Attack()
+        {
+            yield return null;
+            while (true)
+            {
+                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Circle, DefenceFighter.ID, Action.ATTACK))
+                {
+                    TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+                    yield return StartCoroutine(AttackFighter.DriveTriggerCheck());
+                    yield break;
+                }
+                else if (Input.GetButtonDown("Cancel"))
+                {
+                    selectManager.SingleCansel();
+                    yield break;
+                }
+                yield return null;
+            }
+        }
+
         TextManager.Instance.SetPhaseText("バトルフェイズ");
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected(Tag.Circle, AttackFighter.ID));
-        yield return null;
+        while (true)
+        {
+            if (Input.GetButtonDown("Enter"))
+            {
+                if (selectManager.SingleSelected(Tag.Circle, AttackFighter.ID))
+                    yield return StartCoroutine(Attack());
+            }
+            if (Input.GetButtonDown("Submit"))
+            {
+                break;
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Circle, DefenceFighter.ID, Action.ATTACK));
-        yield return null;
+            }
+            yield return null;
+        }
 
-        TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
         TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
 
         yield return StartCoroutine(MainPhase());

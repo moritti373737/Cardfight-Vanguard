@@ -16,6 +16,7 @@ public enum Tag
     Damage,
     Order,
     Guardian,
+    Drive,
 }
 
 public enum FighterID

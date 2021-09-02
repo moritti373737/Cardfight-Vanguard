@@ -107,6 +107,23 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
+    public IEnumerator DeckToDrive(Deck deck, Drive drive)
+    {
+        Card card = deck.Pull(0);
+        card.TurnOver();
+        drive.Add(card);
+
+        yield return new WaitForSeconds(1.0f);
+    }
+
+    public IEnumerator DriveToHand(Drive drive, Hand hand)
+    {
+        Card card = drive.Pull();
+        hand.Add(card);
+
+        yield return new WaitForSeconds(0.0f);
+    }
+
     /// <summary>
     /// カードをソウルに移動
     /// </summary>
