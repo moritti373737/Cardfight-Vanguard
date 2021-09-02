@@ -12,6 +12,7 @@ public class Vanguard : MonoBehaviour, ICardCircle
         card.transform.localRotation = localr;
         card.transform.localRotation = localr;
     }
+    public Card Pull() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
 
     public Transform GetTransform() => transform;
 

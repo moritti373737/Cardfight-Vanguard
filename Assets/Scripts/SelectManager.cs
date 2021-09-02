@@ -285,7 +285,7 @@ public class SelectManager : MonoBehaviour
             }
             else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard))
             {
-                StartCoroutine(CardManager.Instance.RearToRear(selected.GetComponent<Card>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>()));
+                StartCoroutine(CardManager.Instance.RearToRear(selected.parent.GetComponent<ICardCircle>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
                 SelectedCardList.Clear();
                 Destroy(SelectedBox);
                 return true;

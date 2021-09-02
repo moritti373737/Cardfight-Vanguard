@@ -47,7 +47,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// </summary>
     /// <param name="hand"></param>
     /// <param name="cardCircle"></param>
-    /// <param name="index">手札から取り出すためのインデックス</param>
+    /// <param name="card">手札から取り出すカード</param>
     /// <returns>コルーチン</returns>
     public IEnumerator HandToField(Hand hand, ICardCircle cardCircle, Card card)
     {
@@ -88,13 +88,19 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
-    public IEnumerator RearToRear(Card card, ICardCircle targetCircle)
+    public IEnumerator RearToRear(ICardCircle cardCircle, ICardCircle targetCircle, Card card)
     {
         // ログ出力
         //Debug.Log("1second");
         //Card card = deck.Pull(index);
         //card.TurnOver();
         //Card card = cardCircle.GetTransform().FindWithChildTag(Tag.Card).GetComponent<Card>();
+        Card targetCard = targetCircle.Pull();
+        if (targetCard != null)
+        {
+            cardCircle.Add(targetCard);
+        }
+
         targetCircle.Add(card);
 
         // 待つ
