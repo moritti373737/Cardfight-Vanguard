@@ -144,6 +144,8 @@ public class GameMaster : MonoBehaviour
         TextManager.Instance.SetPhaseText("スタンドフェイズ");
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
+
+        yield return null;
         yield return StartCoroutine(DrawPhase());
     }
 
@@ -173,19 +175,53 @@ public class GameMaster : MonoBehaviour
             currentPlayer.CardDraw();
             //phase = Phase.STANDBY;
         }*/
-
+        yield return null;
         //phase = Phase.STANDBY;
         yield return StartCoroutine(RidePhase());
     }
 
     IEnumerator RidePhase()
     {
+        bool IsRide = false; // ライド処理が成功したときtrue
+
+        IEnumerator Ride()
+        {
+            yield return null;
+            while (true)
+            {
+                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard, AttackFighter.ID, Action.MOVE))
+                {
+                    IsRide = true;
+                    yield break;
+                }
+                else if (Input.GetButtonDown("Cancel"))
+                {
+                    selectManager.SingleCansel();
+                    yield break;
+                }
+                yield return null;
+            }
+        }
+
         TextManager.Instance.SetPhaseText("ライドフェイズ");
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected(Tag.Hand, AttackFighter.ID));
-        yield return null;
+        while (true)
+        {
+            if (IsRide) break;
+            if (Input.GetButtonDown("Enter"))
+            {
+                if (selectManager.SingleSelected(Tag.Hand, AttackFighter.ID))
+                    yield return StartCoroutine(Ride());
+            }
+            if (Input.GetButtonDown("Submit"))
+            {
+                break;
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard, AttackFighter.ID, Action.MOVE));
+            }
+            yield return null;
+        }
+
+
         yield return null;
 
         yield return StartCoroutine(MainPhase());
