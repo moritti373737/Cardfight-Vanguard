@@ -302,6 +302,12 @@ public class GameMaster : MonoBehaviour
                 {
                     TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
                     yield return StartCoroutine(AttackFighter.DriveTriggerCheck());
+
+                    yield return new WaitForSeconds(1.5f);
+
+                    TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+                    yield return StartCoroutine(DefenceFighter.DamageTriggerCheck());
+
                     yield break;
                 }
                 else if (Input.GetButtonDown("Cancel"))
@@ -330,7 +336,6 @@ public class GameMaster : MonoBehaviour
             yield return null;
         }
 
-        TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
 
         yield return StartCoroutine(MainPhase());
     }

@@ -125,6 +125,22 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
+    public IEnumerator DriveToDamage(Drive drive, Damage damage)
+    {
+        Card card = drive.Pull();
+        damage.Add(card);
+
+        yield return new WaitForSeconds(0.0f);
+    }
+
+    public IEnumerator DriveToDrop(Drive drive, Drop drop)
+    {
+        Card card = drive.Pull();
+        drop.Add(card);
+
+        yield return new WaitForSeconds(0.0f);
+    }
+
     /// <summary>
     /// カードをソウルに移動
     /// </summary>

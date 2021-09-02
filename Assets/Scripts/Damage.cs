@@ -1,17 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UniRx;
-using System;
+using UnityEngine;
 
-public class Drop : MonoBehaviour
+public class Damage : MonoBehaviour
 {
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();
-
-    // Start is called before the first frame update
     void Start()
     {
-        cardList.ObserveCountChanged().Subscribe(_ => ChangeCount());
+        //cardList.ObserveCountChanged().Subscribe(_ => ChangeCount());
     }
 
     private void ChangeCount()
@@ -25,6 +22,7 @@ public class Drop : MonoBehaviour
     public void Add(Card _card)
     {
         _card.transform.SetParent(transform, false);
+        _card.transform.localPosition = new Vector3(cardList.Count * 0.27F, 0, (cardList.Count + 1) * -0.9F);
         cardList.Add(_card);
 
     }

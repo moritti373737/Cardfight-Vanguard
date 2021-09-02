@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,8 @@ public class Fighter : MonoBehaviour
     public Hand hand;
     //private Card card;
     private Vanguard vanguard;
+    private Drop drop;
+    private Damage damage;
     private Drive drive;
 
     //private bool isDraw = true;
@@ -28,6 +31,8 @@ public class Fighter : MonoBehaviour
 
         deck = field.transform.FindWithChildTag(Tag.Deck).GetComponent<Deck>();
         vanguard = field.transform.FindWithChildTag(Tag.Vanguard).GetComponent<Vanguard>();
+        drop = field.transform.FindWithChildTag(Tag.Drop).GetComponent<Drop>();
+        damage = field.transform.FindWithChildTag(Tag.Damage).GetComponent<Damage>();
         drive = field.transform.FindWithChildTag(Tag.Drive).GetComponent<Drive>();
 
         //this.UpdateAsObservable()
@@ -105,6 +110,12 @@ public class Fighter : MonoBehaviour
     {
         yield return StartCoroutine(CardManager.Instance.DeckToDrive(deck, drive));
         yield return StartCoroutine(CardManager.Instance.DriveToHand(drive, hand));
+    }
+
+    public IEnumerator DamageTriggerCheck()
+    {
+        yield return StartCoroutine(CardManager.Instance.DeckToDrive(deck, drive));
+        yield return StartCoroutine(CardManager.Instance.DriveToDamage(drive, damage));
     }
 
     /*
