@@ -17,6 +17,7 @@ public enum Tag
     Order,
     Guardian,
     Drive,
+    EmptyCard,
 }
 
 public enum FighterID

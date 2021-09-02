@@ -64,6 +64,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
                 yield return StartCoroutine(CardToDrop(removedCard));
         }
         cardCircle.Add(pulledCard);
+        hand.DestroyEmpty(card);
 
         // ‘Ò‚Â
         yield return new WaitForSeconds(0.0f);

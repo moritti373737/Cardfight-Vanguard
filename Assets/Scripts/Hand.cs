@@ -13,18 +13,30 @@ public class Hand : MonoBehaviour
     //private List<Card> cardList = new List<Card>();
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();
 
+    private List<GameObject> EmptyCardList = new List<GameObject>();
+    private List<GameObject> EmptyCardRemovedList = new List<GameObject>();
+    public GameObject EmptyCardPrefab;
+
     private void Start()
     {
         //cardList.ObserveCountChanged().Subscribe(count => SetPosition());
     }
     public void Add(Card _card)
     {
+        var emptyCard = Instantiate(EmptyCardPrefab).FixName();
+        emptyCard.transform.SetParent(transform);
+        emptyCard.transform.position = transform.position;
+        emptyCard.transform.localPosition = Vector3.zero;
+        emptyCard.transform.localScale = new Vector3(0.1F, 1F, 1F);
+        emptyCard.transform.localRotation = Quaternion.identity;
+
         var localr = _card.transform.localRotation;
-        _card.transform.SetParent(transform);
+        _card.transform.SetParent(emptyCard.transform);
         //_card.transform.parent = transform;
         _card.transform.position = transform.position;
         _card.transform.localRotation = localr;
-
+        _card.transform.localPosition = Vector3.zero;
+        _card.transform.localScale = new Vector3(1F, 1F, 1F);
         /*Debug.Log(transform.position);
         Debug.Log(transform.GetComponent<RectTransform>().transform.position);
         Debug.Log(transform.GetComponent<RectTransform>().sizeDelta);
@@ -33,20 +45,26 @@ public class Hand : MonoBehaviour
         Debug.Log(_card.transform.localPosition);
         */
         cardList.Add(_card);
+        EmptyCardList.Add(emptyCard);
         SetPosition();
     }
 
     public Card Pull(Card card)
     {
-        //Card pullCard = null;
-        //foreach (var card in cardList)
-        //{
-        //    if (card.id == id)
-        //        pullCard = card;
-        //}
+        GameObject empthObject = card.transform.parent.gameObject;
         cardList.Remove(card);
+        EmptyCardList.Remove(empthObject);
+        EmptyCardRemovedList.Add(empthObject);
         SetPosition();
         return card;
+    }
+
+    public void DestroyEmpty(Card card)
+    {
+        foreach (var emptyCard in EmptyCardRemovedList)
+        {
+            Destroy(emptyCard);
+        }
     }
 
     //public Card Pull(int _position)
@@ -61,43 +79,43 @@ public class Hand : MonoBehaviour
 
     private void SetPosition()
     {
-        if (cardList.Count == 0) return;
-        float cardSizeX = cardList[0].transform.localScale.x;
-        int cardListCount = cardList.Count;
-        if (cardListCount % 2 == 0)
+        if (EmptyCardList.Count == 0) return;
+        float cardSizeX = EmptyCardList[0].transform.localScale.x;
+        int EmptyCardListCount = EmptyCardList.Count;
+        if (EmptyCardListCount % 2 == 0)
         {
-            for (int i = 1; i <= cardListCount; i++)
+            for (int i = 1; i <= EmptyCardListCount; i++)
             {
-                Vector3 pos = cardList[i - 1].transform.localPosition;
-                if (cardListCount / 2 - i >= 0)
+                Vector3 pos = EmptyCardList[i - 1].transform.localPosition;
+                if (EmptyCardListCount / 2 - i >= 0)
                 {
-                    pos.x = -(cardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
+                    pos.x = -(EmptyCardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
                 }
                 else
                 {
-                    pos.x = -(cardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
+                    pos.x = -(EmptyCardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
                 }
-                cardList[i - 1].transform.localPosition = pos;
+                EmptyCardList[i - 1].transform.localPosition = pos;
             }
         }
         else
         {
-            for (int i = 1; i <= cardListCount; i++)
+            for (int i = 1; i <= EmptyCardListCount; i++)
             {
-                Vector3 pos = cardList[i - 1].transform.localPosition;
-                if ((cardListCount + 1) / 2 - i > 0)
+                Vector3 pos = EmptyCardList[i - 1].transform.localPosition;
+                if ((EmptyCardListCount + 1) / 2 - i > 0)
                 {
-                    pos.x = -((cardListCount + 1) / 2 - i) * cardSizeX;
+                    pos.x = -((EmptyCardListCount + 1) / 2 - i) * cardSizeX;
                 }
-                else if ((cardListCount + 1) / 2 - i < 0)
+                else if ((EmptyCardListCount + 1) / 2 - i < 0)
                 {
-                    pos.x = (i - (cardListCount + 1) / 2) * cardSizeX;
+                    pos.x = (i - (EmptyCardListCount + 1) / 2) * cardSizeX;
                 }
                 else
                 {
                     pos.x = 0;
                 }
-                cardList[i - 1].transform.localPosition = pos;
+                EmptyCardList[i - 1].transform.localPosition = pos;
             }
         }
     }

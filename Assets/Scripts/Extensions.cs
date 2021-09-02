@@ -163,4 +163,15 @@ public static class Extensions
         }
         return selectedIndex;
     }
+
+    /// <summary>
+    /// プレハブ生成時に末尾に付与される"(clone)"の名前を削除する
+    /// </summary>
+    /// <param name="gameObject"></param>
+    /// <returns></returns>
+    public static GameObject FixName(this GameObject gameObject)
+    {
+        gameObject.name = gameObject.name.Substring(0, gameObject.name.Length - 7); // (clone)の部分を削除
+        return gameObject;
+    }
 }

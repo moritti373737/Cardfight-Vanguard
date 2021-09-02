@@ -104,7 +104,7 @@ public class Fighter : MonoBehaviour
     public IEnumerator DriveTriggerCheck()
     {
         yield return StartCoroutine(CardManager.Instance.DeckToDrive(deck, drive));
-        //yield return StartCoroutine(CardManager.Instance.DriveToHand(drive, hand));
+        yield return StartCoroutine(CardManager.Instance.DriveToHand(drive, hand));
     }
 
     /*

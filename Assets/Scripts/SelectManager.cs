@@ -49,7 +49,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     public List<GameObject> SelectObjList2 = new List<GameObject>();
     public List<GameObject> SelectObjList3 = new List<GameObject>();
 
-    private List<Transform> SelectedCardList = new List<Transform>();
+    private List<Transform> SelectedCardParentList = new List<Transform>();
 
     // Start is called before the first frame update
     void Start()
@@ -125,8 +125,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             },
         };
 
-        SelectBox = Instantiate(SelectBoxPrefab);
-        SelectBox.name = "SelectBox";
+        SelectBox = Instantiate(SelectBoxPrefab).FixName();
         SelectBox.ChangeParent(SelectObjList1[2].transform, true, true, true);
         //SelectList.Add(new List<Zone>() { Zone.R11, Zone.V, Zone.R13, Zone.DECK });
         //SelectList.Add(new List<Zone>() { Zone.R21, Zone.R22, Zone.R23, Zone.DROP });
@@ -208,9 +207,9 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             Transform hand = fighter.transform.FindWithChildTag(Tag.Hand);
 
             // 手札以外の場所から手札に移動したとき
-            if (IsHand() && hand.CountWithChildTag(Tag.Card) > 0)
+            if (IsHand() && hand.CountWithChildTag(Tag.EmptyCard) > 0)
             {
-                MultiSelectIndex = hand.CountWithChildTag(Tag.Card) / 2; // 手札の数に合わせて初期化
+                MultiSelectIndex = hand.CountWithChildTag(Tag.EmptyCard) / 2; // 手札の数に合わせて初期化
                 SelectBox.ChangeParent(hand.GetChild(MultiSelectIndex), p: true);
             }
             else
@@ -238,7 +237,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 MultiSelectIndex--;
             }
 
-            if (hand.CountWithChildTag(Tag.Card) > 0) // 手札のカードにカーソルを移動させる
+            if (hand.CountWithChildTag(Tag.EmptyCard) > 0) // 手札のカードにカーソルを移動させる
                 SelectBox.ChangeParent(hand.GetChild(MultiSelectIndex), p: true);
             else // 手札がないとき
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
@@ -260,32 +259,29 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
         if (!HasTag(tag)) return false;
 
-        SelectedBox = Instantiate(SelectedBoxPrefab);
-        SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
+        SelectedBox = Instantiate(SelectedBoxPrefab).FixName();
 
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
-        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.transform.FindWithChildTag(Tag.Hand).CountWithChildTag(Tag.Card) > 0)
+        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.transform.FindWithChildTag(Tag.Hand).CountWithChildTag(Tag.EmptyCard) > 0)
         {
             var selectedCard = fighter.transform.FindWithChildTag(Tag.Hand).GetChild(MultiSelectIndex);
             SelectedBox.ChangeParent(selectedCard, true, true, true);
             //SelectedBox.transform.RotateAround(SelectedBox.transform.position, Vector3.forward, 180);
-            SelectedBox.transform.Rotate(0, 180, 0);
-            SelectedBox.transform.localPosition = Vector3.zero - SelectedBox.transform.localPosition;
-            SelectedCardList.Add(selectedCard);
+            SelectedCardParentList.Add(selectedCard);
         }
         // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
         else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
         {
             var selectedRearguard = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]];
             SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
-            SelectedCardList.Add(selectedRearguard.FindWithChildTag(Tag.Card).transform);
+            SelectedCardParentList.Add(selectedRearguard.transform);
         }
         // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
         else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
         {
             var selectedRearguard = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]];
             SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
-            SelectedCardList.Add(selectedRearguard.FindWithChildTag(Tag.Card).transform);
+            SelectedCardParentList.Add(selectedRearguard.transform);
         }
         else
         {
@@ -309,7 +305,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         Fighter fighter = GetFighter(fighterID);
 
 
-        foreach (var selected in SelectedCardList)
+        foreach (var selected in SelectedCardParentList)
         {
             if (action == Action.MOVE)
             {
@@ -317,13 +313,16 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
                 if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
                 {
-                    StartCoroutine(CardManager.Instance.HandToField(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
+                    Debug.Log(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>());
+                    Debug.Log(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>());
+                    Debug.Log(selected.FindWithChildTag(Tag.Card).GetComponent<Card>());
+                    StartCoroutine(CardManager.Instance.HandToField(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
                 }
                 // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
-                else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
-                    && selected.parent.GetComponent<Rearguard>().IsSameColumn(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>()))
+                else if (selected.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
+                    && selected.GetComponent<Rearguard>().IsSameColumn(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>()))
                 {
-                    StartCoroutine(CardManager.Instance.RearToRear(selected.parent.GetComponent<Rearguard>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>(), selected.GetComponent<Card>()));
+                    StartCoroutine(CardManager.Instance.RearToRear(selected.GetComponent<Rearguard>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
                 }
                 else
                 {
@@ -333,7 +332,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             else if (action == Action.ATTACK)
             {
                 // 選択したカーソル位置がサークル かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
-                if (selected.parent.ExistTag(Tag.Circle) && HasTag(Tag.Vanguard) && IsFighter(fighterID))
+                if (selected.ExistTag(Tag.Circle) && HasTag(Tag.Vanguard) && IsFighter(fighterID))
                 {
                     Debug.Log("Vにアタック");
                 }
@@ -347,7 +346,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 return false;
             }
         }
-        SelectedCardList.Clear();
+        SelectedCardParentList.Clear();
         Destroy(SelectedBox);
         return true;
 
@@ -358,7 +357,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// </summary>
     public void SingleCansel()
     {
-        SelectedCardList.Clear();
+        SelectedCardParentList.Clear();
         Destroy(SelectedBox);
     }
 

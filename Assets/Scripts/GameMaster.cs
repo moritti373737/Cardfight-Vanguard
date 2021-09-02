@@ -88,7 +88,7 @@ public class GameMaster : MonoBehaviour
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
 
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 5; i++)
         {
             yield return StartCoroutine(fighter1.DrawCard());
             //yield return new WaitForSeconds(2f);

@@ -411,7 +411,7 @@ RectTransform:
   m_GameObject: {fileID: 340371887}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: -0.4}
-  m_LocalScale: {x: 1, y: 0.13, z: 0.0010000003}
+  m_LocalScale: {x: 1, y: 0.145, z: 0.0010000003}
   m_Children: []
   m_Father: {fileID: 141899823}
   m_RootOrder: 1
@@ -454,6 +454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c3015b3ed192a64a8e7e498ec78d374, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EmptyCardPrefab: {fileID: 7432465892753982296, guid: 49a92423b4b7cbe468f6a68e0e05f748, type: 3}
 --- !u!1 &344147362
 GameObject:
   m_ObjectHideFlags: 0
@@ -1135,6 +1136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c3015b3ed192a64a8e7e498ec78d374, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EmptyCardPrefab: {fileID: 7432465892753982296, guid: 49a92423b4b7cbe468f6a68e0e05f748, type: 3}
 --- !u!65 &845849767
 BoxCollider:
   m_ObjectHideFlags: 0
