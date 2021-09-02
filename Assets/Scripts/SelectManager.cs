@@ -6,9 +6,9 @@ using UniRx;
 /// <summary>
 /// カーソル選択を管理する
 /// </summary>
-public class SelectManager : MonoBehaviour
+public class SelectManager : SingletonMonoBehaviour<SelectManager>
 {
-    private GameObject SelectBox;   // カーソル
+    public GameObject SelectBox;   // カーソル
     private GameObject SelectedBox; // 選択中のカードを占めるカーソル
     public Fighter fighter1;
     public Fighter fighter2;
@@ -177,14 +177,14 @@ public class SelectManager : MonoBehaviour
 
         if (right && SelectObjList[selectZoneIndex[0]].Count - 1 > selectZoneIndex[1] && !IsHand())
         {
-            // 右端にいないとき
+            // 右端にいない かつ 手札にカーソルがないとき
             selectZoneIndex[1]++;
             changeSelectBox = true;
 
         }
         else if (left && selectZoneIndex[1] > 0 && !IsHand())
         {
-            // 左端にいないとき
+            // 左端にいない かつ 手札にカーソルがないとき
             selectZoneIndex[1]--;
             changeSelectBox = true;
         }
@@ -201,11 +201,18 @@ public class SelectManager : MonoBehaviour
             changeSelectBox = true;
         }
 
+        // エリア移動したとき
         if (changeSelectBox)
         {
-            // エリア移動したとき
-            if (IsHand() && hand1.transform.CountWithChildTag(Tag.Card) > 0)
-                SelectBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex), p: true);
+            Fighter fighter = GetFighter();
+            Transform hand = fighter.transform.FindWithChildTag(Tag.Hand);
+
+            // 手札以外の場所から手札に移動したとき
+            if (IsHand() && hand.CountWithChildTag(Tag.Card) > 0)
+            {
+                MultiSelectIndex = hand.CountWithChildTag(Tag.Card) / 2;
+                SelectBox.ChangeParent(hand.GetChild(MultiSelectIndex), p: true);
+            }
             else
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
 
@@ -215,12 +222,14 @@ public class SelectManager : MonoBehaviour
             //    Debug.Log(childTransform.gameObject.name);
             //}
         }
-
         // カーソルが手札上にある時
-        if (IsHand())
+        else if (IsHand())
         {
+            Fighter fighter = GetFighter();
+            Transform hand = fighter.transform.FindWithChildTag(Tag.Hand);
+
             // カーソルを左右に移動させる
-            if (right && hand1.transform.childCount - 1 > MultiSelectIndex)
+            if (right && hand.childCount - 1 > MultiSelectIndex)
             {
                 MultiSelectIndex++;
 
@@ -230,8 +239,8 @@ public class SelectManager : MonoBehaviour
                 MultiSelectIndex--;
             }
 
-            if (hand1.transform.CountWithChildTag(Tag.Card) > 0) // 手札のカードにカーソルを移動させる
-                SelectBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex), p: true);
+            if (hand.CountWithChildTag(Tag.Card) > 0) // 手札のカードにカーソルを移動させる
+                SelectBox.ChangeParent(hand.GetChild(MultiSelectIndex), p: true);
             else // 手札がないとき
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
             //Debug.Log("hand!");
@@ -352,10 +361,21 @@ public class SelectManager : MonoBehaviour
     /// <summary>
     /// 現在のカーソル位置にあるオブジェクトを所有するファイターと指定したファイターが一致しているか調べる
     /// </summary>
-    /// <param name="fighterID">判定に使うファイター</param>
+    /// <param name="fighterID">判定に使うファイターID</param>
     /// <returns>一致したかどうか</returns>
-    private bool IsFighter(FighterID fighterID) => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform.root.GetComponent<Fighter>().ID == fighterID;
+    private bool IsFighter(FighterID fighterID) => GetFighter().ID == fighterID;
 
+    /// <summary>
+    /// 現在のカーソル位置にあるオブジェクトを所有するファイターを返す
+    /// </summary>
+    /// <returns>条件を満たすファイター</returns>
+    private Fighter GetFighter() => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform.root.GetComponent<Fighter>();
+
+    /// <summary>
+    /// 指定したファイターIDを持つファイターを返す
+    /// </summary>
+    /// <param name="fighterID">判定に使うファイターID</param>
+    /// <returns>条件を満たすファイター</returns>
     private Fighter GetFighter(FighterID fighterID) => fighter1.ID == fighterID ? fighter1 : fighter2;
 
 }

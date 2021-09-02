@@ -82,20 +82,28 @@ public class GameMaster : MonoBehaviour
         DefenceFighter = fighter2;
 
         StartCoroutine(fighter1.SetFirstVanguard());
+        StartCoroutine(fighter2.SetFirstVanguard());
         fighter1.deck.Shuffle();
+        fighter2.deck.Shuffle();
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 1; i++)
         {
             yield return StartCoroutine(fighter1.DrawCard());
             //yield return new WaitForSeconds(2f);
+        }
 
+        for (int i = 0; i < 1; i++)
+        {
+            yield return StartCoroutine(fighter2.DrawCard());
+            //yield return new WaitForSeconds(2f);
         }
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
 
         yield return StartCoroutine(fighter1.StandUpVanguard());
+        yield return StartCoroutine(fighter2.StandUpVanguard());
 
         yield return null;
         //while (true)
