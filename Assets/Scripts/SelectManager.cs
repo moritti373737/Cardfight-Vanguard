@@ -210,7 +210,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             // 手札以外の場所から手札に移動したとき
             if (IsHand() && hand.CountWithChildTag(Tag.Card) > 0)
             {
-                MultiSelectIndex = hand.CountWithChildTag(Tag.Card) / 2;
+                MultiSelectIndex = hand.CountWithChildTag(Tag.Card) / 2; // 手札の数に合わせて初期化
                 SelectBox.ChangeParent(hand.GetChild(MultiSelectIndex), p: true);
             }
             else
@@ -232,7 +232,6 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             if (right && hand.childCount - 1 > MultiSelectIndex)
             {
                 MultiSelectIndex++;
-
             }
             else if (left && MultiSelectIndex > 0)
             {
@@ -274,7 +273,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             SelectedBox.transform.localPosition = Vector3.zero - SelectedBox.transform.localPosition;
             SelectedCardList.Add(selectedCard);
         }
-        // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードにカードが存在する
+        // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
         else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
         {
             var selectedRearguard = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]];
@@ -310,10 +309,11 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 Destroy(SelectedBox);
                 return true;
             }
-            // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの
-            else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID))
+            // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
+            else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
+                && selected.parent.GetComponent<Rearguard>().IsSameColumn(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>()))
             {
-                StartCoroutine(CardManager.Instance.RearToRear(selected.parent.GetComponent<ICardCircle>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
+                StartCoroutine(CardManager.Instance.RearToRear(selected.parent.GetComponent<Rearguard>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>(), selected.GetComponent<Card>()));
                 SelectedCardList.Clear();
                 Destroy(SelectedBox);
                 return true;

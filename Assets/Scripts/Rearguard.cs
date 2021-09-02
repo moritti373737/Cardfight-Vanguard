@@ -18,4 +18,12 @@ public class Rearguard : MonoBehaviour, ICardCircle
     public Transform GetTransform() => transform;
     public Card GetCard() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
 
+    /// <summary>
+    /// リアガードサークルが同じ縦の列に存在するか調べる
+    /// ヴァンガードや相手のサークルの判定はしていない
+    /// </summary>
+    /// <param name="cardCircle"></param>
+    /// <returns></returns>
+    public bool IsSameColumn(ICardCircle cardCircle) => transform.name.Substring(transform.name.Length - 1) == cardCircle.GetTransform().name.Substring(transform.name.Length - 1);
+
 }
