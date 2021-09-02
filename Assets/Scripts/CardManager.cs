@@ -49,21 +49,21 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="cardCircle"></param>
     /// <param name="index">手札から取り出すためのインデックス</param>
     /// <returns>コルーチン</returns>
-    public IEnumerator HandToField(Hand hand, ICardCircle cardCircle, int index)
+    public IEnumerator HandToField(Hand hand, ICardCircle cardCircle, Card card)
     {
         // ログ出力
         //Debug.Log("1second");
-        Card card = hand.Pull(index);
+        Card pulledCard = hand.Pull(card);
         //card.TurnOver();
-        Card removeCard = cardCircle.GetCard();
+        Card removedCard = cardCircle.GetCard();
         if (cardCircle.GetTransform().FindWithChildTag(Tag.Card))
         {
             if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()))
-                yield return StartCoroutine(CardToSoul(removeCard));
+                yield return StartCoroutine(CardToSoul(removedCard));
             else if (cardCircle.GetTransform().tag.Contains(Tag.Rearguard.ToString()))
-                yield return StartCoroutine(CardToDrop(removeCard));
+                yield return StartCoroutine(CardToDrop(removedCard));
         }
-        cardCircle.Add(card);
+        cardCircle.Add(pulledCard);
 
         // 待つ
         yield return new WaitForSeconds(0.0f);
@@ -88,13 +88,13 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
-    public IEnumerator RearToRear(ICardCircle cardCircle, ICardCircle targetCircle)
+    public IEnumerator RearToRear(Card card, ICardCircle targetCircle)
     {
         // ログ出力
         //Debug.Log("1second");
         //Card card = deck.Pull(index);
         //card.TurnOver();
-        Card card = cardCircle.GetTransform().FindWithChildTag(Tag.Card).GetComponent<Card>();
+        //Card card = cardCircle.GetTransform().FindWithChildTag(Tag.Card).GetComponent<Card>();
         targetCircle.Add(card);
 
         // 待つ

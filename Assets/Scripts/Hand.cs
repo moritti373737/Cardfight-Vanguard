@@ -36,13 +36,26 @@ public class Hand : MonoBehaviour
         SetPosition();
     }
 
-    public Card Pull(int _position)
+    public Card Pull(Card card)
     {
-        Card card = transform.GetChild(_position).GetComponent<Card>();
+        //Card pullCard = null;
+        //foreach (var card in cardList)
+        //{
+        //    if (card.id == id)
+        //        pullCard = card;
+        //}
         cardList.Remove(card);
         SetPosition();
         return card;
     }
+
+    //public Card Pull(int _position)
+    //{
+    //    Card card = transform.GetChild(_position).GetComponent<Card>();
+    //    cardList.Remove(card);
+    //    SetPosition();
+    //    return card;
+    //}
 
     //public int Count() => cardList.Count;
 

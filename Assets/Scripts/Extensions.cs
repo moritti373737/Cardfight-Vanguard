@@ -15,6 +15,14 @@ public static class Extensions
     //    transform.position = pos;
     //}
 
+    /// <summary>
+    /// 指定したタグが存在するか調べる
+    /// </summary>
+    /// <param name="transform">検索対象</param>
+    /// <param name="tag">検索したいタグ</param>
+    /// <returns>存在するか</returns>
+    public static bool ExistTag(this Transform transform, Tag tag) => transform.tag.Contains(tag.ToString());
+
     //public static Transform FindWithChildTag(this Transform transform, string tag)
     //{
     //    foreach (Transform childTransform in transform)

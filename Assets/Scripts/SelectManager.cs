@@ -46,7 +46,7 @@ public class SelectManager : MonoBehaviour
     public List<GameObject> SelectObjList2 = new List<GameObject>();
     public List<GameObject> SelectObjList3 = new List<GameObject>();
 
-    private Tag SingleSelectedTag = Tag.None;
+    private List<Transform> SelectedCardList = new List<Transform>();
 
     // Start is called before the first frame update
     void Start()
@@ -199,7 +199,7 @@ public class SelectManager : MonoBehaviour
         {
             // エリア移動したとき
             if (IsHand() && hand1.transform.CountWithChildTag(Tag.Card) > 0)
-                SelectBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex).GetChild(0), p: true);
+                SelectBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex), p: true);
             else
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
 
@@ -225,7 +225,7 @@ public class SelectManager : MonoBehaviour
             }
 
             if (hand1.transform.CountWithChildTag(Tag.Card) > 0) // 手札のカードにカーソルを移動させる
-                SelectBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex).GetChild(0), p: true);
+                SelectBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex), p: true);
             else // 手札がないとき
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
             //Debug.Log("hand!");
@@ -246,8 +246,11 @@ public class SelectManager : MonoBehaviour
         {
             SelectedBox = Instantiate(SelectedBoxPrefab);
             SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
-            SelectedBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex).GetChild(0), true, true, true);
-            SingleSelectedTag = Tag.Hand;
+            SelectedBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex), true, true, true);
+            //SelectedBox.transform.RotateAround(SelectedBox.transform.position, Vector3.forward, 180);
+            SelectedBox.transform.Rotate(0, 180, 0);
+            SelectedBox.transform.localPosition = Vector3.zero - SelectedBox.transform.localPosition;
+            SelectedCardList.Add(hand1.transform.GetChild(MultiSelectIndex));
             return true;
         }
         if (HasTag(Tag.Rearguard) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
@@ -255,7 +258,7 @@ public class SelectManager : MonoBehaviour
             SelectedBox = Instantiate(SelectedBoxPrefab);
             SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
             SelectedBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, true, true, true);
-            SingleSelectedTag = Tag.Rearguard;
+            SelectedCardList.Add(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card).transform);
             return true;
         }
         return false;
@@ -269,31 +272,25 @@ public class SelectManager : MonoBehaviour
     public bool SingleConfirm(Tag tag)
     {
         if (!HasTag(tag)) return false;
-        if (SingleSelectedTag == Tag.Hand && HasTag(Tag.Circle))
+
+        foreach (var selected in SelectedCardList)
         {
-            int selectedIndex = hand1.transform.FindWithGrandchildCard();
-            StartCoroutine(CardManager.Instance.HandToField(hand1, SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selectedIndex));
-            SingleSelectedTag = Tag.None;
-            Destroy(SelectedBox);
-            return true;
-        }
-        else if (SingleSelectedTag == Tag.Rearguard && HasTag(Tag.Rearguard))
-        {
-            List<Transform> fieldList = Field1.transform.FindWithAllChildTag(Tag.Rearguard);
-            foreach (var rearguard in fieldList)
+            if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle))
             {
-                if(rearguard.FindWithChildTag(Tag.Card) != null)
-                {
-                    StartCoroutine(CardManager.Instance.RearToRear(rearguard.GetComponent<ICardCircle>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>()));
-                    break;
-                }
+                //int selectedIndex = hand1.transform.FindWithGrandchildCard();
+                StartCoroutine(CardManager.Instance.HandToField(hand1, SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
+                SelectedCardList.Clear();
+                Destroy(SelectedBox);
+                return true;
             }
-            SingleSelectedTag = Tag.None;
-            Destroy(SelectedBox);
-            return true;
+            else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard))
+            {
+                StartCoroutine(CardManager.Instance.RearToRear(selected.GetComponent<Card>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>()));
+                SelectedCardList.Clear();
+                Destroy(SelectedBox);
+                return true;
+            }
         }
-
-
         return false;
 
     }
@@ -303,7 +300,7 @@ public class SelectManager : MonoBehaviour
     /// </summary>
     public void SingleCansel()
     {
-        SingleSelectedTag = Tag.None;
+        SelectedCardList.Clear();
         Destroy(SelectedBox);
     }
 
