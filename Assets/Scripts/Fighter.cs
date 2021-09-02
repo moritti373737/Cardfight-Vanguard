@@ -2,15 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Fighter : MonoBehaviour
 {
+    public FighterID ID;
+
     public GameObject field;
     public Deck deck;
     public Hand hand;
     //private Card card;
     private Vanguard vanguard;
-
-
 
     //private bool isDraw = true;
     //public Field field;
@@ -25,6 +25,7 @@ public class Player : MonoBehaviour
         //        vanguard = childTransform.GetComponent<Vanguard>();
         //}
 
+        deck = field.transform.FindWithChildTag(Tag.Deck).GetComponent<Deck>();
         vanguard = field.transform.FindWithChildTag(Tag.Vanguard).GetComponent<Vanguard>();
 
         //this.UpdateAsObservable()
@@ -41,6 +42,13 @@ public class Player : MonoBehaviour
             .Where(_ => Input.GetKeyDown(KeyCode.Alpha1))
             .Subscribe(_ => Debug.Log("p button"));
         */
+    }
+
+    public void CreateDeck()
+    {
+        DeckGenerater deckGenerater = GetComponent<DeckGenerater>();
+
+        deckGenerater.Generate(deck);
     }
 
     public IEnumerator SetFirstVanguard()

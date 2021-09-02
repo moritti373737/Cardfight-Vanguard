@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 141899823}
   - component: {fileID: 141899824}
   m_Layer: 0
-  m_Name: Player
+  m_Name: Player1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -167,8 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   field: {fileID: 916212204}
-  deck: {fileID: 999542944}
-  hand: {fileID: 340371891}
+  deck: {fileID: 0}
 --- !u!1 &241021720
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,7 +1072,7 @@ GameObject:
   - component: {fileID: 916212205}
   m_Layer: 0
   m_Name: Field1
-  m_TagString: Untagged
+  m_TagString: Field|Player1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1182,7 +1181,7 @@ GameObject:
   - component: {fileID: 921443768}
   m_Layer: 0
   m_Name: Field2
-  m_TagString: Untagged
+  m_TagString: Field|Player2
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1665,6 +1664,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player1: {fileID: 141899824}
+  player2: {fileID: 0}
   deckGenerater: {fileID: 0}
   selectManager: {fileID: 768289826}
 --- !u!4 &1373051666

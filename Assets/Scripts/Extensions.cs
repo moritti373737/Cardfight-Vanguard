@@ -16,7 +16,7 @@ public static class Extensions
     //}
 
     /// <summary>
-    /// 指定したタグが存在するか調べる
+    /// 指定したタグが存在するか調べる（部分一致）
     /// </summary>
     /// <param name="transform">検索対象</param>
     /// <param name="tag">検索したいタグ</param>
@@ -34,7 +34,7 @@ public static class Extensions
     //}
 
     /// <summary>
-    /// 指定したタグ名を含む子のtransformを探す
+    /// 指定したタグ名を含む子のtransformを探す（部分一致）
     /// </summary>
     /// <param name="parentTransform">親のtransform</param>
     /// <param name="tag">検索したいタグ名</param>
@@ -50,7 +50,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// 指定したタグ名を含む子のGameObjectを探す
+    /// 指定したタグ名を含む子のGameObjectを探す（部分一致）
     /// </summary>
     /// <param name="parentGameObject">親のGameObject</param>
     /// <param name="tag">検索したいタグ名</param>
@@ -66,7 +66,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// 指定したタグ名を含む全ての子のtransformを探す
+    /// 指定したタグ名を含む全ての子のtransformを探す（部分一致）
     /// </summary>
     /// <param name="parentTransform">親のtransform</param>
     /// <param name="tag">検索したいタグ名</param>
@@ -96,7 +96,7 @@ public static class Extensions
     //}
 
     /// <summary>
-    /// 指定したタグ名を含む子のtransformの数を探す
+    /// 指定したタグ名を含む子のtransformの数を探す（部分一致）
     /// </summary>
     /// <param name="parentTransform">親のtransform</param>
     /// <param name="tag">検索したいタグ名</param>
@@ -113,6 +113,10 @@ public static class Extensions
 
         return count;
     }
+
+    public static FighterID GetFighterID(this Transform transform) => transform.root.GetComponent<Fighter>().ID;
+    public static FighterID GetFighterID(this GameObject gameObject) => gameObject.transform.root.GetComponent<Fighter>().ID;
+
 
     /// <summary>
     /// transformを固定して、指定した子を新しい親に変更する

@@ -6,9 +6,13 @@ using UnityEngine.SceneManagement;
 public class GameMaster : MonoBehaviour
 {
     //public Player[] playerList;
-    public Player player1;
-    public DeckGenerater deckGenerater;
+    public Fighter fighter1;
+    public Fighter fighter2;
     public SelectManager selectManager;
+
+
+    private Fighter AttackFighter;
+    private Fighter DefenceFighter;
 
     //[SerializeField] Animator animator;
 
@@ -36,9 +40,9 @@ public class GameMaster : MonoBehaviour
 
     void Start()
     {
-        deckGenerater = GetComponent<DeckGenerater>();
         //phase = Phase.INIT;
-        deckGenerater.Generate(player1.deck);
+        fighter1.CreateDeck();
+        fighter2.CreateDeck();
         StartCoroutine(InitPhase());
     }
 
@@ -74,21 +78,24 @@ public class GameMaster : MonoBehaviour
     {
         TextManager.Instance.SetPhaseText("準備");
 
-        StartCoroutine(player1.SetFirstVanguard());
-        player1.deck.Shuffle();
+        AttackFighter = fighter1;
+        DefenceFighter = fighter2;
+
+        StartCoroutine(fighter1.SetFirstVanguard());
+        fighter1.deck.Shuffle();
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
 
         for (int i = 0; i < 5; i++)
         {
-            yield return StartCoroutine(player1.DrawCard());
+            yield return StartCoroutine(fighter1.DrawCard());
             //yield return new WaitForSeconds(2f);
 
         }
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
 
-        yield return StartCoroutine(player1.StandUpVanguard());
+        yield return StartCoroutine(fighter1.StandUpVanguard());
 
         yield return null;
         //while (true)
@@ -139,14 +146,14 @@ public class GameMaster : MonoBehaviour
         TextManager.Instance.SetPhaseText("ドローフェイズ");
 
 
+        // カードのドロー
         yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
-        yield return StartCoroutine(player1.DrawCard());
+        yield return StartCoroutine(AttackFighter.DrawCard());
         //yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
         //yield return StartCoroutine(StandPhase());
 
 
 
-        // カードのドロー
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             //phase = Phase.STANDBY;
@@ -167,7 +174,7 @@ public class GameMaster : MonoBehaviour
     {
         TextManager.Instance.SetPhaseText("ライドフェイズ");
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected(Tag.Hand));
+        yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected(Tag.Hand, AttackFighter.ID));
         yield return null;
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard));
@@ -222,9 +229,9 @@ public class GameMaster : MonoBehaviour
         {
             if (Input.GetButtonDown("Enter"))
             {
-                if(selectManager.SingleSelected(Tag.Hand))
+                if(selectManager.SingleSelected(Tag.Hand, AttackFighter.ID))
                     yield return StartCoroutine(Call());
-                else if (selectManager.SingleSelected(Tag.Rearguard))
+                else if (selectManager.SingleSelected(Tag.Rearguard, AttackFighter.ID))
                     yield return StartCoroutine(Move());
             }
             if (Input.GetButtonDown("Submit"))

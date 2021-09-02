@@ -10,7 +10,10 @@ public class SelectManager : MonoBehaviour
 {
     private GameObject SelectBox;   // カーソル
     private GameObject SelectedBox; // 選択中のカードを占めるカーソル
-    public Hand hand1;
+    public Fighter fighter1;
+    public Fighter fighter2;
+    private Hand hand1;
+    private Hand hand2;
     public GameObject Field1;
     public GameObject Field2;
 
@@ -51,15 +54,18 @@ public class SelectManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        hand1 = fighter1.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>();
+        hand2 = fighter2.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>();
+
         SelectObjList = new List<List<GameObject>>()
         {
             new List<GameObject>()
             {
-                hand1.gameObject,
-                hand1.gameObject,
-                hand1.gameObject,
-                hand1.gameObject,
-                hand1.gameObject,
+                hand2.gameObject,
+                hand2.gameObject,
+                hand2.gameObject,
+                hand2.gameObject,
+                hand2.gameObject,
             },
             new List<GameObject>()
             {
@@ -238,52 +244,65 @@ public class SelectManager : MonoBehaviour
     /// 1つだけ選択可能なカーソル選択し、選択中を示すオブジェクトを配置
     /// </summary>
     /// <param name="tag">選択可能なマス</param>
+    /// <param name="fighterID">選択可能なファイターID</param>
     /// <returns>実際に選択したか</returns>
-    public bool SingleSelected(Tag tag)
+    public bool SingleSelected(Tag tag, FighterID fighterID)
     {
+        Fighter fighter = GetFighter(fighterID);
+
         if (!HasTag(tag)) return false;
-        if (HasTag(Tag.Hand) && hand1.transform.CountWithChildTag(Tag.Card) > 0)
+
+        SelectedBox = Instantiate(SelectedBoxPrefab);
+        SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
+
+        // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
+        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.transform.FindWithChildTag(Tag.Hand).CountWithChildTag(Tag.Card) > 0)
         {
-            SelectedBox = Instantiate(SelectedBoxPrefab);
-            SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
-            SelectedBox.ChangeParent(hand1.transform.GetChild(MultiSelectIndex), true, true, true);
+            var selectedCard = fighter.transform.FindWithChildTag(Tag.Hand).GetChild(MultiSelectIndex);
+            SelectedBox.ChangeParent(selectedCard, true, true, true);
             //SelectedBox.transform.RotateAround(SelectedBox.transform.position, Vector3.forward, 180);
             SelectedBox.transform.Rotate(0, 180, 0);
             SelectedBox.transform.localPosition = Vector3.zero - SelectedBox.transform.localPosition;
-            SelectedCardList.Add(hand1.transform.GetChild(MultiSelectIndex));
-            return true;
+            SelectedCardList.Add(selectedCard);
         }
-        if (HasTag(Tag.Rearguard) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
+        // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードにカードが存在する
+        else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
         {
-            SelectedBox = Instantiate(SelectedBoxPrefab);
-            SelectedBox.name = SelectedBox.name.Substring(0, SelectedBox.name.Length - 7); // (clone)の部分を削除
-            SelectedBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, true, true, true);
-            SelectedCardList.Add(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card).transform);
-            return true;
+            var selectedRearguard = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]];
+            SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
+            SelectedCardList.Add(selectedRearguard.FindWithChildTag(Tag.Card).transform);
         }
-        return false;
+        else
+        {
+            return false;
+        }
+        return true;
     }
 
     /// <summary>
     /// 1つだけ選択可能なカーソルを確定し、選択中を示すオブジェクトを削除
     /// </summary>
     /// <param name="tag">決定可能なマス</param>
+    /// <param name="fighterID">決定可能なファイターID</param>
     /// <returns>実際に決定したか</returns>
-    public bool SingleConfirm(Tag tag)
+    public bool SingleConfirm(Tag tag, FighterID fighterID=FighterID.One)
     {
+        Fighter fighter = GetFighter(fighterID);
+
         if (!HasTag(tag)) return false;
 
-        foreach (var selected in SelectedCardList)
+        foreach (var selected in SelectedCardList) // ループが一周だけ
         {
-            if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle))
+            // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
+            if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
             {
-                //int selectedIndex = hand1.transform.FindWithGrandchildCard();
-                StartCoroutine(CardManager.Instance.HandToField(hand1, SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
+                StartCoroutine(CardManager.Instance.HandToField(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
                 SelectedCardList.Clear();
                 Destroy(SelectedBox);
                 return true;
             }
-            else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard))
+            // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの
+            else if (selected.parent.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID))
             {
                 StartCoroutine(CardManager.Instance.RearToRear(selected.parent.GetComponent<ICardCircle>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.GetComponent<Card>()));
                 SelectedCardList.Clear();
@@ -322,8 +341,21 @@ public class SelectManager : MonoBehaviour
     //private bool IsCardCircle() => SelectObjList[selectZoneIndex.Item1][selectZoneIndex[1]].tag.Contains("Circle");
 
     //private bool IsVanguard() => SelectObjList[selectZoneIndex.Item1][selectZoneIndex[1]].tag.Contains("Vanguard");
+
+    /// <summary>
+    /// 現在のカーソル位置にあるオブジェクトのタグと指定したタグが部分一致しているか調べる
+    /// </summary>
+    /// <param name="tag">判定に使うタグ</param>
+    /// <returns>部分一致したかどうか</returns>
     private bool HasTag(Tag tag) => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].tag.Contains(tag.ToString());
 
+    /// <summary>
+    /// 現在のカーソル位置にあるオブジェクトを所有するファイターと指定したファイターが一致しているか調べる
+    /// </summary>
+    /// <param name="fighterID">判定に使うファイター</param>
+    /// <returns>一致したかどうか</returns>
+    private bool IsFighter(FighterID fighterID) => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform.root.GetComponent<Fighter>().ID == fighterID;
 
+    private Fighter GetFighter(FighterID fighterID) => fighter1.ID == fighterID ? fighter1 : fighter2;
 
 }

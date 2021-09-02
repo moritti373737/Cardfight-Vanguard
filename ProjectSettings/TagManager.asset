@@ -7,6 +7,15 @@ TagManager:
   - Card
   - Vanguard|Circle
   - Rearguard|Circle
+  - Hand
+  - Order
+  - Drop
+  - Deck
+  - Soul
+  - Guardian
+  - Damage
+  - Field|Player1
+  - Field|Player2
   layers:
   - Default
   - TransparentFX

@@ -18,6 +18,12 @@ public enum Tag
     Guardian,
 }
 
+public enum FighterID
+{
+    One,
+    Two,
+}
+
 public class EnumManager : MonoBehaviour
 {
     // Start is called before the first frame update
