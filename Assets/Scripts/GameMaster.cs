@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,14 +39,13 @@ public class GameMaster : MonoBehaviour
     //Phase phase;
 
 
-    IEnumerator Start()
+    async void Start()
     {
         //phase = Phase.INIT;
-        fighter1.CreateDeck();
-        fighter2.CreateDeck();
-        yield return StartCoroutine(InitPhase());
-        yield return StartCoroutine(StandPhase());
-        TextManager.Instance.SetPhaseText("エンドフェイズ");
+        await InitPhase();
+        await StandPhase();
+        //yield return StartCoroutine(StandPhase());
+        //TextManager.Instance.SetPhaseText("エンドフェイズ");
     }
 
     void Update()
@@ -76,38 +76,31 @@ public class GameMaster : MonoBehaviour
         //}
     }
 
-    private IEnumerator InitPhase()
+    async UniTask InitPhase()
     {
         TextManager.Instance.SetPhaseText("準備");
+
+        fighter1.CreateDeck();
+        fighter2.CreateDeck();
 
         AttackFighter = fighter1;
         DefenceFighter = fighter2;
 
-        StartCoroutine(fighter1.SetFirstVanguard());
-        StartCoroutine(fighter2.SetFirstVanguard());
+        await fighter1.SetFirstVanguard();
+        await fighter2.SetFirstVanguard();
         fighter1.deck.Shuffle();
         fighter2.deck.Shuffle();
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
+        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
-        for (int i = 0; i < 5; i++)
-        {
-            yield return StartCoroutine(fighter1.DrawCard());
-            //yield return new WaitForSeconds(2f);
-        }
+        await fighter1.DrawCard(5);
+        await fighter2.DrawCard(1);
 
-        for (int i = 0; i < 1; i++)
-        {
-            yield return StartCoroutine(fighter2.DrawCard());
-            //yield return new WaitForSeconds(2f);
-        }
+        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
+        await UniTask.WhenAll(fighter1.StandUpVanguard(), fighter2.StandUpVanguard());
 
-        StartCoroutine(fighter1.StandUpVanguard());
-        yield return StartCoroutine(fighter2.StandUpVanguard());
-
-        yield return null;
+        await UniTask.NextFrame();
         //while (true)
         //{
         //yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
@@ -125,219 +118,77 @@ public class GameMaster : MonoBehaviour
 
     }
 
-    //Player currentPlayer;
-    //Player waitPlayer;
-    //void InitPhase()
-    //{
-    //    Debug.Log("InitPhase");
-
-    //    // 現在のプレイヤー
-    //    //currentPlayer = player1;
-    //    //waitPlayer = player1;
-
-    //}
-
-    IEnumerator StandPhase()
+    async UniTask StandPhase()
     {
-        //phase = Phase.DRAW;
-
         TextManager.Instance.SetPhaseText("スタンドフェイズ");
 
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
+        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+        await UniTask.NextFrame();
 
-        yield return null;
-        yield return StartCoroutine(DrawPhase());
+        await DrawPhase();
     }
 
 
-    IEnumerator DrawPhase()
+    async UniTask DrawPhase()
     {
-        //Debug.Log("DrawPhase");
         TextManager.Instance.SetPhaseText("ドローフェイズ");
 
+        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
-        // カードのドロー
-        yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
-        yield return StartCoroutine(AttackFighter.DrawCard());
-        //yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
-        //yield return StartCoroutine(StandPhase());
+        await AttackFighter.DrawCard(1);
 
+        await UniTask.NextFrame();
 
-
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            //phase = Phase.STANDBY;
-            //currentPlayer.CardDraw();
-        }
-        /*
-        if (animator.GetCurrentAnimatorStateInfo(0).IsName("EndState"))
-        {
-            currentPlayer.CardDraw();
-            //phase = Phase.STANDBY;
-        }*/
-        yield return null;
-        //phase = Phase.STANDBY;
-        yield return StartCoroutine(RidePhase());
+        await RidePhase();
     }
 
-    IEnumerator RidePhase()
+    async UniTask RidePhase()
     {
-        bool IsRide = false; // ライド処理が成功したときtrue
-
-        IEnumerator Ride()
-        {
-            yield return null;
-            while (true)
-            {
-                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Vanguard, AttackFighter.ID, Action.MOVE))
-                {
-                    IsRide = true;
-                    yield break;
-                }
-                else if (Input.GetButtonDown("Cancel"))
-                {
-                    selectManager.SingleCansel();
-                    yield break;
-                }
-                yield return null;
-            }
-        }
-
         TextManager.Instance.SetPhaseText("ライドフェイズ");
 
-        while (true)
+        while (!await AttackFighter.RidePhase())
         {
-            if (IsRide) break;
-            if (Input.GetButtonDown("Enter"))
-            {
-                if (selectManager.SingleSelected(Tag.Hand, AttackFighter.ID))
-                    yield return StartCoroutine(Ride());
-            }
-            if (Input.GetButtonDown("Submit"))
-            {
-                break;
-
-            }
-            yield return null;
+            await UniTask.NextFrame();
         }
-
-
-        yield return null;
-
-        yield return StartCoroutine(MainPhase());
+        await MainPhase();
     }
 
-    IEnumerator MainPhase()
+    async UniTask MainPhase()
     {
-        IEnumerator Call()
-        {
-            yield return null;
-            while (true)
-            {
-                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard, AttackFighter.ID, Action.MOVE))
-                    yield break;
-                else if (Input.GetButtonDown("Cancel"))
-                {
-                    selectManager.SingleCansel();
-                    yield break;
-                }
-                yield return null;
-            }
-        }
-
-        IEnumerator Move()
-        {
-            yield return null;
-            while (true)
-            {
-                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Rearguard, AttackFighter.ID, Action.MOVE))
-                    yield break;
-                else if (Input.GetButtonDown("Cancel"))
-                {
-                    selectManager.SingleCansel();
-                    yield break;
-                }
-                yield return null;
-            }
-        }
-
         TextManager.Instance.SetPhaseText("メインフェイズ");
 
-        //Coroutine call = StartCoroutine(Call());
-
-
-        //yield return new WaitUntil(() => CanNext && Input.GetButtonDown("Submit"));
-        //StopCoroutine(call);
-
-        while (true)
+        while (!await AttackFighter.MainPhase())
         {
-            if (Input.GetButtonDown("Enter"))
-            {
-                if(selectManager.SingleSelected(Tag.Hand, AttackFighter.ID))
-                    yield return StartCoroutine(Call());
-                else if (selectManager.SingleSelected(Tag.Rearguard, AttackFighter.ID))
-                    yield return StartCoroutine(Move());
-            }
-            if (Input.GetButtonDown("Submit"))
-            {
-                break;
-
-            }
-            yield return null;
+            await UniTask.NextFrame();
         }
 
-        yield return null;
-
-        yield return StartCoroutine(ButtlePhase());
+        await ButtlePhase();
     }
 
-    IEnumerator ButtlePhase()
+    async UniTask ButtlePhase()
     {
-        IEnumerator Attack()
-        {
-            yield return null;
-            while (true)
-            {
-                if (Input.GetButtonDown("Enter") && selectManager.SingleConfirm(Tag.Circle, DefenceFighter.ID, Action.ATTACK))
-                {
-                    TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
-                    yield return StartCoroutine(AttackFighter.DriveTriggerCheck());
-
-                    yield return new WaitForSeconds(1.5f);
-
-                    TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
-                    yield return StartCoroutine(DefenceFighter.DamageTriggerCheck());
-
-                    yield break;
-                }
-                else if (Input.GetButtonDown("Cancel"))
-                {
-                    selectManager.SingleCansel();
-                    yield break;
-                }
-                yield return null;
-            }
-        }
-
         TextManager.Instance.SetPhaseText("バトルフェイズ");
 
         while (true)
         {
-            if (Input.GetButtonDown("Enter"))
-            {
-                if (selectManager.SingleSelected(Tag.Circle, AttackFighter.ID))
-                    yield return StartCoroutine(Attack());
-            }
-            if (Input.GetButtonDown("Submit"))
-            {
+            await UniTask.NextFrame();
+
+            int result = await AttackFighter.AttackPhase();
+            if (result == -1)
                 break;
+            else if (result == 0)
+                continue;
 
-            }
-            yield return null;
+            TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+
+            await AttackFighter.DriveTriggerCheck();
+
+            TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+
+            await DefenceFighter.DamageTriggerCheck();
+
         }
-
-
-        yield return StartCoroutine(MainPhase());
+        print("終わり");
     }
 
     //void StandbyPhase()

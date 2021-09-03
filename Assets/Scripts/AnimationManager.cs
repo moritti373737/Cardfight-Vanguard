@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -82,7 +83,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     }
 
 
-    public IEnumerator DeckToDrive(Card card, Drive drive)
+    public async UniTask DeckToDrive(Card card, Drive drive)
     {
         int frame = 10;
 
@@ -101,7 +102,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
             card.transform.rotation = Quaternion.Slerp(q1, q2, i / 10.0F); // ê¸å`ï‚ä‘
             //card.transform.localScale = scale;
             card.transform.position = Vector3.Slerp(startPosition, endPosition, (float)i / 20);
-            yield return null;
+            await UniTask.NextFrame();
         }
         startPosition = card.transform.position;
         endPosition = drive.transform.position;
@@ -113,7 +114,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
             card.transform.rotation = Quaternion.Slerp(q2, q3, i / 10.0F); // ê¸å`ï‚ä‘
             //card.transform.localScale = scale;
             card.transform.position = Vector3.Slerp(startPosition, endPosition, (float)i / 10);
-            yield return null;
+            await UniTask.NextFrame();
         }
     }
 

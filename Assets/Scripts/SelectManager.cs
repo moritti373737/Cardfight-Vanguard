@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
 using UnityEngine.UI;
+using System;
+using Cysharp.Threading.Tasks;
 
 /// <summary>
 /// カーソル選択を管理する
 /// </summary>
 public class SelectManager : SingletonMonoBehaviour<SelectManager>
 {
-    public GameObject SelectBox;   // カーソル
+    public GameObject SelectBox { get; private set; }   // カーソル
     private GameObject SelectedBox; // 選択中のカードを占めるカーソル
     public Fighter fighter1;
     public Fighter fighter2;
     private Hand hand1;
     private Hand hand2;
-    public GameObject Field1;
-    public GameObject Field2;
 
     public GameObject SelectBoxPrefab;
     public GameObject SelectedBoxPrefab;
@@ -48,6 +48,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     private int MultiSelectIndex = 0;
 
     private List<List<GameObject>> SelectObjList;
+    private GameObject SelectObj { get => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]]; }
     public List<GameObject> SelectObjList1 = new List<GameObject>();
     public List<GameObject> SelectObjList2 = new List<GameObject>();
     public List<GameObject> SelectObjList3 = new List<GameObject>();
@@ -57,8 +58,10 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     // Start is called before the first frame update
     void Start()
     {
-        hand1 = fighter1.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>();
-        hand2 = fighter2.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>();
+        hand1 = fighter1.hand;
+        hand2 = fighter2.hand;
+        GameObject field1 = fighter1.field;
+        GameObject field2 = fighter2.field;
 
         SelectObjList = new List<List<GameObject>>()
         {
@@ -72,51 +75,52 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             },
             new List<GameObject>()
             {
-                Field2.FindWithChildTag(Tag.Drop),
-                Field2.transform.Find("Rearguard2-3").gameObject,
-                Field2.transform.Find("Rearguard2-2").gameObject,
-                Field2.transform.Find("Rearguard2-1").gameObject,
-                Field2.FindWithChildTag(Tag.Damage),
+                fighter2.drop.gameObject,
+                field2.transform.Find("Rearguard2-3").gameObject,
+                field2.transform.Find("Rearguard2-2").gameObject,
+                field2.transform.Find("Rearguard2-1").gameObject,
+                fighter2.damage.gameObject,
             },
             new List<GameObject>()
             {
-                Field2.FindWithChildTag(Tag.Deck),
-                Field2.transform.Find("Rearguard1-3").gameObject,
-                Field2.FindWithChildTag(Tag.Vanguard),
-                Field2.transform.Find("Rearguard1-1").gameObject,
-                Field2.FindWithChildTag(Tag.Order),
+                fighter2.deck.gameObject,
+                field2.transform.Find("Rearguard1-3").gameObject,
+                fighter2.vanguard.gameObject,
+                field2.transform.Find("Rearguard1-1").gameObject,
+                fighter1.guardian.gameObject,
+                fighter2.order.gameObject,
             },
             new List<GameObject>()
             {
-                Field2.FindWithChildTag(Tag.Guardian),
-                Field2.FindWithChildTag(Tag.Guardian),
-                Field2.FindWithChildTag(Tag.Guardian),
-                Field2.FindWithChildTag(Tag.Guardian),
-                Field2.FindWithChildTag(Tag.Guardian),
+                fighter2.guardian.gameObject,
+                fighter2.guardian.gameObject,
+                fighter2.guardian.gameObject,
+                fighter2.guardian.gameObject,
+                fighter2.guardian.gameObject,
             },
             new List<GameObject>()
             {
-                Field1.FindWithChildTag(Tag.Guardian),
-                Field1.FindWithChildTag(Tag.Guardian),
-                Field1.FindWithChildTag(Tag.Guardian),
-                Field1.FindWithChildTag(Tag.Guardian),
-                Field1.FindWithChildTag(Tag.Guardian),
+                fighter1.guardian.gameObject,
+                fighter1.guardian.gameObject,
+                fighter1.guardian.gameObject,
+                fighter1.guardian.gameObject,
+                fighter1.guardian.gameObject,
             },
             new List<GameObject>()
             {
-                Field1.FindWithChildTag(Tag.Order),
-                Field1.transform.Find("Rearguard1-1").gameObject,
-                Field1.FindWithChildTag(Tag.Vanguard),
-                Field1.transform.Find("Rearguard1-3").gameObject,
-                Field1.FindWithChildTag(Tag.Deck),
+                fighter1.order.gameObject,
+                field1.transform.Find("Rearguard1-1").gameObject,
+                fighter1.vanguard.gameObject,
+                field1.transform.Find("Rearguard1-3").gameObject,
+                fighter1.deck.gameObject,
             },
             new List<GameObject>()
             {
-                Field1.FindWithChildTag(Tag.Damage),
-                Field1.transform.Find("Rearguard2-1").gameObject,
-                Field1.transform.Find("Rearguard2-2").gameObject,
-                Field1.transform.Find("Rearguard2-3").gameObject,
-                Field1.FindWithChildTag(Tag.Drop),
+                fighter1.damage.gameObject,
+                field1.transform.Find("Rearguard2-1").gameObject,
+                field1.transform.Find("Rearguard2-2").gameObject,
+                field1.transform.Find("Rearguard2-3").gameObject,
+                fighter1.drop.gameObject,
             },
             new List<GameObject>()
             {
@@ -207,16 +211,16 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         if (changeSelectBox)
         {
             Fighter fighter = GetFighter();
-            Transform hand = fighter.transform.FindWithChildTag(Tag.Hand);
+            Hand hand = fighter.hand;
 
             // 手札以外の場所から手札に移動したとき
-            if (IsHand() && hand.CountWithChildTag(Tag.EmptyCard) > 0)
+            if (IsHand() && hand.Count() > 0)
             {
-                MultiSelectIndex = hand.CountWithChildTag(Tag.EmptyCard) / 2; // 手札の数に合わせて初期化
-                SelectBox.ChangeParent(hand.GetChild(MultiSelectIndex), p: true);
+                MultiSelectIndex = hand.Count() / 2; // 手札の数に合わせて初期化
+                SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
             }
             else
-                SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
+                SelectBox.ChangeParent(SelectObj.transform, p: true);
 
             SetZoomCard();
             // 子オブジェクトを全て取得する
@@ -229,10 +233,10 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         else if (IsHand())
         {
             Fighter fighter = GetFighter();
-            Transform hand = fighter.transform.FindWithChildTag(Tag.Hand);
+            Hand hand = fighter.hand;
 
             // カーソルを左右に移動させる
-            if (right && hand.childCount - 1 > MultiSelectIndex)
+            if (right && hand.Count() - 1 > MultiSelectIndex)
             {
                 MultiSelectIndex++;
             }
@@ -241,10 +245,10 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 MultiSelectIndex--;
             }
 
-            if (hand.CountWithChildTag(Tag.EmptyCard) > 0) // 手札のカードにカーソルを移動させる
-                SelectBox.ChangeParent(hand.GetChild(MultiSelectIndex), p: true);
+            if (hand.Count() > 0) // 手札のカードにカーソルを移動させる
+                SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
             else // 手札がないとき
-                SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
+                SelectBox.ChangeParent(SelectObj.transform, p: true);
             //Debug.Log("hand!");
             //Debug.Log(MultiSelectIndex);
             SetZoomCard();
@@ -258,7 +262,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <param name="tag">選択可能なマス</param>
     /// <param name="fighterID">選択可能なファイターID</param>
     /// <returns>実際に選択したか</returns>
-    public bool SingleSelected(Tag tag, FighterID fighterID)
+    public async UniTask<bool> SingleSelected(Tag tag, FighterID fighterID)
     {
         Fighter fighter = GetFighter(fighterID);
 
@@ -267,24 +271,24 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         SelectedBox = Instantiate(SelectedBoxPrefab).FixName();
 
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
-        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.transform.FindWithChildTag(Tag.Hand).CountWithChildTag(Tag.EmptyCard) > 0)
+        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.hand.Count() > 0)
         {
-            var selectedCard = fighter.transform.FindWithChildTag(Tag.Hand).GetChild(MultiSelectIndex);
+            var selectedCard = fighter.hand.transform.GetChild(MultiSelectIndex);
             SelectedBox.ChangeParent(selectedCard, true, true, true);
             //SelectedBox.transform.RotateAround(SelectedBox.transform.position, Vector3.forward, 180);
             SelectedCardParentList.Add(selectedCard);
         }
         // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
-        else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
+        else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
-            var selectedRearguard = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]];
+            var selectedRearguard = SelectObj;
             SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
             SelectedCardParentList.Add(selectedRearguard.transform);
         }
         // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
-        else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
+        else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
-            var selectedRearguard = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]];
+            var selectedRearguard = SelectObj;
             SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
             SelectedCardParentList.Add(selectedRearguard.transform);
         }
@@ -296,6 +300,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         return true;
     }
 
+
     /// <summary>
     /// 1つだけ選択可能なカーソルを確定し、選択中を示すオブジェクトを削除
     /// </summary>
@@ -303,7 +308,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <param name="fighterID">決定可能なファイターID</param>
     /// <param name="action">選択、決定したカードに対しとる行動</param>
     /// <returns>実際に決定したか</returns>
-    public bool SingleConfirm(Tag tag, FighterID fighterID, Action action)
+    public async UniTask<bool> SingleConfirm(Tag tag, FighterID fighterID, Action action)
     {
         if (!HasTag(tag)) return false;
 
@@ -318,13 +323,13 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
                 if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
                 {
-                    StartCoroutine(CardManager.Instance.HandToField(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
+                    await StartCoroutine(CardManager.Instance.HandToField(fighter.hand, SelectObj.GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
                 }
                 // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
                 else if (selected.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
-                    && selected.GetComponent<Rearguard>().IsSameColumn(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>()))
+                    && selected.GetComponent<Rearguard>().IsSameColumn(SelectObj.GetComponent<Rearguard>()))
                 {
-                    StartCoroutine(CardManager.Instance.RearToRear(selected.GetComponent<Rearguard>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Rearguard>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
+                    await StartCoroutine(CardManager.Instance.RearToRear(selected.GetComponent<Rearguard>(), SelectObj.GetComponent<Rearguard>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
                 }
                 else
                 {
@@ -353,6 +358,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         return true;
 
     }
+
 
     /// <summary>
     /// 選択中のカーソルをキャンセル
@@ -384,15 +390,15 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     {
         if (!ZoomImage.enabled) return;
         if (HasTag(Tag.Deck)) return;
-        if (HasTag(Tag.Hand) && GetFighter(FighterID.ONE).transform.FindWithChildTag(Tag.Hand).CountWithChildTag(Tag.EmptyCard) > 0)
+        if (HasTag(Tag.Hand) && GetFighter(FighterID.ONE).hand.Count() > 0)
         {
-            var card = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform.GetChild(MultiSelectIndex).FindWithChildTag(Tag.Card).GetComponent<Card>();
+            var card = SelectObj.transform.GetChild(MultiSelectIndex).FindWithChildTag(Tag.Card).GetComponent<Card>();
             var cardTexture = (Texture2D)card.GetTexture();
             ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f); ;
         }
-        else if (SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
+        else if (SelectObj.FindWithChildTag(Tag.Card) != null)
         {
-            var card = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card).GetComponent<Card>();
+            var card = SelectObj.FindWithChildTag(Tag.Card).GetComponent<Card>();
             var cardTexture = (Texture2D)card.GetTexture();
             ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f); ;
         }
@@ -406,7 +412,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         }
     }
 
-    private bool IsHand() => !ReferenceEquals(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<Hand>(), null);
+    private bool IsHand() => !ReferenceEquals(SelectObj.GetComponent<Hand>(), null);
 
     //private bool IsCardCircle() => SelectObjList[selectZoneIndex.Item1][selectZoneIndex[1]].tag.Contains("Circle");
 
@@ -417,7 +423,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// </summary>
     /// <param name="tag">判定に使うタグ</param>
     /// <returns>部分一致したかどうか</returns>
-    private bool HasTag(Tag tag) => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].tag.Contains(tag.ToString());
+    private bool HasTag(Tag tag) => SelectObj.tag.Contains(tag.ToString());
 
     /// <summary>
     /// 現在のカーソル位置にあるオブジェクトを所有するファイターと指定したファイターが一致しているか調べる
@@ -430,7 +436,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// 現在のカーソル位置にあるオブジェクトを所有するファイターを返す
     /// </summary>
     /// <returns>条件を満たすファイター</returns>
-    private Fighter GetFighter() => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform.root.GetComponent<Fighter>();
+    private Fighter GetFighter() => SelectObj.transform.root.GetComponent<Fighter>();
 
     /// <summary>
     /// 指定したファイターIDを持つファイターを返す

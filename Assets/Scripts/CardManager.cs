@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -108,15 +109,15 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
-    public IEnumerator DeckToDrive(Deck deck, Drive drive)
+    public async UniTask DeckToDrive(Deck deck, Drive drive)
     {
         Card card = deck.Pull(0);
         card.transform.parent = null;
-        yield return StartCoroutine(AnimationManager.Instance.DeckToDrive(card, drive));
+        await AnimationManager.Instance.DeckToDrive(card, drive);
         drive.Add(card);
         card.TurnOver();
 
-        yield return new WaitForSeconds(0.0f);
+        //yield return new WaitForSeconds(0.0f);
     }
 
     public IEnumerator DriveToHand(Drive drive, Hand hand)

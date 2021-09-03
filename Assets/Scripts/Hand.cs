@@ -75,7 +75,7 @@ public class Hand : MonoBehaviour
     //    return card;
     //}
 
-    //public int Count() => cardList.Count;
+    public int Count() => cardList.Count;
 
     private void SetPosition()
     {

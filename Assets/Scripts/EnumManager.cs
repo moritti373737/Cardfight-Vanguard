@@ -18,6 +18,7 @@ public enum Tag
     Guardian,
     Drive,
     EmptyCard,
+    Field,
 }
 
 public enum FighterID
@@ -28,9 +29,11 @@ public enum FighterID
 
 public enum Action
 {
+    None,
     MOVE,
     ATTACK,
     GUARD,
+    CALL,
 }
 
 public class EnumManager : MonoBehaviour
