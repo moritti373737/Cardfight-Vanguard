@@ -38,19 +38,21 @@ public class GameMaster : MonoBehaviour
     //Phase phase;
 
 
-    void Start()
+    IEnumerator Start()
     {
         //phase = Phase.INIT;
         fighter1.CreateDeck();
         fighter2.CreateDeck();
-        StartCoroutine(InitPhase());
+        yield return StartCoroutine(InitPhase());
+        yield return StartCoroutine(StandPhase());
+        TextManager.Instance.SetPhaseText("エンドフェイズ");
     }
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.Return))
+        if (Input.GetButtonDown("Zoom"))
         {
-            ResetScene();
+            selectManager.ZoomCard();
         }
 
 
@@ -118,9 +120,7 @@ public class GameMaster : MonoBehaviour
         //yield return null;
         //}
 
-        yield return StartCoroutine(StandPhase());
         //phase = Phase.DRAW;
-        TextManager.Instance.SetPhaseText("エンドフェイズ");
 
 
     }

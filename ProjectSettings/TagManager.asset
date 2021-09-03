@@ -16,6 +16,8 @@ TagManager:
   - Damage
   - Field|Player1
   - Field|Player2
+  - Drive
+  - EmptyCard
   layers:
   - Default
   - TransparentFX

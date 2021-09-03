@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
+using UnityEngine.UI;
 
 /// <summary>
 /// カーソル選択を管理する
@@ -19,6 +20,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     public GameObject SelectBoxPrefab;
     public GameObject SelectedBoxPrefab;
+
+    private Image ZoomImage;
     //public GameObject R13;
 
     //private enum Zone
@@ -144,7 +147,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         //SelectObjList.Add(SelectObjList3);
 
         hand1.cardList.ObserveCountChanged().Subscribe(count => ChangeHandCount(count));
-
+        ZoomImage = GameObject.Find("Canvas").transform.Find("ZoomCard").GetComponent<Image>();
     }
 
     // Update is called once per frame
@@ -215,6 +218,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             else
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
 
+            SetZoomCard();
             // 子オブジェクトを全て取得する
             //foreach (Transform childTransform in hand.transform)
             //{
@@ -243,6 +247,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 SelectBox.ChangeParent(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform, p: true);
             //Debug.Log("hand!");
             //Debug.Log(MultiSelectIndex);
+            SetZoomCard();
         }
 
     }
@@ -313,9 +318,6 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
                 if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
                 {
-                    Debug.Log(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>());
-                    Debug.Log(SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>());
-                    Debug.Log(selected.FindWithChildTag(Tag.Card).GetComponent<Card>());
                     StartCoroutine(CardManager.Instance.HandToField(fighter.transform.FindWithChildTag(Tag.Hand).GetComponent<Hand>(), SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
                 }
                 // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
@@ -364,6 +366,36 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     public void MultSelected()
     {
 
+    }
+
+    /// <summary>
+    /// カードの拡大機能のオンオフを切り替える
+    /// </summary>
+    public void ZoomCard()
+    {
+        ZoomImage.enabled = !ZoomImage.enabled;
+        SetZoomCard();
+    }
+
+    /// <summary>
+    /// カードの拡大機能で表示するカードの設定を行う
+    /// </summary>
+    private void SetZoomCard()
+    {
+        if (!ZoomImage.enabled) return;
+        if (HasTag(Tag.Deck)) return;
+        if (HasTag(Tag.Hand) && GetFighter(FighterID.ONE).transform.FindWithChildTag(Tag.Hand).CountWithChildTag(Tag.EmptyCard) > 0)
+        {
+            var card = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].transform.GetChild(MultiSelectIndex).FindWithChildTag(Tag.Card).GetComponent<Card>();
+            var cardTexture = (Texture2D)card.GetTexture();
+            ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f); ;
+        }
+        else if (SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card) != null)
+        {
+            var card = SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]].FindWithChildTag(Tag.Card).GetComponent<Card>();
+            var cardTexture = (Texture2D)card.GetTexture();
+            ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f); ;
+        }
     }
 
     private void ChangeHandCount(int count)

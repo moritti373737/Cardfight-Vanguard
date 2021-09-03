@@ -22,7 +22,7 @@ public class DeckGenerater : MonoBehaviour
 
     public void Generate(Deck _deck)
     {
-        (List<Texture> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) = LoadDeckData();
+        (List<Texture2D> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) = LoadDeckData();
         int spriteNumber = 0;
         int nextSpriteCardNumber = cardNumber[spriteNumber];
         int sum = cardNumber.Sum();
@@ -65,18 +65,18 @@ public class DeckGenerater : MonoBehaviour
         }
     }
 
-    private (List<Texture> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) LoadDeckData()
+    private (List<Texture2D> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) LoadDeckData()
     {
         string dirName;
         string[,] saveData = LoadSave();
-        List<Texture> cardSpriteList = new List<Texture>();
+        List<Texture2D> cardSpriteList = new List<Texture2D>();
         List<TextAsset> cardTextList = new List<TextAsset>();
         List<int> cardNumber = new List<int>();
 
         for (int i = 0; i < saveData.GetLength(0); i++)
         {
             dirName = saveData[i, 0] + "/" + saveData[i, 1] + "img";
-            cardSpriteList.Add(Resources.Load<Texture>(dirName));
+            cardSpriteList.Add(Resources.Load<Texture2D>(dirName));
             dirName = saveData[i, 0] + "/" + saveData[i, 1] + "txt";
             cardTextList.Add(Resources.Load(dirName) as TextAsset);
             cardNumber.Add(int.Parse(saveData[i, 2]));

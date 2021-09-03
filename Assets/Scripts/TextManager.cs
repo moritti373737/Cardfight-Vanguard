@@ -12,8 +12,7 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
     // Start is called before the first frame update
     void Start()
     {
-        Canvas = Instantiate(CanvasPrefab);
-        Canvas.name = Canvas.name.Substring(0, Canvas.name.Length - 7); // (clone)‚Ì•”•ª‚ğíœ
+        Canvas = Instantiate(CanvasPrefab).FixName();
     }
 
     // Update is called once per frame

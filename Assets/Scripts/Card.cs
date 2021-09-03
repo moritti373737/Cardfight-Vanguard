@@ -18,8 +18,7 @@ public class Card : MonoBehaviour
 
     }
 
-    public void TurnOver()
-    {
-        transform.Rotate(0, 180, 0);
-    }
+    public void TurnOver() => transform.Rotate(0, 180, 0);
+
+    public Texture GetTexture() => transform.Find("Face").GetComponent<Renderer>().material.mainTexture;
 }
