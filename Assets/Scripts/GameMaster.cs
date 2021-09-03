@@ -43,8 +43,12 @@ public class GameMaster : MonoBehaviour
     {
         //phase = Phase.INIT;
         await InitPhase();
-        await StandPhase();
-        //yield return StartCoroutine(StandPhase());
+
+        while (true)
+        {
+            await StandPhase();
+            (AttackFighter, DefenceFighter) = (DefenceFighter, AttackFighter);
+        }
         //TextManager.Instance.SetPhaseText("エンドフェイズ");
     }
 
@@ -101,21 +105,6 @@ public class GameMaster : MonoBehaviour
         await UniTask.WhenAll(fighter1.StandUpVanguard(), fighter2.StandUpVanguard());
 
         await UniTask.NextFrame();
-        //while (true)
-        //{
-        //yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
-        //yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleSelected());
-        //selectManager.SingleSelected();
-        //yield return null;
-
-        //yield return new WaitUntil(() => Input.GetButtonDown("Enter") && selectManager.SingleConfirm("Vanguard"));
-        //selectManager.SingleConfirm();
-        //yield return null;
-        //}
-
-        //phase = Phase.DRAW;
-
-
     }
 
     async UniTask StandPhase()
@@ -188,7 +177,12 @@ public class GameMaster : MonoBehaviour
             await DefenceFighter.DamageTriggerCheck();
 
         }
-        print("終わり");
+        await EndPhase();
+    }
+    async UniTask EndPhase()
+    {
+        TextManager.Instance.SetPhaseText("エンドフェイズ");
+        return;
     }
 
     //void StandbyPhase()

@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 public class Fighter : MonoBehaviour
 {
     public FighterID ID;
+    private FighterID OpponentID { get; set; }
 
     public GameObject field { get; private set; }
 
@@ -41,6 +42,7 @@ public class Fighter : MonoBehaviour
         guardian = field.transform.FindWithChildTag(Tag.Guardian).GetComponent<Guardian>();
         order = field.transform.FindWithChildTag(Tag.Order).GetComponent<Order>();
 
+        OpponentID = FighterID.ONE == ID ? FighterID.TWO : FighterID.ONE;
         //this.UpdateAsObservable()
         //    .Where(_ => FirstStateController.Instance.firstState == FirstState.Draw);
         //.Subscribe(_ => Debug.Log("draw"));
@@ -209,7 +211,7 @@ public class Fighter : MonoBehaviour
 
             if (inputIndex == 0)
             {
-                if (await SelectManager.Instance.SingleConfirm(Tag.Vanguard, FighterID.TWO, Action.ATTACK)) return 1;
+                if (await SelectManager.Instance.SingleConfirm(Tag.Vanguard, OpponentID, Action.ATTACK)) return 1;
             }
             else if (inputIndex == 1)
             {
