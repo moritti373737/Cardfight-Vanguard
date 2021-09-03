@@ -104,7 +104,7 @@ public class GameMaster : MonoBehaviour
 
         yield return new WaitUntil(() => Input.GetButtonDown("Enter"));
 
-        yield return StartCoroutine(fighter1.StandUpVanguard());
+        StartCoroutine(fighter1.StandUpVanguard());
         yield return StartCoroutine(fighter2.StandUpVanguard());
 
         yield return null;

@@ -111,10 +111,12 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     public IEnumerator DeckToDrive(Deck deck, Drive drive)
     {
         Card card = deck.Pull(0);
-        card.TurnOver();
+        card.transform.parent = null;
+        yield return StartCoroutine(AnimationManager.Instance.DeckToDrive(card, drive));
         drive.Add(card);
+        card.TurnOver();
 
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(0.0f);
     }
 
     public IEnumerator DriveToHand(Drive drive, Hand hand)

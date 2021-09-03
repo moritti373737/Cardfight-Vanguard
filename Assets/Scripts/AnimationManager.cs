@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -80,6 +81,43 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         yield return MoveCard(card, 40, false, targetY:-0.01F);
     }
 
+
+    public IEnumerator DeckToDrive(Card card, Drive drive)
+    {
+        int frame = 10;
+
+        Vector3 startPosition = card.transform.position;
+        Vector3 endPosition = drive.transform.position;
+        endPosition.y += 0.18F;
+
+
+        Quaternion q1 = card.transform.rotation;
+        Quaternion q2 = Quaternion.Euler(200f, 0f, 30f);
+        Quaternion q3 = Quaternion.Euler(270f, 0f, 90f);
+        for (int i = 0; i <= frame; i++)
+        {
+            //var scale = card.transform.localScale;
+            //card.transform.Rotate(0, 2, 1);
+            card.transform.rotation = Quaternion.Slerp(q1, q2, i / 10.0F); // 線形補間
+            //card.transform.localScale = scale;
+            card.transform.position = Vector3.Slerp(startPosition, endPosition, (float)i / 20);
+            yield return null;
+        }
+        startPosition = card.transform.position;
+        endPosition = drive.transform.position;
+        endPosition.y += 0.001F;
+        for (int i = 0; i <= frame; i++)
+        {
+            //var scale = card.transform.localScale;
+            //card.transform.Rotate(0, 2, 1);
+            card.transform.rotation = Quaternion.Slerp(q2, q3, i / 10.0F); // 線形補間
+            //card.transform.localScale = scale;
+            card.transform.position = Vector3.Slerp(startPosition, endPosition, (float)i / 10);
+            yield return null;
+        }
+    }
+
+
     IEnumerator RotateCard(Card card, int frame)
     {
         for (int i = 0; i < frame; i++)
@@ -94,7 +132,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
     /// <param name="frame">アニメの総フレーム数</param>
-    /// <param name="local">ローカル座標で計算する</param>
+    /// <param name="local">ローカル座標で計算する、falseの場合はグローバル座標を用いる</param>
     /// <param name="targetX">X方向の移動量</param>
     /// <param name="targetY">Y方向の移動量</param>
     /// <param name="targetZ">Z方向の移動量</param>
@@ -113,4 +151,5 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
             yield return null;
         }
     }
+
 }

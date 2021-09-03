@@ -6,12 +6,11 @@ public class Drive : MonoBehaviour
 {
     public void Add(Card card)
     {
-        var localr = card.transform.localRotation;
-        var locals = card.transform.localScale;
         card.transform.SetParent(transform);
         card.transform.position = transform.position;
-        card.transform.localRotation = localr;
-        card.transform.localScale = locals;
+        card.transform.localPosition = new Vector3(0, 0, -1);
+        card.transform.localRotation = Quaternion.identity;
+        card.transform.localScale = Vector3.one;
     }
     public Card Pull() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
 
