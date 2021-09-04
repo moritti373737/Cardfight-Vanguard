@@ -25,6 +25,7 @@ public class Hand : MonoBehaviour
     public void Add(Card _card)
     {
         var emptyCard = Instantiate(EmptyCardPrefab).FixName();
+        emptyCard.GetComponent<EmptyCard>().card = _card;
         emptyCard.transform.SetParent(transform);
         emptyCard.transform.position = transform.position;
         emptyCard.transform.localPosition = Vector3.zero;

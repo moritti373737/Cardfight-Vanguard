@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 7432465892753982298}
   - component: {fileID: 3301583407934829738}
+  - component: {fileID: 7759170975901552729}
   m_Layer: 0
   m_Name: EmptyCard
-  m_TagString: EmptyCard
+  m_TagString: Card
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -44,3 +45,15 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7759170975901552729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7432465892753982296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19980a170c7142c44bde4f97eb331c51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -208,11 +208,11 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             changeSelectBox = true;
         }
 
+        if (MultiSelectIndex == -1) return;
 
         // エリア移動したとき
         if (changeSelectBox)
         {
-            if (MultiSelectIndex == -1) return;
             Fighter fighter = GetFighter();
             Hand hand = fighter.hand;
 
@@ -261,54 +261,76 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     }
 
-    /// <summary>
-    /// 1つだけ選択可能なカーソル選択し、選択中を示すオブジェクトを配置
-    /// </summary>
-    /// <param name="tag">選択可能なマス</param>
-    /// <param name="fighterID">選択可能なファイターID</param>
-    /// <returns>実際に選択したか</returns>
-    public async UniTask<Result> SingleSelected(Tag tag, FighterID fighterID)
+    public async UniTask<Result> CanSelect(Tag tag, FighterID fighterID)
     {
         Fighter fighter = GetFighter(fighterID);
 
         if (!HasTag(tag)) return Result.NO;
 
+        // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
+        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.hand.Count() > 0)
+        {
+            return Result.YES;
+        }
+        // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
+        else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
+        {
+            return Result.YES;
+        }
+        // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
+        else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
+        {
+            return Result.YES;
+        }
+        return Result.NO;
+    }
 
+    /// <summary>
+    /// 1つだけ選択可能なカーソル選択し、選択中を示すオブジェクトを配置
+    /// </summary>
+    /// <param name="tag">選択可能なマス</param>
+    /// <param name="fighterID">選択可能なファイターID</param>
+    /// <returns>実際に選択したゾーンのtransform</returns>
+    public async UniTask<Transform> NormalSelected(Tag tag, FighterID fighterID)
+    {
+        Fighter fighter = GetFighter(fighterID);
+
+        if (!HasTag(tag)) return null;
 
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
         if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.hand.Count() > 0)
         {
             var selectedCard = fighter.hand.transform.GetChild(MultiSelectIndex);
-            if (selectedCard.Find("SelectedBox")) return Result.NO;
+            if (selectedCard.Find("SelectedBox")) return null;
             var selectedBox = Instantiate(SelectedBoxPrefab).FixName();
             SelectedBoxList.Add(selectedBox);
             selectedBox.ChangeParent(selectedCard, true, true, true);
             //SelectedBox.transform.RotateAround(SelectedBox.transform.position, Vector3.forward, 180);
             SelectedCardParentList.Add(selectedCard);
-            return Result.YES;
+            return fighter.hand.transform;
         }
         // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
         else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
             var selectedBox = Instantiate(SelectedBoxPrefab).FixName();
             SelectedBoxList.Add(selectedBox);
-            var selectedRearguard = SelectObj;
-            selectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
-            SelectedCardParentList.Add(selectedRearguard.transform);
-            return Result.YES;
+            var selectedRearguard = SelectObj.transform;
+            selectedBox.ChangeParent(selectedRearguard, true, true, true);
+            SelectedCardParentList.Add(selectedRearguard);
+            return selectedRearguard;
         }
         // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
         else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
             var selectedBox = Instantiate(SelectedBoxPrefab).FixName();
             SelectedBoxList.Add(selectedBox);
-            var selectedRearguard = SelectObj;
-            selectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
-            SelectedCardParentList.Add(selectedRearguard.transform);
-            return Result.YES;
+            var selectedRearguard = SelectObj.transform;
+            selectedBox.ChangeParent(selectedRearguard, true, true, true);
+            SelectedCardParentList.Add(selectedRearguard);
+            return selectedRearguard;
         }
         //SingleCansel();
-        return Result.NO;
+        return null;
     }
 
 
@@ -318,59 +340,66 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <param name="tag">決定可能なマス</param>
     /// <param name="fighterID">決定可能なファイターID</param>
     /// <param name="action">選択、決定したカードに対しとる行動</param>
-    /// <returns>実際に決定したか</returns>
-    public async UniTask<Result> SingleConfirm(Tag tag, FighterID fighterID, Action action)
+    /// <returns></returns>
+    public async UniTask<(Transform, Transform)> NormalConfirm(Tag tag, FighterID fighterID, Action action)
     {
-        if (!HasTag(tag)) return Result.NO;
+        if (!HasTag(tag)) return (null, null);
 
         Fighter fighter = GetFighter(fighterID);
 
+        Transform selected = SelectedCardParentList[0];
 
-        foreach (var selected in SelectedCardParentList)
+        (Transform Area, Transform Card) result = (Area: null, Card: null);
+
+        if (action == Action.MOVE)
         {
-            if (action == Action.MOVE)
-            {
 
-                // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
-                if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
-                {
-                    await StartCoroutine(CardManager.Instance.HandToField(fighter.hand, SelectObj.GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
-                }
-                // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
-                else if (selected.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
-                    && selected.GetComponent<Rearguard>().IsSameColumn(SelectObj.GetComponent<Rearguard>()))
-                {
-                    await StartCoroutine(CardManager.Instance.RearToRear(selected.GetComponent<Rearguard>(), SelectObj.GetComponent<Rearguard>(), selected.FindWithChildTag(Tag.Card).GetComponent<Card>()));
-                }
-                else
-                {
-                    return Result.NO;
-                }
-            }
-            else if (action == Action.ATTACK)
+            // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
+            if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
             {
-                // 選択したカーソル位置がサークル かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
-                if (selected.ExistTag(Tag.Circle) && HasTag(Tag.Vanguard) && IsFighter(fighterID))
-                {
-                    Debug.Log("Vにアタック");
-                }
-                else
-                {
-                    return Result.NO;
-                }
+                result = (SelectObj.transform, selected.FindWithChildTag(Tag.Card));
+                goto END;
+            }
+            // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
+            else if (selected.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
+                && selected.GetComponent<Rearguard>().IsSameColumn(SelectObj.GetComponent<Rearguard>()))
+            {
+                result = (SelectObj.transform, selected.FindWithChildTag(Tag.Card));
+                goto END;
             }
             else
             {
-                return Result.NO;
+                return (null, null);
             }
         }
+        else if (action == Action.ATTACK)
+        {
+            // 選択したカーソル位置がサークル かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
+            if (selected.ExistTag(Tag.Circle) && HasTag(Tag.Vanguard) && IsFighter(fighterID))
+            {
+                //Debug.Log("Vにアタック");
+                result = (SelectObj.transform, null);
+                goto END;
+            }
+            else
+            {
+                return (null, null);
+            }
+        }
+        else
+        {
+            return (null, null);
+        }
+
+        END:
+
         SelectedCardParentList.Clear();
         foreach (var selectedBox in SelectedBoxList)
         {
             Destroy(selectedBox);
         }
         SelectedBoxList.Clear();
-        return Result.YES;
+        return result;
 
     }
 

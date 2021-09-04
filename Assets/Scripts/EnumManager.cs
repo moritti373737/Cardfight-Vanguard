@@ -17,7 +17,6 @@ public enum Tag
     Order,
     Guardian,
     Drive,
-    EmptyCard,
     Field,
 }
 
