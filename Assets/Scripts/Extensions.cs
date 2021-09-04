@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -173,5 +175,42 @@ public static class Extensions
     {
         gameObject.name = gameObject.name.Substring(0, gameObject.name.Length - 7); // (clone)の部分を削除
         return gameObject;
+    }
+
+    public static Result ToEnum (this int button, string one, string two)
+    {
+        if (button == 0)
+        {
+            Debug.Log(one);
+            return (Result)Enum.Parse(typeof(Result), one);
+        }
+        else
+        {
+
+            Debug.Log(two);
+            return (Result)Enum.Parse(typeof(Result), two);
+        }
+    }
+}
+
+public static class ListExtensions
+{
+    /// <summary>
+    /// 末尾にあるオブジェクトを削除して返す
+    /// </summary>
+    public static T Pop<T>(this IList<T> self)
+    {
+        int index = self.Count - 1;
+        var result = self[index];
+        self.RemoveAt(index);
+        return result;
+    }
+
+    /// <summary>
+    /// 末尾にオブジェクトを追加します
+    /// </summary>
+    public static void Push<T>(this IList<T> self, T item)
+    {
+        self.Add(item);
     }
 }

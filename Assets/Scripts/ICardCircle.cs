@@ -4,6 +4,7 @@ using UnityEngine;
 
 public interface ICardCircle
 {
+    int ID { get; }
     void Add(Card card);
     Card Pull();
 

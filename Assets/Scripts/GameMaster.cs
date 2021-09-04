@@ -100,7 +100,9 @@ public class GameMaster : MonoBehaviour
         await fighter1.DrawCard(5);
         await fighter2.DrawCard(1);
 
-        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+        await fighter1.Mulligan();
+
+        //await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
         await UniTask.WhenAll(fighter1.StandUpVanguard(), fighter2.StandUpVanguard());
 
@@ -135,10 +137,7 @@ public class GameMaster : MonoBehaviour
     {
         TextManager.Instance.SetPhaseText("ライドフェイズ");
 
-        while (!await AttackFighter.RidePhase())
-        {
-            await UniTask.NextFrame();
-        }
+        await AttackFighter.RidePhase();
         await MainPhase();
     }
 
@@ -146,7 +145,7 @@ public class GameMaster : MonoBehaviour
     {
         TextManager.Instance.SetPhaseText("メインフェイズ");
 
-        while (!await AttackFighter.MainPhase())
+        while (await AttackFighter.MainPhase())
         {
             await UniTask.NextFrame();
         }
@@ -162,11 +161,9 @@ public class GameMaster : MonoBehaviour
         {
             await UniTask.NextFrame();
 
-            int result = await AttackFighter.AttackPhase();
-            if (result == -1)
+            bool result = await AttackFighter.AttackPhase();
+            if (!result)
                 break;
-            else if (result == 0)
-                continue;
 
             TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
 

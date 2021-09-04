@@ -4,7 +4,14 @@ using UnityEngine;
 
 public class Rearguard : MonoBehaviour, ICardCircle
 {
-    // Start is called before the first frame update
+    public int ID { get; private set; }
+
+    private void Start()
+    {
+        ID = int.Parse(transform.name.Substring(transform.name.Length - 2));
+        print(ID);
+    }
+
     public void Add(Card card)
     {
         var localr = card.transform.localRotation;

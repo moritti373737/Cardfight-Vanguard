@@ -71,6 +71,42 @@ public class Fighter : MonoBehaviour
         await CardManager.Instance.DeckToCircle(deck, vanguard, 0);
     }
 
+    public async UniTask Mulligan()
+    {
+        while (true)
+        {
+            await UniTask.NextFrame();
+
+            int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+
+            if (inputIndex == 0) await SelectManager.Instance.SingleSelected(Tag.Hand, ID);
+            else if (inputIndex == 1 && SelectManager.Instance.SelectedCount() == 0) return; // Submit入力時
+            else break;
+        }
+
+        int ToDeckCount = SelectManager.Instance.SelectedCount();
+        await SelectManager.Instance.ForceConfirm(Tag.Hand, ID, Action.MOVE);
+
+        await DrawCard(ToDeckCount);
+
+        //while (true)
+        //{
+        //    inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+
+        //    if (inputIndex == 0)
+        //    {
+        //        if (await SelectManager.Instance.SingleConfirm(Tag.Vanguard, ID, Action.MOVE)) return false;
+        //    }
+        //    else if (inputIndex == 1)
+        //    {
+        //        SelectManager.Instance.SingleCansel();
+        //        return false;
+        //    };
+
+        //    await UniTask.NextFrame();
+        //}
+    }
+
     public async UniTask StandUpVanguard()
     {
         await CardManager.Instance.RotateCard(vanguard.transform.FindWithChildTag(Tag.Card).GetComponent<Card>());
@@ -117,110 +153,329 @@ public class Fighter : MonoBehaviour
         //hand.Add(card);
     }
 
-    public async UniTask<bool> RidePhase()
+    public async UniTask RidePhase()
     {
-        int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
-
-        if (inputIndex == 0) // Enter入力時
-        {
-            if (!await SelectManager.Instance.SingleSelected(Tag.Hand, ID)) return false;
-        }
-        else if (inputIndex == 1) return true; // Submit入力時
-
+        Result result = Result.END;
         await UniTask.NextFrame();
+        int i = 0;
 
-        while (true)
+        List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
+
+        functions.Add(async () => {
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+            return resultInt.ToEnum("YES", "END");
+        });
+        functions.Add(async () => await SelectManager.Instance.SingleSelected(Tag.Hand, ID));
+        functions.Add(async () => {
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            return resultInt.ToEnum("YES", "CANCEL");
+        });
+        functions.Add(async () => await SelectManager.Instance.SingleConfirm(Tag.Vanguard, ID, Action.MOVE));
+
+        while (i < functions.Count)
         {
-            inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
-
-            if (inputIndex == 0)
-            {
-                if (await SelectManager.Instance.SingleConfirm(Tag.Vanguard, ID, Action.MOVE)) return true;
-            }
-            else if (inputIndex == 1)
-            {
-                SelectManager.Instance.SingleCansel();
-                return false;
-            };
-
+            print(i);
             await UniTask.NextFrame();
+            result = await functions[i]();
+            print(result);
+            switch (result)
+            {
+                case Result.YES:
+                    i++;
+                    break;
+                case Result.NO:
+                    i -= 1;
+                    break;
+                case Result.CANCEL:
+                    SelectManager.Instance.SingleCansel();
+                    i -= 2;
+                    break;
+                case Result.END:
+                    return;
+            }
         }
+
+        print("owari");
+        //inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+
+
+        //if (inputIndex == 0)
+        //    functions.Add(() => SelectManager.Instance.SingleSelected(Tag.Hand, ID));
+        //else if (inputIndex == 1) return true;
+
+        //while (i < functions.Count)
+        //{
+        //    bool result = await functions[i]();
+        //    if (result) i++;
+        //}
+
+        //foreach (Func<Cysharp.Threading.Tasks.UniTask<bool>> func in functions)
+        //    await func();
+
+
+
+
+        //int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+
+        //if (inputIndex == 0) // Enter入力時
+        //{
+        //    if (!await SelectManager.Instance.SingleSelected(Tag.Hand, ID)) return false;
+        //}
+        //else if (inputIndex == 1) return true; // Submit入力時
+
+        //await UniTask.NextFrame();
+
+        //while (true)
+        //{
+        //    inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+
+        //    if (inputIndex == 0)
+        //    {
+        //        if (await SelectManager.Instance.SingleConfirm(Tag.Vanguard, ID, Action.MOVE)) return true;
+        //    }
+        //    else if (inputIndex == 1)
+        //    {
+        //        SelectManager.Instance.SingleCansel();
+        //        return false;
+        //    };
+
+        //    await UniTask.NextFrame();
+        //}
 
     }
 
     public async UniTask<bool> MainPhase()
     {
-        print("メイン開始");
-
-        Action action = Action.None;
-
-        async UniTask<bool> Loop2()
-        {
-            int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
-
-            if (inputIndex == 0)
-            {
-                if (action == Action.CALL && await SelectManager.Instance.SingleConfirm(Tag.Rearguard, ID, Action.MOVE)) return true;
-                else if (action == Action.MOVE && await SelectManager.Instance.SingleConfirm(Tag.Rearguard, ID, Action.MOVE)) return true;
-                else return false;
-            }
-            else if (inputIndex == 1)
-            {
-                SelectManager.Instance.SingleCansel();
-                return true;
-            };
-            return true;
-        }
-
-        int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
-
-        if (inputIndex == 0) // Enter入力時
-        {
-            if (await SelectManager.Instance.SingleSelected(Tag.Hand, ID))
-                action = Action.CALL;
-            else if (await SelectManager.Instance.SingleSelected(Tag.Rearguard, ID))
-                action = Action.MOVE;
-            else return false;
-        }
-        else if (inputIndex == 1) return true; // Submit入力時
+        Result result = Result.NONE;
         await UniTask.NextFrame();
+        int i = 0;
 
-        while (!await Loop2())
+        List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsV = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsC = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsM = new List<Func<UniTask<Result>>>();
+
+        var state = functionsV;
+
+        functionsV.Add(async () => {
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+            return resultInt.ToEnum("YES", "END");
+        });
+        functionsV.Add(async () => {
+            if (await SelectManager.Instance.SingleSelected(Tag.Hand, ID) == Result.YES)
+            {
+                state = functionsC;
+                functions.AddRange(functionsC);
+                return Result.YES;
+            }
+            else if (await SelectManager.Instance.SingleSelected(Tag.Rearguard, ID) == Result.YES)
+            {
+                state = functionsM;
+                functions.AddRange(functionsM);
+                return Result.YES;
+            }
+            return Result.NO;
+        });
+
+        functionsC.Add(async () => {
+            print("C");
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            return resultInt.ToEnum("YES", "CANCEL");
+        });
+        functionsC.Add(async () => await SelectManager.Instance.SingleConfirm(Tag.Rearguard, ID, Action.MOVE));
+
+        functionsM.Add(async () => {
+            print("M");
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            return resultInt.ToEnum("YES", "CANCEL");
+        });
+        functionsM.Add(async () => await SelectManager.Instance.SingleConfirm(Tag.Rearguard, ID, Action.MOVE));
+
+        functions.AddRange(functionsV);
+
+        while (i < functions.Count)
         {
+            print(i);
             await UniTask.NextFrame();
+            result = await functions[i]();
+            switch (result)
+            {
+                case Result.YES:
+                    i++;
+                    break;
+                case Result.NO:
+                    i -= 1;
+                    break;
+                case Result.CANCEL:
+                    functions.RemoveRange(functions.Count - state.Count, state.Count);
+                    state = functionsV;
+                    SelectManager.Instance.SingleCansel();
+                    i -= 2;
+                    break;
+                case Result.END:
+                    return false;
+            }
         }
 
-        return false;
+        print("owari");
+        return true;
+
+        //Action action = Action.None;
+
+        //async UniTask<bool> Loop2()
+        //{
+        //    int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+
+        //    if (inputIndex == 0)
+        //    {
+        //        if (action == Action.CALL && Result.YES == await SelectManager.Instance.SingleConfirm(Tag.Rearguard, ID, Action.MOVE)) return true;
+        //        else if (action == Action.MOVE && Result.YES == await SelectManager.Instance.SingleConfirm(Tag.Rearguard, ID, Action.MOVE)) return true;
+        //        else return false;
+        //    }
+        //    else if (inputIndex == 1)
+        //    {
+        //        SelectManager.Instance.SingleCansel();
+        //        return true;
+        //    };
+        //    return true;
+        //}
+
+        //int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+
+        //if (inputIndex == 0) // Enter入力時
+        //{
+        //    if (Result.YES == await SelectManager.Instance.SingleSelected(Tag.Hand, ID))
+        //        action = Action.CALL;
+        //    else if (Result.YES == await SelectManager.Instance.SingleSelected(Tag.Rearguard, ID))
+        //        action = Action.MOVE;
+        //    else return false;
+        //}
+        //else if (inputIndex == 1) return true; // Submit入力時
+        //await UniTask.NextFrame();
+
+        //while (!await Loop2())
+        //{
+        //    await UniTask.NextFrame();
+        //}
+
+        //return false;
 
     }
 
-    public async UniTask<int> AttackPhase()
+    public async UniTask<bool> AttackPhase()
     {
-        int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
-        if (inputIndex == 0) // Enter入力時
-        {
-            if (!await SelectManager.Instance.SingleSelected(Tag.Circle, ID)) return 0;
-        }
-        else if (inputIndex == 1) return -1; // Submit入力時
-
+        print("開始");
+        Result result = Result.NONE;
         await UniTask.NextFrame();
+        int i = 0;
 
-        while (true)
+        List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsV = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsV2 = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsO = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsT = new List<Func<UniTask<Result>>>();
+
+        var state = functionsV;
+
+        functionsV.Add(async () => {
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+            return resultInt.ToEnum("YES", "END");
+        });
+        functionsV.Add(async () => {
+            state = functionsV2;
+            functions.AddRange(functionsV2);
+            return await SelectManager.Instance.SingleSelected(Tag.Circle, ID);
+        });
+
+
+        functionsV2.Add(async () => {
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            return resultInt.ToEnum("YES", "CANCEL");
+        });
+        functionsV2.Add(async () => {
+            if (await SelectManager.Instance.SingleConfirm(Tag.Vanguard, OpponentID, Action.ATTACK) == Result.YES)
+            {
+                state = functionsO;
+                functions.AddRange(functionsO);
+                return Result.YES;
+            }
+            else if (await SelectManager.Instance.SingleSelected(Tag.Rearguard, ID) == Result.YES)
+            {
+                state = functionsT;
+                functions.AddRange(functionsT);
+                return Result.YES;
+            }
+            return Result.NO;
+        });
+
+        functionsT.Add(async () => {
+            print("T");
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            return resultInt.ToEnum("YES", "CANCEL");
+        });
+        functionsT.Add(async () => await SelectManager.Instance.SingleConfirm(Tag.Vanguard, OpponentID, Action.ATTACK));
+
+        functions.AddRange(functionsV);
+
+        while (i < functions.Count)
         {
-            inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
-
-            if (inputIndex == 0)
-            {
-                if (await SelectManager.Instance.SingleConfirm(Tag.Vanguard, OpponentID, Action.ATTACK)) return 1;
-            }
-            else if (inputIndex == 1)
-            {
-                SelectManager.Instance.SingleCansel();
-                return 0;
-            }
-
+            print(i);
             await UniTask.NextFrame();
+            result = await functions[i]();
+            print(result);
+            switch (result)
+            {
+                case Result.YES:
+                    i++;
+                    break;
+                case Result.NO:
+                    i -= 1;
+                    break;
+                case Result.CANCEL:
+                    print(functions.Count);
+                    print(state.Count);
+                    functions.RemoveRange(functions.Count - state.Count, state.Count);
+                    i -= state.Count;
+                    print(functions.Count);
+                    print(state.Count);
+                    state = functionsV;
+                    SelectManager.Instance.SingleCansel();
+                    break;
+                case Result.END:
+                    return false;
+            }
         }
+
+        return true;
+
+        print("owari");
+
+
+        //int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+        //if (inputIndex == 0) // Enter入力時
+        //{
+        //    if (Result.NO == await SelectManager.Instance.SingleSelected(Tag.Circle, ID)) return 0;
+        //}
+        //else if (inputIndex == 1) return -1; // Submit入力時
+
+        //await UniTask.NextFrame();
+
+        //while (true)
+        //{
+        //    inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+
+        //    if (inputIndex == 0)
+        //    {
+        //        if (Result.YES == await SelectManager.Instance.SingleConfirm(Tag.Vanguard, OpponentID, Action.ATTACK)) return 1;
+        //    }
+        //    else if (inputIndex == 1)
+        //    {
+        //        SelectManager.Instance.SingleCansel();
+        //        return 0;
+        //    }
+
+        //    await UniTask.NextFrame();
+        //}
     }
 
 

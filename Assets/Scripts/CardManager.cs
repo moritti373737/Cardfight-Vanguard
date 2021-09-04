@@ -171,6 +171,20 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     }
 
     /// <summary>
+    /// 手札をデッキに移動
+    /// </summary>
+    /// <param name="card">移動させるカード</param>
+    /// <returns>コルーチン</returns>
+    public async UniTask HandToDeck(Hand hand, Deck deck, Card card)
+    {
+        hand.Pull(card);
+
+        hand.DestroyEmpty(card);
+
+        deck.Add(card);
+    }
+
+    /// <summary>
     /// カードを裏返す
     /// </summary>
     /// <param name="card">カード</param>

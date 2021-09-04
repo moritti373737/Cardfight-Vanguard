@@ -36,6 +36,15 @@ public enum Action
     CALL,
 }
 
+public enum Result
+{
+    YES,
+    NO,
+    CANCEL,
+    END,
+    NONE,
+}
+
 public class EnumManager : MonoBehaviour
 {
     // Start is called before the first frame update

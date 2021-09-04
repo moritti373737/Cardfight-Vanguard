@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Vanguard : MonoBehaviour, ICardCircle
 {
+    public int ID { get; } = 12;
     public void Add(Card card)
     {
         var localr = card.transform.localRotation;

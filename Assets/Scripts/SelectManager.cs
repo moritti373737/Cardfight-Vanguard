@@ -5,6 +5,7 @@ using UniRx;
 using UnityEngine.UI;
 using System;
 using Cysharp.Threading.Tasks;
+using System.Linq;
 
 /// <summary>
 /// カーソル選択を管理する
@@ -12,7 +13,7 @@ using Cysharp.Threading.Tasks;
 public class SelectManager : SingletonMonoBehaviour<SelectManager>
 {
     public GameObject SelectBox { get; private set; }   // カーソル
-    private GameObject SelectedBox; // 選択中のカードを占めるカーソル
+    private List<GameObject> SelectedBoxList = new List<GameObject>(); // 選択中のカードを占めるカーソル
     public Fighter fighter1;
     public Fighter fighter2;
     private Hand hand1;
@@ -55,7 +56,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     private List<Transform> SelectedCardParentList = new List<Transform>();
 
-    // Start is called before the first frame update
+// Start is called before the first frame update
     void Start()
     {
         hand1 = fighter1.hand;
@@ -76,17 +77,17 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             new List<GameObject>()
             {
                 fighter2.drop.gameObject,
-                field2.transform.Find("Rearguard2-3").gameObject,
-                field2.transform.Find("Rearguard2-2").gameObject,
-                field2.transform.Find("Rearguard2-1").gameObject,
+                field2.transform.Find("Rearguard23").gameObject,
+                field2.transform.Find("Rearguard22").gameObject,
+                field2.transform.Find("Rearguard21").gameObject,
                 fighter2.damage.gameObject,
             },
             new List<GameObject>()
             {
                 fighter2.deck.gameObject,
-                field2.transform.Find("Rearguard1-3").gameObject,
+                field2.transform.Find("Rearguard13").gameObject,
                 fighter2.vanguard.gameObject,
-                field2.transform.Find("Rearguard1-1").gameObject,
+                field2.transform.Find("Rearguard11").gameObject,
                 fighter1.guardian.gameObject,
                 fighter2.order.gameObject,
             },
@@ -109,17 +110,17 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             new List<GameObject>()
             {
                 fighter1.order.gameObject,
-                field1.transform.Find("Rearguard1-1").gameObject,
+                field1.transform.Find("Rearguard11").gameObject,
                 fighter1.vanguard.gameObject,
-                field1.transform.Find("Rearguard1-3").gameObject,
+                field1.transform.Find("Rearguard13").gameObject,
                 fighter1.deck.gameObject,
             },
             new List<GameObject>()
             {
                 fighter1.damage.gameObject,
-                field1.transform.Find("Rearguard2-1").gameObject,
-                field1.transform.Find("Rearguard2-2").gameObject,
-                field1.transform.Find("Rearguard2-3").gameObject,
+                field1.transform.Find("Rearguard21").gameObject,
+                field1.transform.Find("Rearguard22").gameObject,
+                field1.transform.Find("Rearguard23").gameObject,
                 fighter1.drop.gameObject,
             },
             new List<GameObject>()
@@ -207,9 +208,11 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             changeSelectBox = true;
         }
 
+
         // エリア移動したとき
         if (changeSelectBox)
         {
+            if (MultiSelectIndex == -1) return;
             Fighter fighter = GetFighter();
             Hand hand = fighter.hand;
 
@@ -246,7 +249,9 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             }
 
             if (hand.Count() > 0) // 手札のカードにカーソルを移動させる
+            {
                 SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
+            }
             else // 手札がないとき
                 SelectBox.ChangeParent(SelectObj.transform, p: true);
             //Debug.Log("hand!");
@@ -262,42 +267,48 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <param name="tag">選択可能なマス</param>
     /// <param name="fighterID">選択可能なファイターID</param>
     /// <returns>実際に選択したか</returns>
-    public async UniTask<bool> SingleSelected(Tag tag, FighterID fighterID)
+    public async UniTask<Result> SingleSelected(Tag tag, FighterID fighterID)
     {
         Fighter fighter = GetFighter(fighterID);
 
-        if (!HasTag(tag)) return false;
+        if (!HasTag(tag)) return Result.NO;
 
-        SelectedBox = Instantiate(SelectedBoxPrefab).FixName();
+
 
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
         if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.hand.Count() > 0)
         {
             var selectedCard = fighter.hand.transform.GetChild(MultiSelectIndex);
-            SelectedBox.ChangeParent(selectedCard, true, true, true);
+            if (selectedCard.Find("SelectedBox")) return Result.NO;
+            var selectedBox = Instantiate(SelectedBoxPrefab).FixName();
+            SelectedBoxList.Add(selectedBox);
+            selectedBox.ChangeParent(selectedCard, true, true, true);
             //SelectedBox.transform.RotateAround(SelectedBox.transform.position, Vector3.forward, 180);
             SelectedCardParentList.Add(selectedCard);
+            return Result.YES;
         }
         // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
         else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
+            var selectedBox = Instantiate(SelectedBoxPrefab).FixName();
+            SelectedBoxList.Add(selectedBox);
             var selectedRearguard = SelectObj;
-            SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
+            selectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
             SelectedCardParentList.Add(selectedRearguard.transform);
+            return Result.YES;
         }
         // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
         else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
+            var selectedBox = Instantiate(SelectedBoxPrefab).FixName();
+            SelectedBoxList.Add(selectedBox);
             var selectedRearguard = SelectObj;
-            SelectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
+            selectedBox.ChangeParent(selectedRearguard.transform, true, true, true);
             SelectedCardParentList.Add(selectedRearguard.transform);
+            return Result.YES;
         }
-        else
-        {
-            SingleCansel();
-            return false;
-        }
-        return true;
+        //SingleCansel();
+        return Result.NO;
     }
 
 
@@ -308,9 +319,9 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <param name="fighterID">決定可能なファイターID</param>
     /// <param name="action">選択、決定したカードに対しとる行動</param>
     /// <returns>実際に決定したか</returns>
-    public async UniTask<bool> SingleConfirm(Tag tag, FighterID fighterID, Action action)
+    public async UniTask<Result> SingleConfirm(Tag tag, FighterID fighterID, Action action)
     {
-        if (!HasTag(tag)) return false;
+        if (!HasTag(tag)) return Result.NO;
 
         Fighter fighter = GetFighter(fighterID);
 
@@ -333,7 +344,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 }
                 else
                 {
-                    return false;
+                    return Result.NO;
                 }
             }
             else if (action == Action.ATTACK)
@@ -345,34 +356,85 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 }
                 else
                 {
-                    return false;
+                    return Result.NO;
                 }
             }
             else
             {
-                return false;
+                return Result.NO;
             }
         }
         SelectedCardParentList.Clear();
-        Destroy(SelectedBox);
-        return true;
+        foreach (var selectedBox in SelectedBoxList)
+        {
+            Destroy(selectedBox);
+        }
+        SelectedBoxList.Clear();
+        return Result.YES;
 
     }
 
+    public async UniTask ForceConfirm(Tag tag, FighterID fighterID, Action action)
+    {
+        var SelectedZip = SelectedBoxList.Zip(SelectedCardParentList, (box, parent) => (Box: box, Parent: parent));
+        Fighter fighter = GetFighter(fighterID);
+
+        MultiSelectIndex = -1;
+        SelectBox.transform.parent = null;
+
+        foreach (var selectedZip in SelectedZip)
+        {
+            //if (selectedZip.Parent.Find("SelectBox") == SelectBox.transform)
+            //{
+            //    print("yabai");
+            //    // カーソルを左右に移動させる
+            //    if (MultiSelectIndex > 0)
+            //        MultiSelectIndex
+            //    else
+            //        MultiSelectIndex++;
+            //    if (fighter.hand.Count() > 0) // 手札のカードにカーソルを移動させる
+            //    {
+            //        SelectBox.ChangeParent(fighter.hand.transform.GetChild(MultiSelectIndex), p: true);
+            //    }
+            //    else // 手札がないとき
+            //        SelectBox.ChangeParent(SelectObj.transform, p: true);
+            //}
+            await CardManager.Instance.HandToDeck(fighter.hand, fighter.deck, selectedZip.Parent.FindWithChildTag(Tag.Card).GetComponent<Card>());
+        }
+        SelectedBoxList.Clear();
+        SelectedCardParentList.Clear();
+        foreach (var box in SelectedBoxList)
+        {
+            Destroy(box);
+        }
+
+        await UniTask.NextFrame();
+
+        MultiSelectIndex = 0;
+        if (fighter.hand.Count() > 0) // 手札のカードにカーソルを移動させる
+        {
+            SelectBox.ChangeParent(fighter.hand.transform.GetChild(MultiSelectIndex), p: false);
+        }
+        //else // 手札がないとき
+        //    SelectBox.ChangeParent(SelectObj.transform, p: true);
+    }
 
     /// <summary>
     /// 選択中のカーソルをキャンセル
     /// </summary>
     public void SingleCansel()
     {
-        SelectedCardParentList.Clear();
-        Destroy(SelectedBox);
+        SelectedCardParentList.Pop();
+        Destroy(SelectedBoxList.Last());
+        SelectedBoxList.Pop();
     }
 
     public void MultSelected()
     {
 
     }
+
+    public int SelectedCount() => SelectedCardParentList.Count;
 
     /// <summary>
     /// カードの拡大機能のオンオフを切り替える
@@ -409,6 +471,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         if (hand1.cardList.Count <= MultiSelectIndex)
         {
             MultiSelectIndex = hand1.cardList.Count - 1;
+            if (MultiSelectIndex < 0) MultiSelectIndex = 0;
         }
     }
 

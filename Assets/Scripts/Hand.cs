@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
 using System;
+using Cysharp.Threading.Tasks;
 
 public class Hand : MonoBehaviour
 {
@@ -63,8 +64,12 @@ public class Hand : MonoBehaviour
     {
         foreach (var emptyCard in EmptyCardRemovedList)
         {
+            print(emptyCard.transform.childCount);
+            print(emptyCard.transform.Find("SelectBox"));
+                //yield return false;
             Destroy(emptyCard);
         }
+        EmptyCardRemovedList.Clear();
     }
 
     //public Card Pull(int _position)
