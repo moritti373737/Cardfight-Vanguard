@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -191,6 +192,8 @@ public static class Extensions
             return (Result)Enum.Parse(typeof(Result), two);
         }
     }
+
+    public static List<string> SplitEx(this string text, char separator) => text.Split(new char[] { separator }, options: StringSplitOptions.RemoveEmptyEntries).ToList();
 }
 
 public static class ListExtensions

@@ -1,17 +1,17 @@
-style-h3,yTD01zu¹ˆæ‚ÌŒõŒ•miƒuƒ‰ƒXƒ^[EƒuƒŒ[ƒhjv
-name,ƒXƒ^[ƒ_ƒXƒgEƒgƒ‰ƒ“ƒyƒbƒ^[
-type,ƒm[ƒ}ƒ‹ƒ†ƒjƒbƒg
-group,ƒƒCƒ„ƒ‹ƒpƒ‰ƒfƒBƒ“
-race,ƒGƒ“ƒWƒFƒ‹
-nation,ƒ†ƒiƒCƒeƒbƒhƒTƒ“ƒNƒ`ƒ…ƒAƒŠ
+style-h3,ã€TD01ã€‘ã€Œè–åŸŸã®å…‰å‰£å£«ï¼ˆãƒ–ãƒ©ã‚¹ã‚¿ãƒ¼ãƒ»ãƒ–ãƒ¬ãƒ¼ãƒ‰ï¼‰ã€
+name,ã‚¹ã‚¿ãƒ¼ãƒ€ã‚¹ãƒˆãƒ»ãƒˆãƒ©ãƒ³ãƒšãƒƒã‚¿ãƒ¼
+type,ãƒãƒ¼ãƒãƒ«ãƒ¦ãƒ‹ãƒƒãƒˆ
+group,ãƒ­ã‚¤ãƒ¤ãƒ«ãƒ‘ãƒ©ãƒ‡ã‚£ãƒ³
+race,ã‚¨ãƒ³ã‚¸ã‚§ãƒ«
+nation,ãƒ¦ãƒŠã‚¤ãƒ†ãƒƒãƒ‰ã‚µãƒ³ã‚¯ãƒãƒ¥ã‚¢ãƒª
 grade,0
 power,6000
 critical,1
 shield,10000
-skill,ƒu[ƒXƒg
+skill,ãƒ–ãƒ¼ã‚¹ãƒˆ
 gift,-
 effect,-
-flavor,ƒgƒ‰ƒ“ƒyƒbƒg‚ğ‚«‚È‚ç‚¹I@‚³‚ í‚¢‚Ìn‚Ü‚è‚¾I
+flavor,ãƒˆãƒ©ãƒ³ãƒšãƒƒãƒˆã‚’å¹ããªã‚‰ã›ï¼ã€€ã•ã‚æˆ¦ã„ã®å§‹ã¾ã‚Šã ï¼
 number,TD01/012
 rarity,TD
 url,https://s3-ap-northeast-1.amazonaws.com/cf-vanguard.com/wordpress/wp-content/images/cardlist/TD01/td01_012.png

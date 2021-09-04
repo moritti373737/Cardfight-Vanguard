@@ -37,7 +37,6 @@ public class DeckGenerater : MonoBehaviour
             GameObject cardObj = Instantiate(cardPrefab);
             cardObj.name = "Card" + i;
 
-            Card card = cardObj.GetComponent<Card>();
             Material material = new Material(Shader.Find("Standard"));
             material.SetTexture("_MainTex", cardSpriteList[spriteNumber]);
 
@@ -54,8 +53,9 @@ public class DeckGenerater : MonoBehaviour
             material.renderQueue = 3000;
             // ‚±‚±‚Ü‚Å
 
+            Card card = cardObj.GetComponent<Card>();
             card.transform.Find("Face").GetComponent<MeshRenderer>().material = material;
-
+            card.SetStatus(cardTextList[spriteNumber]);
             //card.cardModel.face = cardSpriteList[0];
             //card.CardModel.ToggleFace(true);
             //card.Load(cardDataList[i]);
