@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 
 public class GameMaster : MonoBehaviour
 {
+    private int Turn { get; set; } = 1;
+
     //public Player[] playerList;
     public Fighter fighter1;
     public Fighter fighter2;
@@ -47,7 +49,6 @@ public class GameMaster : MonoBehaviour
         while (true)
         {
             await StandPhase();
-            (AttackFighter, DefenceFighter) = (DefenceFighter, AttackFighter);
         }
         //TextManager.Instance.SetPhaseText("エンドフェイズ");
     }
@@ -58,26 +59,6 @@ public class GameMaster : MonoBehaviour
         {
             selectManager.ZoomCard();
         }
-
-
-        //switch (phase)
-        //{
-        //    case Phase.INIT:
-        //        //InitPhase();
-        //        break;
-        //    case Phase.STAND:
-        //        DrawPhase();
-        //        break;
-        //    case Phase.DRAW:
-        //        StandPhase();
-        //        break;
-        //    case Phase.BATTLE:
-        //        BattlePhase();
-        //        break;
-        //    case Phase.END:
-        //        EndPhase();
-        //        break;
-        //}
     }
 
     async UniTask InitPhase()
@@ -87,8 +68,12 @@ public class GameMaster : MonoBehaviour
         fighter1.CreateDeck();
         fighter2.CreateDeck();
 
+        // ここで、カード生成したので1フレーム待って、CardのStart()メソッドを実行させる
+        await UniTask.NextFrame();
+
         AttackFighter = fighter1;
         DefenceFighter = fighter2;
+
 
         await fighter1.SetFirstVanguard();
         await fighter2.SetFirstVanguard();
@@ -179,6 +164,12 @@ public class GameMaster : MonoBehaviour
     async UniTask EndPhase()
     {
         TextManager.Instance.SetPhaseText("エンドフェイズ");
+
+        Turn++;
+        await AttackFighter.EndPhase();
+        await DefenceFighter.EndPhase();
+
+        (AttackFighter, DefenceFighter) = (DefenceFighter, AttackFighter);
         return;
     }
 

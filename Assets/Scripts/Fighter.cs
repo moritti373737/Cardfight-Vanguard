@@ -6,6 +6,8 @@ using Cysharp.Threading.Tasks;
 
 public class Fighter : MonoBehaviour
 {
+    private int Turn { get; set; } = 1;
+
     public FighterID ID;
     private FighterID OpponentID { get; set; }
 
@@ -259,6 +261,9 @@ public class Fighter : MonoBehaviour
     {
         await UniTask.NextFrame();
         print("ŠJŽn");
+
+        //if (Turn == 1) return true;
+
         Result result = Result.NONE;
         ICardCircle selectedAttackZone = null;
         ICardCircle selectedBoostZone = null;
@@ -394,8 +399,26 @@ public class Fighter : MonoBehaviour
         switch (triggerCard.Trigger)
         {
             case Card.TriggerType.Critical:
+                functions.Add(async () => {
+                    await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+                    return Result.YES;
+                });
+                functions.Add(async () => {
+                    selectedPowerUpCircle = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Circle, ID);
+                    if (selectedPowerUpCircle == null) return Result.NO;
+                    selectedPowerUpCircle.GetCard().ChangeCritical(1);
+                    return Result.YES;
+                });
                 break;
             case Card.TriggerType.Draw:
+                functions.Add(async () => {
+                    await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+                    return Result.YES;
+                });
+                functions.Add(async () => {
+                    await DrawCard(1);
+                    return Result.YES;
+                });
                 break;
             case Card.TriggerType.Front:
                 break;
@@ -417,7 +440,7 @@ public class Fighter : MonoBehaviour
         functions.Add(async () => {
             selectedPowerUpCircle = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Circle, ID);
             if (selectedPowerUpCircle == null) return Result.NO;
-            selectedPowerUpCircle.ChangeCardPower(triggerCard.TriggerPower);
+            selectedPowerUpCircle.GetCard().ChangePower(triggerCard.TriggerPower);
             return Result.YES;
         });
 
@@ -443,6 +466,12 @@ public class Fighter : MonoBehaviour
         }
     }
 
+    public async UniTask EndPhase()
+    {
+        await UniTask.NextFrame();
+
+        Turn++;
+    }
 
     //public IEnumerator Attack()
     //{

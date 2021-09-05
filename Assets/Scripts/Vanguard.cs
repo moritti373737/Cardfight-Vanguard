@@ -32,6 +32,5 @@ public class Vanguard : MonoBehaviour, ICardCircle
     public Transform GetTransform() => transform;
 
     public Card GetCard() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
-    public void ChangeCardPower(int power) => GetCard().OffsetPower += power;
     public bool IsSameColumn(ICardCircle cardCircle) => ID % 10 == cardCircle.ID % 10;
 }

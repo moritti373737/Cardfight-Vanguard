@@ -14,9 +14,10 @@ public class Card : MonoBehaviour
     public string Race { get; private set; }     // 種族名
     public string Nation { get; private set; }   // 国家名
     public int Grade { get; private set; }
-    public int PowerText { get; private set; }  // 元のパワー
-    public int Power { get => PowerText + OffsetPower; }
-    public int Critical { get; private set; }
+    private int DefaultPower { get;  set; }  // 元のパワー
+    public int Power { get => DefaultPower + OffsetPower; }
+    private int DefaultCritical { get;  set; }
+    public int Critical { get => DefaultCritical + OffsetCritical; }
     public int Shield { get; private set; }
     public SkillType Skill { get; private set; }
     public TriggerType Trigger { get; private set; }
@@ -27,6 +28,7 @@ public class Card : MonoBehaviour
     public string Rarity { get; private set; }
 
     public int OffsetPower { get; set; } = 0;
+    public int OffsetCritical { get; set; } = 0;
 
     [Flags]
     public enum State
@@ -68,11 +70,10 @@ public class Card : MonoBehaviour
                  .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
         this.ObserveEveryValueChanged(x => x.OffsetPower)
             .Skip(1)
-            .Subscribe(_ => {
-                TextManager.Instance.DestroyStatusText(transform.GetComponentInParent<ICardCircle>());
-                TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>());
-                }
-            );
+            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
+        this.ObserveEveryValueChanged(x => x.OffsetCritical)
+            .Skip(1)
+            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
     }
 
 
@@ -86,8 +87,8 @@ public class Card : MonoBehaviour
         Race = cardTextList[4].SplitEx(',')[1];
         Nation = cardTextList[5].SplitEx(',')[1];
         Grade = int.Parse(cardTextList[6].SplitEx(',')[1]);
-        PowerText = int.Parse(cardTextList[7].SplitEx(',')[1]);
-        Critical = int.Parse(cardTextList[8].SplitEx(',')[1]);
+        DefaultPower = int.Parse(cardTextList[7].SplitEx(',')[1]);
+        DefaultCritical = int.Parse(cardTextList[8].SplitEx(',')[1]);
         Shield = int.Parse(cardTextList[9].SplitEx(',')[1].Replace("-", "0"));
         var skillText = cardTextList[10].SplitEx(',')[1];
         if (skillText == "ブースト") Skill = SkillType.Boost;
@@ -122,4 +123,6 @@ public class Card : MonoBehaviour
     public Texture GetTexture() => transform.Find("Face").GetComponent<Renderer>().material.mainTexture;
 
     public bool JudgeState(State judgeState) => state == (state | judgeState);
+    public void ChangePower(int power) => OffsetPower += power;
+    public void ChangeCritical(int critical) => OffsetCritical += critical;
 }

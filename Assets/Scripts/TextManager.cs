@@ -37,11 +37,17 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
     public void SetStatusText(ICardCircle cardCircle)
     {
         print($"{cardCircle}, {cardCircle.GetTransform().root}");
-        var status = Instantiate(StatusPrefab).FixName();
-        status.ChangeParent(cardCircle.GetTransform(), true, true, true);
+        Transform status = cardCircle.GetTransform().FindWithChildTag(Tag.StatusText);
+        if (status == null) // 初めてテキストを作るとき
+        {
+            status = Instantiate(StatusPrefab).FixName().transform;
+            status.gameObject.ChangeParent(cardCircle.GetTransform(), true, true, true);
+        }
+        else status.gameObject.SetActive(true);
 
         Card card = cardCircle.GetCard();
-        status.transform.Find("Critical").GetComponent<SpriteRenderer>().sprite = CriticalSprite[card.Critical];
+
+        status.transform.Find("Critical").GetComponent<SpriteRenderer>().sprite = CriticalSprite[card.Critical]; // クリティカル値をセット
 
         string power = card.Power.ToString();
         int inactiveCount = 5 - power.Length;
@@ -52,19 +58,17 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
             if (inactiveCount > i)
             {
                 powerDigit[i].gameObject.SetActive(false);
-                continue;
             }
-            powerDigit[i].GetComponent<SpriteRenderer>().sprite = CriticalSprite[int.Parse(power[i - inactiveCount].ToString())];
+            else
+            {
+                powerDigit[i].gameObject.SetActive(true);
+                powerDigit[i].GetComponent<SpriteRenderer>().sprite = CriticalSprite[int.Parse(power[i - inactiveCount].ToString())];
+            }
         }
     }
 
     public void DestroyStatusText(ICardCircle cardCircle)
     {
-        List<Transform> statusTextList = cardCircle.GetTransform().FindWithAllChildTag(Tag.StatusText);
-        foreach (var statusText in statusTextList)
-        {
-            Destroy(statusText.gameObject);
-        }
+        cardCircle.GetTransform().FindWithChildTag(Tag.StatusText)?.gameObject.SetActive(false);
     }
-
 }

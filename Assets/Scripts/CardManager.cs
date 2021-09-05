@@ -86,8 +86,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         //card.TurnOver();
         cardCircle.Add(card);
 
-        // ‘Ò‚Â
-        yield return new WaitForSeconds(0.0f);
+        yield return null;
     }
 
     public IEnumerator RearToRear(ICardCircle cardCircle, ICardCircle targetCircle, Card card)
