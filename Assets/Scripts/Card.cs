@@ -16,7 +16,7 @@ public class Card : MonoBehaviour
     public int Power { get; private set; }
     public int Critical { get; private set; }
     public int Shield { get; private set; }
-    public string Skill { get; private set; }
+    public SkillType Skill { get; private set; }
     public string Gift { get; private set; }
     public string Effect { get; private set; }
     public string Flavor { get; private set; }
@@ -33,6 +33,14 @@ public class Card : MonoBehaviour
         Mera = 1 << 3       //2進数だと1000　(10進数だと8)
     }
     public State state { get; set; }
+
+    public enum SkillType
+    {
+        Boost,
+        Intercept,
+        TwinDrive,
+        TripleDrive,
+    }
 
     void Start()
     {
@@ -54,7 +62,11 @@ public class Card : MonoBehaviour
         Power = int.Parse(cardTextList[7].SplitEx(',')[1]);
         Critical = int.Parse(cardTextList[8].SplitEx(',')[1]);
         Shield = int.Parse(cardTextList[9].SplitEx(',')[1].Replace("-", "0"));
-        Skill = cardTextList[10].SplitEx(',')[1];
+        var skillText = cardTextList[10].SplitEx(',')[1];
+        if (skillText == "ブースト") Skill = SkillType.Boost;
+        else if (skillText == "インターセプト") Skill = SkillType.Intercept;
+        else if (skillText == "ツインドライブ") Skill = SkillType.TwinDrive;
+        else if (skillText == "トリプルドライブ") Skill = SkillType.TripleDrive;
         Gift = cardTextList[11].SplitEx(',')[1];
         Effect = cardTextList[12].SplitEx(',')[1];
         Flavor = cardTextList[13].SplitEx(',')[1];

@@ -20,10 +20,6 @@ public class Fighter : MonoBehaviour
     public Guardian guardian { get; private set; }
     public Order order { get; private set; }
 
-    //private bool isDraw = true;
-    //public Field field;
-    //public Graveyard graveyard;
-
     private void Start()
     {
         //子オブジェクトを全て取得する
@@ -43,20 +39,7 @@ public class Fighter : MonoBehaviour
         order = field.transform.FindWithChildTag(Tag.Order).GetComponent<Order>();
 
         OpponentID = FighterID.ONE == ID ? FighterID.TWO : FighterID.ONE;
-        //this.UpdateAsObservable()
-        //    .Where(_ => FirstStateController.Instance.firstState == FirstState.Draw);
-        //.Subscribe(_ => Debug.Log("draw"));
-        /*
 
-        this.UpdateAsObservable()
-            .Where(_ => firstManager.firstState.Draw == FirstState.End)
-            .Subscribe(_ => Debug.Log("draw"));
-
-        this.UpdateAsObservable()
-            .Where(_ => firstManager.firstState.Draw == FirstState.Draw)
-            .Where(_ => Input.GetKeyDown(KeyCode.Alpha1))
-            .Subscribe(_ => Debug.Log("p button"));
-        */
     }
 
     public void CreateDeck()
@@ -89,22 +72,6 @@ public class Fighter : MonoBehaviour
 
         await DrawCard(ToDeckCount);
 
-        //while (true)
-        //{
-        //    inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
-
-        //    if (inputIndex == 0)
-        //    {
-        //        if (await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE)) return false;
-        //    }
-        //    else if (inputIndex == 1)
-        //    {
-        //        SelectManager.Instance.SingleCansel();
-        //        return false;
-        //    };
-
-        //    await UniTask.NextFrame();
-        //}
     }
 
     public async UniTask StandUpVanguard()
@@ -124,33 +91,6 @@ public class Fighter : MonoBehaviour
             await CardManager.Instance.DeckToHand(deck, hand, 0);
         }
 
-        /*if (!isDraw)
-            return;
-        card = deck.Pull(0);
-        var sequence = DOTween.Sequence();
-        RectTransform transform = card.GetComponent<RectTransform>();
-        Image image = card.GetComponent<Image>();
-
-        sequence.Append(transform.DOMove(new Vector3(0, 0, -0.5f), 0.5f)
-                        .SetRelative());
-        sequence.Join(
-            DOTween.ToAlpha(
-                    () => image.color,
-                    color => image.color = color,
-                    0f, // 目標値
-                    0.5f // 所要時間
-            )
-        );
-        sequence.OnStart(() => { isDraw = false; });
-        sequence.OnComplete(() =>
-        {
-            hand.Add(card);
-            isDraw = true;
-        });
-        */
-        //card.GetComponent<Animator>().SetBool("IsDraw", true);
-
-        //hand.Add(card);
     }
 
     public async UniTask RidePhase()
@@ -158,6 +98,7 @@ public class Fighter : MonoBehaviour
         await UniTask.NextFrame();
         Result result = Result.NONE;
         int i = 0;
+        ICardZone selectedEmpty = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
 
@@ -167,6 +108,9 @@ public class Fighter : MonoBehaviour
         });
         //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
         functions.Add(async () => {
+            selectedEmpty = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+            if (selectedEmpty == null) return Result.NO;
+            if (selectedEmpty.GetCard().Grade > vanguard.GetCard().Grade + 1) return Result.NO; // グレードのチェック
             var result = await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
             if (result != null)
                 return Result.YES;
@@ -206,51 +150,6 @@ public class Fighter : MonoBehaviour
         }
 
         print("owari");
-        //inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
-
-
-        //if (inputIndex == 0)
-        //    functions.Add(() => SelectManager.Instance.NormalSelected(Tag.Hand, ID));
-        //else if (inputIndex == 1) return true;
-
-        //while (i < functions.Count)
-        //{
-        //    bool result = await functions[i]();
-        //    if (result) i++;
-        //}
-
-        //foreach (Func<Cysharp.Threading.Tasks.UniTask<bool>> func in functions)
-        //    await func();
-
-
-
-
-        //int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
-
-        //if (inputIndex == 0) // Enter入力時
-        //{
-        //    if (!await SelectManager.Instance.NormalSelected(Tag.Hand, ID)) return false;
-        //}
-        //else if (inputIndex == 1) return true; // Submit入力時
-
-        //await UniTask.NextFrame();
-
-        //while (true)
-        //{
-        //    inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
-
-        //    if (inputIndex == 0)
-        //    {
-        //        if (await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE)) return true;
-        //    }
-        //    else if (inputIndex == 1)
-        //    {
-        //        SelectManager.Instance.SingleCansel();
-        //        return false;
-        //    };
-
-        //    await UniTask.NextFrame();
-        //}
 
     }
 
@@ -259,6 +158,7 @@ public class Fighter : MonoBehaviour
         await UniTask.NextFrame();
         Result result = Result.NONE;
         int i = 0;
+        ICardZone selectedEmpty = null;
         Transform selectedTransform = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
@@ -275,9 +175,11 @@ public class Fighter : MonoBehaviour
         });
         functionsV.Add(async () =>
         {
-            var result = await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
-            if (result != null)
+            selectedEmpty = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+            if (selectedEmpty != null)
             {
+                if (selectedEmpty.GetCard().Grade > vanguard.GetCard().Grade) return Result.NO; // グレードのチェック
+                await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
                 state = functionsC;
                 functions.AddRange(functionsC);
                 return Result.YES;
@@ -354,47 +256,7 @@ public class Fighter : MonoBehaviour
         print("owari");
         return true;
 
-        //Action action = Action.None;
-
-        //async UniTask<bool> Loop2()
-        //{
-        //    int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
-
-        //    if (inputIndex == 0)
-        //    {
-        //        if (action == Action.CALL && Result.YES == await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE)) return true;
-        //        else if (action == Action.MOVE && Result.YES == await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE)) return true;
-        //        else return false;
-        //    }
-        //    else if (inputIndex == 1)
-        //    {
-        //        SelectManager.Instance.SingleCansel();
-        //        return true;
-        //    };
-        //    return true;
-        //}
-
-        //int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
-
-        //if (inputIndex == 0) // Enter入力時
-        //{
-        //    if (Result.YES == await SelectManager.Instance.NormalSelected(Tag.Hand, ID))
-        //        action = Action.CALL;
-        //    else if (Result.YES == await SelectManager.Instance.NormalSelected(Tag.Rearguard, ID))
-        //        action = Action.MOVE;
-        //    else return false;
-        //}
-        //else if (inputIndex == 1) return true; // Submit入力時
-        //await UniTask.NextFrame();
-
-        //while (!await Loop2())
-        //{
-        //    await UniTask.NextFrame();
-        //}
-
-        //return false;
-
-    }
+     }
 
     public async UniTask<bool> AttackPhase()
     {
@@ -504,33 +366,6 @@ public class Fighter : MonoBehaviour
         return true;
 
         print("owari");
-
-
-        //int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
-        //if (inputIndex == 0) // Enter入力時
-        //{
-        //    if (Result.NO == await SelectManager.Instance.NormalSelected(Tag.Circle, ID)) return 0;
-        //}
-        //else if (inputIndex == 1) return -1; // Submit入力時
-
-        //await UniTask.NextFrame();
-
-        //while (true)
-        //{
-        //    inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
-
-        //    if (inputIndex == 0)
-        //    {
-        //        if (Result.YES == await SelectManager.Instance.NormalConfirm(Tag.Vanguard, OpponentID, Action.ATTACK)) return 1;
-        //    }
-        //    else if (inputIndex == 1)
-        //    {
-        //        SelectManager.Instance.SingleCansel();
-        //        return 0;
-        //    }
-
-        //    await UniTask.NextFrame();
-        //}
     }
 
 

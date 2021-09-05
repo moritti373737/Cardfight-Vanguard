@@ -35,7 +35,7 @@ public class Deck : MonoBehaviour
     public void Shuffle()
     {
 
-        //cardList = cardList.OrderBy(a => Guid.NewGuid()).ToList();
+        cardList = cardList.OrderBy(a => Guid.NewGuid()).ToList();
         for (int i = 1; i <= cardList.Count; i++)
         {
             cardList[cardList.Count - i].transform.localPosition = new Vector3(0, 0, (float)(i * -0.9));

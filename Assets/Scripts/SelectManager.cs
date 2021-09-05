@@ -270,7 +270,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
         if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.hand.Count() > 0)
         {
-            //return Result.YES;
+            return fighter.hand.transform.GetChild(MultiSelectIndex).GetComponent<ICardZone>();
         }
         // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
         //else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
