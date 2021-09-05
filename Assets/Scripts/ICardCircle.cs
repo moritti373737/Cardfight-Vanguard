@@ -2,12 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface ICardCircle
+public interface ICardCircle : ICardZone
 {
-    int ID { get; }
-    void Add(Card card);
-    Card Pull();
-
-    Transform GetTransform();
-    Card GetCard();
+    bool Front { get; }
+    bool Back { get; }
+    public bool IsSameColumn(ICardCircle cardCircle);
 }

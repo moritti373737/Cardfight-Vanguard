@@ -24,9 +24,20 @@ public class Card : MonoBehaviour
     public string Rarity { get; private set; }
 
 
+    [Flags]
+    public enum State
+    {
+        Stand = 1 << 0,     //2進数だと0001　(10進数だと1)
+        Gira = 1 << 1,      //2進数だと0010　(10進数だと2)
+        Hoimi = 1 << 2,     //2進数だと0100　(10進数だと4)
+        Mera = 1 << 3       //2進数だと1000　(10進数だと8)
+    }
+    public State state { get; set; }
+
     void Start()
     {
         ID = int.Parse(transform.name.Substring(4));
+        state = State.Stand;
     }
 
 
@@ -52,10 +63,12 @@ public class Card : MonoBehaviour
 
 
 
-        print(cardText);
+        if (ID == 0) print(cardText);
     }
 
     public void TurnOver() => transform.Rotate(0, 180, 0);
 
     public Texture GetTexture() => transform.Find("Face").GetComponent<Renderer>().material.mainTexture;
+
+    public bool JudgeState(State judgeState) => state == (state | judgeState);
 }

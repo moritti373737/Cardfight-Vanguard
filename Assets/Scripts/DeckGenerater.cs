@@ -75,7 +75,7 @@ public class DeckGenerater : MonoBehaviour
 
         for (int i = 0; i < saveData.GetLength(0); i++)
         {
-            dirName = saveData[i, 0] + "/" + saveData[i, 1] + "img";
+            dirName = saveData[i, 0] + "/" + saveData[i, 1] + "png";
             cardSpriteList.Add(Resources.Load<Texture2D>(dirName));
             dirName = saveData[i, 0] + "/" + saveData[i, 1] + "txt";
             cardTextList.Add(Resources.Load(dirName) as TextAsset);

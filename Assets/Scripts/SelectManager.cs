@@ -261,28 +261,28 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     }
 
-    public async UniTask<Result> CanSelect(Tag tag, FighterID fighterID)
+    public async UniTask<ICardZone> GetSelect(Tag tag, FighterID fighterID)
     {
         Fighter fighter = GetFighter(fighterID);
 
-        if (!HasTag(tag)) return Result.NO;
+        if (!HasTag(tag)) return null;
 
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
         if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.hand.Count() > 0)
         {
-            return Result.YES;
+            //return Result.YES;
         }
         // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
-        else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
-        {
-            return Result.YES;
-        }
+        //else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
+        //{
+        //    return Result.YES;
+        //}
         // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
         else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
-            return Result.YES;
+            return SelectObj.GetComponent<ICardZone>();
         }
-        return Result.NO;
+        return null;
     }
 
     /// <summary>
@@ -374,8 +374,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         }
         else if (action == Action.ATTACK)
         {
-            // 選択したカーソル位置がサークル かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
-            if (selected.ExistTag(Tag.Circle) && HasTag(Tag.Vanguard) && IsFighter(fighterID))
+            // 選択したカーソル位置がサークル かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
+            if (selected.ExistTag(Tag.Circle) && HasTag(Tag.Vanguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
             {
                 //Debug.Log("Vにアタック");
                 result = (SelectObj.transform, null);

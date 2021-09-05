@@ -182,16 +182,15 @@ public static class Extensions
     {
         if (button == 0)
         {
-            Debug.Log(one);
             return (Result)Enum.Parse(typeof(Result), one);
         }
         else
         {
-
-            Debug.Log(two);
             return (Result)Enum.Parse(typeof(Result), two);
         }
     }
+
+    public static Card GetCard(this Transform parentTransform) => parentTransform.GetComponentInChildren<Card>();
 
     public static List<string> SplitEx(this string text, char separator) => text.Split(new char[] { separator }, options: StringSplitOptions.RemoveEmptyEntries).ToList();
 }

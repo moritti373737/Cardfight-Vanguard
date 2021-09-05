@@ -5,11 +5,14 @@ using UnityEngine;
 public class Rearguard : MonoBehaviour, ICardCircle
 {
     public int ID { get; private set; }
+    public bool Front { get; private set; } = false;
+    public bool Back { get; private set; } = false;
 
     private void Start()
     {
         ID = int.Parse(transform.name.Substring(transform.name.Length - 2));
-        print(ID);
+        Front = (ID - ID % 10) / 10  == 1;
+        Back = !Front;
     }
 
     public void Add(Card card)
@@ -26,10 +29,10 @@ public class Rearguard : MonoBehaviour, ICardCircle
 
     /// <summary>
     /// リアガードサークルが同じ縦の列に存在するか調べる
-    /// ヴァンガードや相手のサークルの判定はしていない
+    /// 相手のサークルの判定はしていない
     /// </summary>
     /// <param name="cardCircle"></param>
     /// <returns></returns>
-    public bool IsSameColumn(ICardCircle cardCircle) => transform.name.Substring(transform.name.Length - 1) == cardCircle.GetTransform().name.Substring(transform.name.Length - 1);
+    public bool IsSameColumn(ICardCircle cardCircle) => ID % 10 == cardCircle.ID % 10;
 
 }

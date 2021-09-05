@@ -165,7 +165,7 @@ public class Fighter : MonoBehaviour
             int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
             return resultInt.ToEnum("YES", "END");
         });
-        functions.Add(async () => await SelectManager.Instance.CanSelect(Tag.Hand, ID));
+        //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
         functions.Add(async () => {
             var result = await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
             if (result != null)
@@ -401,8 +401,8 @@ public class Fighter : MonoBehaviour
         await UniTask.NextFrame();
         print("開始");
         Result result = Result.NONE;
-        Transform selectedAttackTransform = null;
-        Transform selectedBoostTransform = null;
+        ICardCircle selectedAttackZone = null;
+        ICardCircle selectedBoostZone = null;
 
         int i = 0;
 
@@ -421,10 +421,15 @@ public class Fighter : MonoBehaviour
         });
         functionsV.Add(async () =>
         {
+            selectedAttackZone = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Circle, ID); // こちらのサークルを選択したかどうか
+            if (selectedAttackZone == null) return Result.NO;
+
+            if (!selectedAttackZone.GetCard().JudgeState(Card.State.Stand)) return Result.NO; // 攻撃可能なカードか判定
+            if (!selectedAttackZone.Front) return Result.NO;
             state = functionsV2;
             functions.AddRange(functionsV2);
-            selectedAttackTransform = await SelectManager.Instance.NormalSelected(Tag.Circle, ID);
-                if (selectedAttackTransform != null)
+            var result = await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // 攻撃するカードを選択する
+                if (result != null)
                     return Result.YES;
                 else
                     return Result.NO;
@@ -438,18 +443,21 @@ public class Fighter : MonoBehaviour
         });
         functionsV2.Add(async () =>
         {
-            var result = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, OpponentID, Action.ATTACK);
+            selectedBoostZone = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Rearguard, ID); // ブーストする
+            if (selectedBoostZone != null)
+            {
+                if (!selectedBoostZone.GetCard().JudgeState(Card.State.Stand)) return Result.NO; // ブースト可能なカードか判定
+                if (!selectedBoostZone.IsSameColumn(selectedAttackZone)) return Result.NO;
+                state = functionsT;
+                functions.AddRange(functionsT);
+                await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
+                return Result.YES;
+            }
+            var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentID, Action.ATTACK); // 相手に攻撃する
             if (result.Item1 != null)
             {
                 state = functionsO;
                 functions.AddRange(functionsO);
-                return Result.YES;
-            }
-            selectedBoostTransform = await SelectManager.Instance.NormalSelected(Tag.Rearguard, ID);
-            if (selectedBoostTransform != null)
-            {
-                state = functionsT;
-                functions.AddRange(functionsT);
                 return Result.YES;
             }
             return Result.NO;
@@ -462,7 +470,7 @@ public class Fighter : MonoBehaviour
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsT.Add(async () => {
-            (Transform area, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, OpponentID, Action.ATTACK);
+            (Transform area, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, OpponentID, Action.ATTACK); // 相手に攻撃する
             if (area == null) return Result.NO;
             return Result.YES;
         });
@@ -472,6 +480,7 @@ public class Fighter : MonoBehaviour
         while (i < functions.Count)
         {
             await UniTask.NextFrame();
+            print($"{ i}, { result}, { SelectManager.Instance.SelectedCount()}, {functions.Count}, {state}");
             result = await functions[i]();
             switch (result)
             {
@@ -482,12 +491,8 @@ public class Fighter : MonoBehaviour
                     i -= 1;
                     break;
                 case Result.CANCEL:
-                    print(functions.Count);
-                    print(state.Count);
                     functions.RemoveRange(functions.Count - state.Count, state.Count);
                     i -= state.Count;
-                    print(functions.Count);
-                    print(state.Count);
                     state = functionsV;
                     SelectManager.Instance.SingleCansel();
                     break;
