@@ -18,6 +18,8 @@ public enum Tag
     Guardian,
     Drive,
     Field,
+    Power,
+    StatusText,
 }
 
 public enum FighterID

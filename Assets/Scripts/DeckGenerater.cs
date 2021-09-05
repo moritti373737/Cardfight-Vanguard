@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using System.Linq;
-public class DeckGenerater : MonoBehaviour
+public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
 {
     public GameObject cardPrefab;
 
@@ -19,9 +19,11 @@ public class DeckGenerater : MonoBehaviour
             _deck.Add(card);
         }
     }*/
+    private int Offset = 0;
 
     public void Generate(Deck _deck)
     {
+        print(Offset);
         (List<Texture2D> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) = LoadDeckData();
         int spriteNumber = 0;
         int nextSpriteCardNumber = cardNumber[spriteNumber];
@@ -35,7 +37,7 @@ public class DeckGenerater : MonoBehaviour
             }
 
             GameObject cardObj = Instantiate(cardPrefab);
-            cardObj.name = "Card" + i;
+            cardObj.name = "Card" + (i + Offset);
 
             Material material = new Material(Shader.Find("Standard"));
             material.SetTexture("_MainTex", cardSpriteList[spriteNumber]);
@@ -63,6 +65,8 @@ public class DeckGenerater : MonoBehaviour
             //Debug.Log(i);
 
         }
+
+        Offset += 50;
     }
 
     private (List<Texture2D> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) LoadDeckData()

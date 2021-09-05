@@ -8,5 +8,6 @@ public interface ICardCircle : ICardZone
     bool R { get; }
     bool Front { get; }
     bool Back { get; }
+    public void ChangeCardPower(int power);
     public bool IsSameColumn(ICardCircle cardCircle);
 }

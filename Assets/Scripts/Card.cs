@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UniRx;
 
 public class Card : MonoBehaviour
 {
@@ -13,7 +14,8 @@ public class Card : MonoBehaviour
     public string Race { get; private set; }     // Ží‘°–¼
     public string Nation { get; private set; }   // ‘‰Æ–¼
     public int Grade { get; private set; }
-    public int Power { get; private set; }
+    public int PowerText { get; private set; }  // Œ³‚Ìƒpƒ[
+    public int Power { get => PowerText + OffsetPower; }
     public int Critical { get; private set; }
     public int Shield { get; private set; }
     public SkillType Skill { get; private set; }
@@ -24,6 +26,7 @@ public class Card : MonoBehaviour
     public string Number { get; private set; }
     public string Rarity { get; private set; }
 
+    public int OffsetPower { get; set; } = 0;
 
     [Flags]
     public enum State
@@ -58,6 +61,18 @@ public class Card : MonoBehaviour
     {
         ID = int.Parse(transform.name.Substring(4));
         state = State.Stand;
+        transform.ObserveEveryValueChanged(x => x.parent)
+                 .Skip(1)
+                 .Where(parent => parent != null)
+                 .Where(parent => parent.ExistTag(Tag.Circle))
+                 .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
+        this.ObserveEveryValueChanged(x => x.OffsetPower)
+            .Skip(1)
+            .Subscribe(_ => {
+                TextManager.Instance.DestroyStatusText(transform.GetComponentInParent<ICardCircle>());
+                TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>());
+                }
+            );
     }
 
 
@@ -71,7 +86,7 @@ public class Card : MonoBehaviour
         Race = cardTextList[4].SplitEx(',')[1];
         Nation = cardTextList[5].SplitEx(',')[1];
         Grade = int.Parse(cardTextList[6].SplitEx(',')[1]);
-        Power = int.Parse(cardTextList[7].SplitEx(',')[1]);
+        PowerText = int.Parse(cardTextList[7].SplitEx(',')[1]);
         Critical = int.Parse(cardTextList[8].SplitEx(',')[1]);
         Shield = int.Parse(cardTextList[9].SplitEx(',')[1].Replace("-", "0"));
         var skillText = cardTextList[10].SplitEx(',')[1];
@@ -99,7 +114,7 @@ public class Card : MonoBehaviour
 
 
 
-        if (ID == 0) print(cardText);
+        //if (ID == 0) print(cardText);
     }
 
     public void TurnOver() => transform.Rotate(0, 180, 0);

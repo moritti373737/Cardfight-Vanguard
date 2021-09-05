@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UniRx;
 
 public class Rearguard : MonoBehaviour, ICardCircle
 {
@@ -15,6 +16,10 @@ public class Rearguard : MonoBehaviour, ICardCircle
         ID = int.Parse(transform.name.Substring(transform.name.Length - 2));
         Front = (ID - ID % 10) / 10  == 1;
         Back = !Front;
+        transform.ObserveEveryValueChanged(x => x.childCount)
+                 .Skip(1)
+                 .Where(_ => GetCard() == null)
+                 .Subscribe(_ => TextManager.Instance.DestroyStatusText(this));
     }
 
     public void Add(Card card)
@@ -28,6 +33,8 @@ public class Rearguard : MonoBehaviour, ICardCircle
 
     public Transform GetTransform() => transform;
     public Card GetCard() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
+
+    public void ChangeCardPower(int power) => GetCard().OffsetPower += power;
 
     /// <summary>
     /// リアガードサークルが同じ縦の列に存在するか調べる

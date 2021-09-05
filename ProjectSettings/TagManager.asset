@@ -18,6 +18,8 @@ TagManager:
   - Field|Player2
   - Drive
   - EmptyCard
+  - Power
+  - StatusText
   layers:
   - Default
   - TransparentFX

@@ -44,9 +44,7 @@ public class Fighter : MonoBehaviour
 
     public void CreateDeck()
     {
-        DeckGenerater deckGenerater = GetComponent<DeckGenerater>();
-
-        deckGenerater.Generate(deck);
+        DeckGenerater.Instance.Generate(deck);
     }
 
     public async UniTask SetFirstVanguard()
@@ -76,8 +74,7 @@ public class Fighter : MonoBehaviour
 
     public async UniTask StandUpVanguard()
     {
-        await CardManager.Instance.RotateCard(vanguard.transform.FindWithChildTag(Tag.Card).GetComponent<Card>());
-
+        await CardManager.Instance.RotateCard(vanguard.GetCard());
     }
 
     public async UniTask DrawCard(int count)
@@ -374,8 +371,8 @@ public class Fighter : MonoBehaviour
     public async UniTask DriveTriggerCheck()
     {
         await CardManager.Instance.DeckToDrive(deck, drive);
-        //if (drive.GetCard().Trigger != Card.TriggerType.None)
-        //    await GetDriveTrigger(drive.GetCard());
+        if (drive.GetCard().Trigger != Card.TriggerType.None)
+            await GetDriveTrigger(drive.GetCard());
         await CardManager.Instance.DriveToHand(drive, hand);
     }
 
@@ -390,7 +387,7 @@ public class Fighter : MonoBehaviour
         await UniTask.NextFrame();
         Result result = Result.NONE;
         int i = 0;
-        ICardZone selectedPower = null;
+        ICardCircle selectedPowerUpCircle = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
 
@@ -418,8 +415,9 @@ public class Fighter : MonoBehaviour
         });
         //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
         functions.Add(async () => {
-            selectedPower = await SelectManager.Instance.GetSelect(Tag.Circle, ID);
-            if (selectedPower == null) return Result.NO;
+            selectedPowerUpCircle = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Circle, ID);
+            if (selectedPowerUpCircle == null) return Result.NO;
+            selectedPowerUpCircle.ChangeCardPower(triggerCard.TriggerPower);
             return Result.YES;
         });
 
