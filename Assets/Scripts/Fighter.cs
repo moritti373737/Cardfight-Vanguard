@@ -310,6 +310,7 @@ public class Fighter : MonoBehaviour
             {
                 if (!selectedBoostZone.GetCard().JudgeState(Card.State.Stand)) return Result.NO; // ブースト可能なカードか判定
                 if (!selectedBoostZone.IsSameColumn(selectedAttackZone)) return Result.NO;
+                if (selectedBoostZone.GetCard().Skill != Card.SkillType.Boost) return Result.NO;
                 state = functionsT;
                 functions.AddRange(functionsT);
                 await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
@@ -318,6 +319,7 @@ public class Fighter : MonoBehaviour
             var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentID, Action.ATTACK); // 相手に攻撃する
             if (result.Item1 != null)
             {
+                if (selectedAttackZone.V) await DriveTriggerCheck();
                 state = functionsO;
                 functions.AddRange(functionsO);
                 return Result.YES;
@@ -372,6 +374,8 @@ public class Fighter : MonoBehaviour
     public async UniTask DriveTriggerCheck()
     {
         await CardManager.Instance.DeckToDrive(deck, drive);
+        //if (drive.GetCard().Trigger != Card.TriggerType.None)
+        //    await GetDriveTrigger(drive.GetCard());
         await CardManager.Instance.DriveToHand(drive, hand);
     }
 
@@ -380,6 +384,67 @@ public class Fighter : MonoBehaviour
         await CardManager.Instance.DeckToDrive(deck, drive);
         await CardManager.Instance.DriveToDamage(drive, damage);
     }
+
+    public async UniTask GetDriveTrigger(Card triggerCard)
+    {
+        await UniTask.NextFrame();
+        Result result = Result.NONE;
+        int i = 0;
+        ICardZone selectedPower = null;
+
+        List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
+
+        switch (triggerCard.Trigger)
+        {
+            case Card.TriggerType.Critical:
+                break;
+            case Card.TriggerType.Draw:
+                break;
+            case Card.TriggerType.Front:
+                break;
+            case Card.TriggerType.Heal:
+                break;
+            case Card.TriggerType.Stand:
+                break;
+            case Card.TriggerType.Over:
+                break;
+            default:
+                break;
+        }
+
+        functions.Add(async () => {
+            await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+            return Result.YES;
+        });
+        //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
+        functions.Add(async () => {
+            selectedPower = await SelectManager.Instance.GetSelect(Tag.Circle, ID);
+            if (selectedPower == null) return Result.NO;
+            return Result.YES;
+        });
+
+        while (i < functions.Count)
+        {
+            await UniTask.NextFrame();
+            result = await functions[i]();
+            switch (result)
+            {
+                case Result.YES:
+                    i++;    // 1つ次に進む
+                    break;
+                case Result.NO:
+                    i -= 1; // 1つ前に戻る
+                    break;
+                case Result.CANCEL:
+                    SelectManager.Instance.SingleCansel();
+                    i = 0;  // 最初に戻る
+                    break;
+                case Result.END:
+                    return; // 終了する
+            }
+        }
+    }
+
 
     //public IEnumerator Attack()
     //{

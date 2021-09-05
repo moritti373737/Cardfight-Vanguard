@@ -5,6 +5,8 @@ using UnityEngine;
 public class Rearguard : MonoBehaviour, ICardCircle
 {
     public int ID { get; private set; }
+    public bool V { get; } = false;
+    public bool R { get; } = true;
     public bool Front { get; private set; } = false;
     public bool Back { get; private set; } = false;
 

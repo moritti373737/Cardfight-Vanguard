@@ -17,7 +17,8 @@ public class Card : MonoBehaviour
     public int Critical { get; private set; }
     public int Shield { get; private set; }
     public SkillType Skill { get; private set; }
-    public string Gift { get; private set; }
+    public TriggerType Trigger { get; private set; }
+    public int TriggerPower { get; private set; } = 0;
     public string Effect { get; private set; }
     public string Flavor { get; private set; }
     public string Number { get; private set; }
@@ -40,6 +41,17 @@ public class Card : MonoBehaviour
         Intercept,
         TwinDrive,
         TripleDrive,
+    }
+
+    public enum TriggerType
+    {
+        None,
+        Critical,
+        Draw,
+        Front,
+        Heal,
+        Stand,
+        Over
     }
 
     void Start()
@@ -67,7 +79,19 @@ public class Card : MonoBehaviour
         else if (skillText == "インターセプト") Skill = SkillType.Intercept;
         else if (skillText == "ツインドライブ") Skill = SkillType.TwinDrive;
         else if (skillText == "トリプルドライブ") Skill = SkillType.TripleDrive;
-        Gift = cardTextList[11].SplitEx(',')[1];
+        var triggerText = cardTextList[11].SplitEx(',')[1];
+        if (triggerText == "-") Trigger = TriggerType.None;
+        else
+        {
+            var text = triggerText.SplitEx('+');
+            if (text[0] == "クリティカルトリガー") Trigger = TriggerType.Critical;
+            else if (text[0] == "ドロートリガー") Trigger = TriggerType.Draw;
+            else if (text[0] == "フロントトリガー") Trigger = TriggerType.Front;
+            else if (text[0] == "ヒールトリガー") Trigger = TriggerType.Heal;
+            else if (text[0] == "スタンドトリガー") Trigger = TriggerType.Stand;
+            else if (text[0] == "オーバートリガー") Trigger = TriggerType.Over;
+            TriggerPower = int.Parse(text[1]);
+        }
         Effect = cardTextList[12].SplitEx(',')[1];
         Flavor = cardTextList[13].SplitEx(',')[1];
         Number = cardTextList[14].SplitEx(',')[1].Replace("/", "-");

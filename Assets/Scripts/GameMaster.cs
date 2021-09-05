@@ -165,13 +165,13 @@ public class GameMaster : MonoBehaviour
             if (!result)
                 break;
 
-            TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+            //TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
 
-            await AttackFighter.DriveTriggerCheck();
+            //await AttackFighter.DriveTriggerCheck();
 
-            TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+            //TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
 
-            await DefenceFighter.DamageTriggerCheck();
+            //await DefenceFighter.DamageTriggerCheck();
 
         }
         await EndPhase();
