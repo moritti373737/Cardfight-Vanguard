@@ -23,7 +23,6 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
 
     public void Generate(Deck _deck)
     {
-        print(Offset);
         (List<Texture2D> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) = LoadDeckData();
         int spriteNumber = 0;
         int nextSpriteCardNumber = cardNumber[spriteNumber];
@@ -63,6 +62,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             //card.Load(cardDataList[i]);
             _deck.Add(card);
             //Debug.Log(i);
+            cardTextList.ForEach(cardText => Resources.UnloadAsset(cardText));
 
         }
 
@@ -104,6 +104,8 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
         TextAsset saveText = Resources.Load("save/004") as TextAsset;
         //Debug.Log(saveText.text);
         string TextLines = saveText.text; //テキスト全体をstring型で入れる変数を用意して入れる
+
+        Resources.UnloadAsset(saveText);
 
         //Splitで一行づつを代入した1次配列を作成
         textMessage = TextLines.Split('\n'); //

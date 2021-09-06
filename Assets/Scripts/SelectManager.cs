@@ -41,7 +41,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <summary>
     /// 現在地のマス目、インデックス
     /// </summary>
-    private ReactiveCollection<int> selectZoneIndex = new ReactiveCollection<int>() { 5, 2 };
+    private ReactiveCollection<int> selectZoneIndex = new ReactiveCollection<int>() { 4, 2 };
 
     /// <summary>
     /// 一つのマス目内で移動可能な場合用のインデックス
@@ -88,17 +88,16 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 field2.transform.Find("Rearguard13").gameObject,
                 fighter2.vanguard.gameObject,
                 field2.transform.Find("Rearguard11").gameObject,
-                fighter1.guardian.gameObject,
                 fighter2.order.gameObject,
             },
-            new List<GameObject>()
-            {
-                fighter2.guardian.gameObject,
-                fighter2.guardian.gameObject,
-                fighter2.guardian.gameObject,
-                fighter2.guardian.gameObject,
-                fighter2.guardian.gameObject,
-            },
+            //new List<GameObject>()
+            //{
+            //    fighter2.guardian.gameObject,
+            //    fighter2.guardian.gameObject,
+            //    fighter2.guardian.gameObject,
+            //    fighter2.guardian.gameObject,
+            //    fighter2.guardian.gameObject,
+            //},
             new List<GameObject>()
             {
                 fighter1.guardian.gameObject,
@@ -394,10 +393,11 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         END:
 
         SelectedCardParentList.Clear();
-        foreach (var selectedBox in SelectedBoxList)
-        {
-            Destroy(selectedBox);
-        }
+        //foreach (var selectedBox in SelectedBoxList)
+        //{
+        //    Destroy(selectedBox);
+        //}
+        SelectedBoxList.ForEach(selectedBox => Destroy(selectedBox));
         SelectedBoxList.Clear();
         return result;
 
@@ -432,10 +432,11 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         }
         SelectedBoxList.Clear();
         SelectedCardParentList.Clear();
-        foreach (var box in SelectedBoxList)
-        {
-            Destroy(box);
-        }
+        SelectedBoxList.ForEach(selectedBox => Destroy(selectedBox));
+        //foreach (var box in SelectedBoxList)
+        //{
+        //    Destroy(selectedBox);
+        //}
 
         await UniTask.NextFrame();
 
@@ -490,6 +491,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         else if (SelectObj.FindWithChildTag(Tag.Card) != null)
         {
             var card = SelectObj.FindWithChildTag(Tag.Card).GetComponent<Card>();
+            //if (!card.JudgeState(Card.State.FaceUp)) return;
             var cardTexture = (Texture2D)card.GetTexture();
             ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f); ;
         }

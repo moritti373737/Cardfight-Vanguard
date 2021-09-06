@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using System.Linq;
 
 public class Fighter : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class Fighter : MonoBehaviour
     public Hand hand { get; private set; }
     public Deck deck { get; private set; }
     public Vanguard vanguard { get; private set; }
+    public List<Rearguard> Rearguards { get; private set; } = new List<Rearguard>();
     public Drop drop { get; private set; }
     public Damage damage { get; private set; }
     public Drive drive { get; private set; }
@@ -39,6 +41,12 @@ public class Fighter : MonoBehaviour
         drive = field.transform.FindWithChildTag(Tag.Drive).GetComponent<Drive>();
         guardian = field.transform.FindWithChildTag(Tag.Guardian).GetComponent<Guardian>();
         order = field.transform.FindWithChildTag(Tag.Order).GetComponent<Order>();
+
+        List<Transform> rearguards = field.transform.FindWithAllChildTag(Tag.Rearguard);
+        foreach (var rear in rearguards)
+        {
+            Rearguards.Add(rear.GetComponent<Rearguard>());
+        }
 
         OpponentID = FighterID.ONE == ID ? FighterID.TWO : FighterID.ONE;
 
@@ -76,7 +84,20 @@ public class Fighter : MonoBehaviour
 
     public async UniTask StandUpVanguard()
     {
-        await CardManager.Instance.RotateCard(vanguard.GetCard());
+        var card = vanguard.GetCard();
+        card.SetState(Card.State.FaceUp, true);
+        await CardManager.Instance.RotateCard(card);
+        print("standup");
+    }
+
+    public async UniTask StandPhase()
+    {
+        print("stand");
+        await UniTask.NextFrame();
+        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+        print("enter");
+        await CardManager.Instance.StandCard(vanguard);
+        Rearguards.ForEach(async rear => await CardManager.Instance.StandCard(rear));
     }
 
     public async UniTask DrawCard(int count)
@@ -273,8 +294,8 @@ public class Fighter : MonoBehaviour
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsV = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsV2 = new List<Func<UniTask<Result>>>();
-        List<Func<UniTask<Result>>> functionsO = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsT = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsV3 = new List<Func<UniTask<Result>>>();
 
         var state = functionsV;
 
@@ -321,9 +342,8 @@ public class Fighter : MonoBehaviour
             var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentID, Action.ATTACK); // ‘ŠŽè‚ÉUŒ‚‚·‚é
             if (result.Item1 != null)
             {
-                if (selectedAttackZone.V) await DriveTriggerCheck();
-                state = functionsO;
-                functions.AddRange(functionsO);
+                state = functionsV3;
+                functions.AddRange(functionsV3);
                 return Result.YES;
             }
             return Result.NO;
@@ -338,6 +358,19 @@ public class Fighter : MonoBehaviour
         functionsT.Add(async () => {
             (Transform area, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, OpponentID, Action.ATTACK); // ‘ŠŽè‚ÉUŒ‚‚·‚é
             if (area == null) return Result.NO;
+            state = functionsV3;
+            functions.AddRange(functionsV3);
+            return Result.YES;
+        });
+
+        functionsV3.Add(async () =>
+        {
+            print("V3");
+            await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+            print("V3Enter");
+            await CardManager.Instance.RestCard(selectedAttackZone);
+            if (selectedBoostZone != null) await CardManager.Instance.RestCard(selectedBoostZone);
+            //if (selectedAttackZone.V) await DriveTriggerCheck();
             return Result.YES;
         });
 
@@ -469,6 +502,8 @@ public class Fighter : MonoBehaviour
     public async UniTask EndPhase()
     {
         await UniTask.NextFrame();
+
+
 
         Turn++;
     }

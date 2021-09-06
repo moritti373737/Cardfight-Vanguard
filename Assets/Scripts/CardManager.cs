@@ -66,9 +66,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         }
         cardCircle.Add(pulledCard);
         hand.DestroyEmpty(card);
-
-        // 待つ
-        yield return new WaitForSeconds(0.0f);
+        card.SetState(Card.State.FaceUp, true);
     }
 
     /// <summary>
@@ -188,8 +186,28 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// </summary>
     /// <param name="card">カード</param>
     /// <returns>コルーチン</returns>
-    public IEnumerator RotateCard(Card card)
+    public async UniTask RotateCard(Card card)
     {
-        yield return StartCoroutine(AnimationManager.Instance.RotateFieldCard(card));
+        await AnimationManager.Instance.RotateFieldCard(card);
+    }
+
+    public async UniTask RestCard(ICardCircle cardCircle)
+    {
+        Card card = cardCircle.GetCard();
+        //Card card = cardCircle.Pull();
+        //card.transform.parent = null;
+        await AnimationManager.Instance.RestCard(card, 15);
+        //cardCircle.Add(card);
+        card.SetState(Card.State.Stand, false);
+    }
+
+    public async UniTask StandCard(ICardCircle cardCircle)
+    {
+        Card card = cardCircle.Pull();
+        if (card == null) return;
+        card.transform.parent = null;
+        await AnimationManager.Instance.StandCard(card, 15);
+        cardCircle.Add(card);
+        card.SetState(Card.State.Stand, true);
     }
 }

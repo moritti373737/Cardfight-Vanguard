@@ -63,13 +63,14 @@ public class Hand : MonoBehaviour
 
     public void DestroyEmpty(Card card)
     {
-        foreach (var emptyCard in EmptyCardRemovedList)
-        {
-            print(emptyCard.transform.childCount);
-            print(emptyCard.transform.Find("SelectBox"));
-                //yield return false;
-            Destroy(emptyCard);
-        }
+        //foreach (var emptyCard in EmptyCardRemovedList)
+        //{
+        //    print(emptyCard.transform.childCount);
+        //    print(emptyCard.transform.Find("SelectBox"));
+        //        //yield return false;
+        //    Destroy(emptyCard);
+        //}
+        EmptyCardRemovedList.ForEach(emptyCard => Destroy(emptyCard));
         EmptyCardRemovedList.Clear();
     }
 

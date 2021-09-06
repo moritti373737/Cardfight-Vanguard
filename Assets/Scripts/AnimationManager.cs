@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
@@ -81,7 +82,46 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         yield return MoveCard(card, 20, false, targetY:0.01F);
         yield return MoveCard(card, 40, false, targetY:-0.01F);
     }
+    public async UniTask RestCard(Card card, int frame)
+    {
+        Quaternion q1 = card.transform.localRotation;
+        Quaternion q2 = Quaternion.Euler(180, 0, 270);
+        Vector3 defaultScale = card.transform.lossyScale;
+        Vector3 lossyScale, localScale;
 
+        for (int i = 0; i < frame; i++)
+        {
+            await UniTask.NextFrame();
+            card.transform.localRotation = Quaternion.Slerp(q1, q2, (float)i / frame); // üŒ`•âŠÔ
+            lossyScale = card.transform.lossyScale;
+            localScale = card.transform.localScale;
+            card.transform.localScale = new Vector3(
+                localScale.x / lossyScale.x * defaultScale.x,
+                localScale.y / lossyScale.y * defaultScale.y,
+                localScale.z / lossyScale.z * defaultScale.z
+            );
+        }
+        card.transform.localRotation = q2;
+        lossyScale = card.transform.lossyScale;
+        localScale = card.transform.localScale;
+        card.transform.localScale = new Vector3(
+            localScale.x / lossyScale.x * defaultScale.x,
+            localScale.y / lossyScale.y * defaultScale.y,
+            localScale.z / lossyScale.z * defaultScale.z
+        );
+    }
+
+    public async UniTask StandCard(Card card, int frame)
+    {
+        Quaternion q1 = card.transform.rotation;
+        Quaternion q2 = Quaternion.Euler(270f, 0f, 180f);
+        for (int i = 0; i < frame; i++)
+        {
+            await UniTask.NextFrame();
+            card.transform.rotation = Quaternion.Slerp(q1, q2, (float)i / frame); // üŒ`•âŠÔ
+        }
+        card.transform.rotation = Quaternion.Euler(270f, 0f, 180f);
+    }
 
     public async UniTask DeckToDrive(Card card, Drive drive)
     {

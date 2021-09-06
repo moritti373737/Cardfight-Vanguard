@@ -59,6 +59,7 @@ public class GameMaster : MonoBehaviour
         {
             selectManager.ZoomCard();
         }
+        else if (Input.GetButtonDown("Reset")) ResetScene();
     }
 
     async UniTask InitPhase()
@@ -98,8 +99,7 @@ public class GameMaster : MonoBehaviour
     {
         TextManager.Instance.SetPhaseText("スタンドフェイズ");
 
-        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
-        await UniTask.NextFrame();
+        await AttackFighter.StandPhase();
 
         await DrawPhase();
     }

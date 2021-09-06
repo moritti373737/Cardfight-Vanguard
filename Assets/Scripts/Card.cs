@@ -14,9 +14,9 @@ public class Card : MonoBehaviour
     public string Race { get; private set; }     // 種族名
     public string Nation { get; private set; }   // 国家名
     public int Grade { get; private set; }
-    private int DefaultPower { get;  set; }  // 元のパワー
+    private int DefaultPower { get; set; }  // 元のパワー
     public int Power { get => DefaultPower + OffsetPower; }
-    private int DefaultCritical { get;  set; }
+    private int DefaultCritical { get; set; }
     public int Critical { get => DefaultCritical + OffsetCritical; }
     public int Shield { get; private set; }
     public SkillType Skill { get; private set; }
@@ -33,8 +33,8 @@ public class Card : MonoBehaviour
     [Flags]
     public enum State
     {
-        Stand = 1 << 0,     //2進数だと0001　(10進数だと1)
-        Gira = 1 << 1,      //2進数だと0010　(10進数だと2)
+        Stand = 1 << 0,     //2進数だと0001　(10進数だと1) スタンド状態か
+        FaceUp = 1 << 1,    //2進数だと0010　(10進数だと2) 表向きかどうか
         Hoimi = 1 << 2,     //2進数だと0100　(10進数だと4)
         Mera = 1 << 3       //2進数だと1000　(10進数だと8)
     }
@@ -67,7 +67,14 @@ public class Card : MonoBehaviour
                  .Skip(1)
                  .Where(parent => parent != null)
                  .Where(parent => parent.ExistTag(Tag.Circle))
+                 .Where(_ => JudgeState(State.FaceUp))
                  .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
+        this.ObserveEveryValueChanged(x => x.state)
+            .Skip(1)
+            .Where(_ => transform.parent != null)
+            .Where(_ => transform.parent.ExistTag(Tag.Circle))
+            .Where(_ => JudgeState(State.FaceUp))
+            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
         this.ObserveEveryValueChanged(x => x.OffsetPower)
             .Skip(1)
             .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
@@ -113,15 +120,22 @@ public class Card : MonoBehaviour
         Number = cardTextList[14].SplitEx(',')[1].Replace("/", "-");
         Rarity = cardTextList[15].SplitEx(',')[1];
 
-
-
         //if (ID == 0) print(cardText);
     }
 
-    public void TurnOver() => transform.Rotate(0, 180, 0);
+    public void TurnOver()
+    {
+        transform.Rotate(0, 180, 0);
+        //state = state ^ State.FaceUp;
+    }
 
     public Texture GetTexture() => transform.Find("Face").GetComponent<Renderer>().material.mainTexture;
 
+    public void SetState(State newState, bool t)
+    {
+        if (t) state |= newState;
+        else state &= ~newState;
+    }
     public bool JudgeState(State judgeState) => state == (state | judgeState);
     public void ChangePower(int power) => OffsetPower += power;
     public void ChangeCritical(int critical) => OffsetCritical += critical;

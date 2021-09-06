@@ -44,12 +44,15 @@ public static class Extensions
     /// <returns>子のtransform</returns>
     public static Transform FindWithChildTag(this Transform parentTransform, Tag tag)
     {
-        foreach (Transform childTransform in parentTransform)
-        {
-            if (childTransform.tag.Contains(tag.ToString()))
-                return childTransform;
-        }
-        return null;
+        return parentTransform.Cast<Transform>()
+                              .ToList()
+                              .FirstOrDefault(t => t.tag.Contains(tag.ToString()));
+        //foreach (Transform childTransform in parentTransform)
+        //{
+        //    if (childTransform.tag.Contains(tag.ToString()))
+        //        return childTransform;
+        //}
+        //return null;
     }
 
     /// <summary>
@@ -58,15 +61,7 @@ public static class Extensions
     /// <param name="parentGameObject">親のGameObject</param>
     /// <param name="tag">検索したいタグ名</param>
     /// <returns>子のGameObject</returns>
-    public static GameObject FindWithChildTag(this GameObject parentGameObject, Tag tag)
-    {
-        foreach (Transform childTransform in parentGameObject.transform)
-        {
-            if (childTransform.tag.Contains(tag.ToString()))
-                return childTransform.gameObject;
-        }
-        return null;
-    }
+    public static GameObject FindWithChildTag(this GameObject parentGameObject, Tag tag) => FindWithChildTag(parentGameObject.transform, tag)?.gameObject;
 
     /// <summary>
     /// 指定したタグ名を含む全ての子のtransformを探す（部分一致）
@@ -76,13 +71,17 @@ public static class Extensions
     /// <returns>子のtransformリスト</returns>
     public static List<Transform> FindWithAllChildTag(this Transform parentTransform, Tag tag)
     {
-        List<Transform> children = new List<Transform>();
-        foreach (Transform childTransform in parentTransform)
-        {
-            if (childTransform.tag.Contains(tag.ToString()))
-                children.Add(childTransform);
-        }
-        return children;
+        return parentTransform.Cast<Transform>()
+                              .ToList()
+                              .Where(t => t.tag.Contains(tag.ToString()))
+                              .ToList();
+        //List<Transform> children = new List<Transform>();
+        //foreach (Transform childTransform in parentTransform)
+        //{
+        //    if (childTransform.tag.Contains(tag.ToString()))
+        //        children.Add(childTransform);
+        //}
+        //return children;
     }
 
 
@@ -106,6 +105,10 @@ public static class Extensions
     /// <returns>タグを含む子のtransformの数</returns>
     public static int CountWithChildTag(this Transform parentTransform, Tag tag)
     {
+        var a = parentTransform.Cast<Transform>()
+                              .ToList()
+                              .Where(t => t.tag.Contains(tag.ToString()))
+                              .Count();
         int count = 0;
         string tagName = tag.ToString();
 
