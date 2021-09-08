@@ -8,17 +8,6 @@ using UnityEngine;
 /// </summary>
 public class CardManager : SingletonMonoBehaviour<CardManager>
 {
-    public GameObject Field;
-
-    private Soul soul;
-    private Drop drop;
-
-    void Start()
-    {
-        soul = Field.transform.FindWithChildTag(Tag.Soul).GetComponent<Soul>();
-        drop = Field.transform.FindWithChildTag(Tag.Drop).GetComponent<Drop>();
-    }
-
     /// <summary>
     /// カードをデッキから手札に移動
     /// </summary>
@@ -49,23 +38,25 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="hand"></param>
     /// <param name="cardCircle"></param>
     /// <param name="card">手札から取り出すカード</param>
-    /// <returns>コルーチン</returns>
-    public IEnumerator HandToField(Hand hand, ICardCircle cardCircle, Card card)
+    /// <returns></returns>
+    public async UniTask<Card> HandToField(Hand hand, ICardCircle cardCircle, Card card)
     {
         // ログ出力
         //Debug.Log("1second");
         Card pulledCard = hand.Pull(card);
         //card.TurnOver();
-        Card removedCard = cardCircle.Card;
-        if (cardCircle.GetTransform().FindWithChildTag(Tag.Card))
-        {
-            if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()))
-                yield return StartCoroutine(CardToSoul(removedCard));
-            else if (cardCircle.GetTransform().tag.Contains(Tag.Rearguard.ToString()))
-                yield return StartCoroutine(CardToDrop(removedCard));
-        }
+        Card removedCard = cardCircle.Pull();
         cardCircle.Add(pulledCard);
         card.SetState(Card.State.FaceUp, true);
+        //if (removedCard != null)
+        //{
+            return removedCard;
+            //if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()))
+            //    yield return StartCoroutine(CardToSoul(removedCardCircle, removedCard));
+            //else if (cardCircle.GetTransform().tag.Contains(Tag.Rearguard.ToString()))
+            //    yield return StartCoroutine(CardToDrop(removedCardCircle, removedCard));
+        //}
+
     }
 
     /// <summary>
@@ -145,7 +136,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// </summary>
     /// <param name="card">移動させるカード</param>
     /// <returns>コルーチン</returns>
-    public IEnumerator CardToSoul(Card card)
+    public IEnumerator CardToSoul(Soul soul, Card card)
     {
         soul.Add(card);
 
@@ -158,7 +149,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// </summary>
     /// <param name="card">移動させるカード</param>
     /// <returns>コルーチン</returns>
-    public IEnumerator CardToDrop(Card card)
+    public IEnumerator CardToDrop(Drop drop, Card card)
     {
         drop.Add(card);
 

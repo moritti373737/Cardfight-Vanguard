@@ -150,8 +150,31 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         //SelectObjList.Add(SelectObjList2);
         //SelectObjList.Add(SelectObjList3);
 
-        hand1.cardList.ObserveCountChanged().Subscribe(count => ChangeHandCount(count));
+        hand1.cardList.ObserveCountChanged()
+            .Where(_ => MultiSelectIndex != -1)
+            .Where(_ => HasTag(Tag.Hand))
+            .Subscribe(_ => ChangeHandCount(hand1))
+            .AddTo(this);
+        hand2.cardList.ObserveCountChanged()
+            .Where(_ => MultiSelectIndex != -1)
+            .Where(_ => HasTag(Tag.Hand))
+            .Subscribe(_ => ChangeHandCount(hand2))
+            .AddTo(this);
         ZoomImage = GameObject.Find("Canvas").transform.Find("ZoomCard").GetComponent<Image>();
+        this.ObserveEveryValueChanged(x => x.MultiSelectIndex).Skip(1).Where(_ => MultiSelectIndex != -1).Subscribe(i =>
+        {
+            try
+            {
+                SelectBox.ChangeParent(GetFighter().hand.transform.GetChild(MultiSelectIndex), p: true);
+            }
+            catch (UnityException)
+            {
+                MultiSelectIndex = 0;
+            }
+
+        }
+        )
+        .AddTo(this);
     }
 
     // Update is called once per frame
@@ -247,12 +270,12 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 MultiSelectIndex--;
             }
 
-            if (hand.Count() > 0) // 手札のカードにカーソルを移動させる
-            {
-                SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
-            }
-            else // 手札がないとき
-                SelectBox.ChangeParent(SelectObj.transform, p: true);
+            //if (hand.Count() > 0) SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
+            //if (hand.Count() > 0) // 手札のカードにカーソルを移動させる
+            //{
+            //}
+            //else // 手札がないとき
+            //    SelectBox.ChangeParent(SelectObj.transform, p: true);
             //Debug.Log("hand!");
             //Debug.Log(MultiSelectIndex);
             SetZoomCard();
@@ -344,7 +367,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <param name="fighterID">決定可能なファイターID</param>
     /// <param name="action">選択、決定したカードに対しとる行動</param>
     /// <returns></returns>
-    public async UniTask<(Transform, Transform)> NormalConfirm(Tag tag, FighterID fighterID, Action action)
+    public async UniTask<(ICardCircle, Transform)> NormalConfirm(Tag tag, FighterID fighterID, Action action)
     {
         if (!HasTag(tag)) return (null, null);
 
@@ -352,7 +375,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
         Transform selected = SelectedCardParentList[0];
 
-        (Transform Area, Transform Card) result = (Area: null, Card: null);
+        (ICardCircle Circle, Transform Card) result = (Circle: null, Card: null);
 
         if (action == Action.MOVE)
         {
@@ -360,14 +383,14 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
             if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
             {
-                result = (SelectObj.transform, selected.FindWithChildTag(Tag.Card));
+                result = (SelectObj.GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card));
                 goto END;
             }
             // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
             else if (selected.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
                 && selected.GetComponent<Rearguard>().IsSameColumn(SelectObj.GetComponent<Rearguard>()))
             {
-                result = (SelectObj.transform, selected.FindWithChildTag(Tag.Card));
+                result = (SelectObj.GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card));
                 goto END;
             }
             else
@@ -378,10 +401,10 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         else if (action == Action.ATTACK)
         {
             // 選択したカーソル位置がサークル かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
-            if (selected.ExistTag(Tag.Circle) && HasTag(Tag.Vanguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
+            if (selected.ExistTag(Tag.Circle) && HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
             {
                 //Debug.Log("Vにアタック");
-                result = (SelectObj.transform, null);
+                result = (SelectObj.GetComponent<ICardCircle>(), null);
                 goto END;
             }
             else
@@ -434,8 +457,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         {
             SelectBox.ChangeParent(fighter.hand.transform.GetChild(MultiSelectIndex), p: false);
         }
-        //else // 手札がないとき
-        //    SelectBox.ChangeParent(SelectObj.transform, p: true);
+        else // 手札がないとき
+            SelectBox.ChangeParent(SelectObj.transform);
     }
 
     /// <summary>
@@ -498,13 +521,27 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         }
     }
 
-    private void ChangeHandCount(int count)
+    /// <summary>
+    /// 手札内でのカーソルの位置を一番右（最後に引いたカード）にする
+    /// </summary>
+    /// <param name="hand"></param>
+    private void ChangeHandCount(Hand hand)
     {
-        if (hand1.cardList.Count <= MultiSelectIndex)
+        //Hand hand = fighter.hand;
+        MultiSelectIndex = hand.cardList.Count -1;
+
+        if (hand.Count() > 0) // 手札のカードにカーソルを移動させる
         {
-            MultiSelectIndex = hand1.cardList.Count - 1;
-            if (MultiSelectIndex < 0) MultiSelectIndex = 0;
+            SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
         }
+        else // 手札がないとき
+            SelectBox.ChangeParent(SelectObj.transform, p: true);
+
+        //if (hand.cardList.Count <= MultiSelectIndex)
+        //{
+        //    MultiSelectIndex = hand.cardList.Count - 1;
+        //    if (MultiSelectIndex < 0) MultiSelectIndex = 0;
+        //}
     }
 
     private bool IsHand() => !ReferenceEquals(SelectObj.GetComponent<Hand>(), null);

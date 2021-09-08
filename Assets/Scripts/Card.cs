@@ -69,19 +69,23 @@ public class Card : MonoBehaviour
                  .Where(parent => parent != null)
                  .Where(parent => parent.ExistTag(Tag.Circle))
                  .Where(_ => JudgeState(State.FaceUp))
-                 .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
+                 .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
+                 .AddTo(this);
         this.ObserveEveryValueChanged(x => x.state)
             .Skip(1)
             .Where(_ => transform.parent != null)
             .Where(_ => transform.parent.ExistTag(Tag.Circle))
             .Where(_ => JudgeState(State.FaceUp))
-            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
+            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
+            .AddTo(this);
         this.ObserveEveryValueChanged(x => x.OffsetPower)
             .Skip(1)
-            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
+            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
+            .AddTo(this);
         this.ObserveEveryValueChanged(x => x.OffsetCritical)
             .Skip(1)
-            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()));
+            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
+            .AddTo(this);
     }
 
 

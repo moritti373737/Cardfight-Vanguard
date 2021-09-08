@@ -23,6 +23,7 @@ public class Fighter : MonoBehaviour
     public Drive drive { get; private set; }
     public Guardian guardian { get; private set; }
     public Order order { get; private set; }
+    public Soul soul { get; private set; }
 
     private void Start()
     {
@@ -41,6 +42,7 @@ public class Fighter : MonoBehaviour
         drive = field.transform.FindWithChildTag(Tag.Drive).GetComponent<Drive>();
         guardian = field.transform.FindWithChildTag(Tag.Guardian).GetComponent<Guardian>();
         order = field.transform.FindWithChildTag(Tag.Order).GetComponent<Order>();
+        soul = field.transform.FindWithChildTag(Tag.Soul).GetComponent<Soul>();
 
         List<Transform> rearguards = field.transform.FindWithAllChildTag(Tag.Rearguard);
         foreach (var rear in rearguards)
@@ -142,9 +144,10 @@ public class Fighter : MonoBehaviour
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functions.Add(async () => {
-            (Transform area, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE);
-            if (area == null) return Result.NO;
-            await CardManager.Instance.HandToField(hand, area.GetComponent<ICardCircle>(), card.GetComponent<Card>());
+            (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE);
+            if (circle == null) return Result.NO;
+            Card removedCard = await CardManager.Instance.HandToField(hand, circle, card.GetComponent<Card>());
+            if (removedCard != null) await CardManager.Instance.CardToSoul(soul, removedCard);
             return Result.YES;
         });
 
@@ -227,9 +230,10 @@ public class Fighter : MonoBehaviour
         });
         functionsC.Add(async () =>
         {
-            (Transform area, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-            if (area == null) return Result.NO;
-            await CardManager.Instance.HandToField(hand, area.GetComponent<ICardCircle>(), card.GetComponent<Card>());
+            (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
+            if (circle == null) return Result.NO;
+            Card removedCard = await CardManager.Instance.HandToField(hand, circle, card.GetComponent<Card>());
+            if (removedCard != null) await CardManager.Instance.CardToDrop(drop, removedCard);
             return Result.YES;
         });
 
@@ -242,9 +246,9 @@ public class Fighter : MonoBehaviour
         });
         functionsM.Add(async () =>
         {
-            (Transform area, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-            if (area == null) return Result.NO;
-            await CardManager.Instance.RearToRear(selectedTransform.GetComponent<Rearguard>(), area.GetComponent<Rearguard>(), card.GetComponent<Card>());
+            (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
+            if (circle == null) return Result.NO;
+            await CardManager.Instance.RearToRear(selectedTransform.GetComponent<Rearguard>(), circle, card.GetComponent<Card>());
             return Result.YES;
         });
 
@@ -278,7 +282,7 @@ public class Fighter : MonoBehaviour
 
      }
 
-    public async UniTask<bool> AttackPhase()
+    public async UniTask<(ICardCircle, ICardCircle)> AttackPhase()
     {
         await UniTask.NextFrame();
         print("ŠJŽn");
@@ -288,6 +292,7 @@ public class Fighter : MonoBehaviour
         Result result = Result.NONE;
         ICardCircle selectedAttackZone = null;
         ICardCircle selectedBoostZone = null;
+        ICardCircle selectedTargetZone = null;
 
         int i = 0;
 
@@ -342,6 +347,7 @@ public class Fighter : MonoBehaviour
             }
             var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentID, Action.ATTACK); // ‘ŠŽè‚ÉUŒ‚‚·‚é
             if (result.Item1 == null) return Result.NO;
+            selectedTargetZone = result.Item1;
             state = functionsV3;
             functions.AddRange(functionsV3);
             return Result.YES;
@@ -356,6 +362,7 @@ public class Fighter : MonoBehaviour
         functionsB.Add(async () => {
             var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentID, Action.ATTACK); // ‘ŠŽè‚ÉUŒ‚‚·‚é
             if (result.Item1 == null) return Result.NO;
+            selectedTargetZone = result.Item1;
             state = functionsV3;
             functions.AddRange(functionsV3);
             return Result.YES;
@@ -394,11 +401,11 @@ public class Fighter : MonoBehaviour
                     SelectManager.Instance.SingleCancel();
                     break;
                 case Result.END:
-                    return false;
+                    return (null, null);
             }
         }
 
-        return true;
+        return (selectedAttackZone, selectedTargetZone);
 
         print("owari");
     }
@@ -452,7 +459,7 @@ public class Fighter : MonoBehaviour
         functionsSubmit.Add(async () =>
         {
             await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
-            await CardManager.Instance.GuardianToDrop(guardian, drop);
+            //await CardManager.Instance.GuardianToDrop(guardian, drop);
             return Result.YES;
         });
 
@@ -483,18 +490,26 @@ public class Fighter : MonoBehaviour
     }
 
 
-    public async UniTask DriveTriggerCheck()
+    public async UniTask DriveTriggerCheck(int count)
     {
-        await CardManager.Instance.DeckToDrive(deck, drive);
-        if (drive.GetCard().Trigger != Card.TriggerType.None)
-            await GetDriveTrigger(drive.GetCard());
-        await CardManager.Instance.DriveToHand(drive, hand);
+        for (int i = 0; i < count; i++)
+        {
+            await CardManager.Instance.DeckToDrive(deck, drive);
+            if (drive.GetCard().Trigger != Card.TriggerType.None)
+                await GetDriveTrigger(drive.GetCard());
+            await CardManager.Instance.DriveToHand(drive, hand);
+        }
+
     }
 
-    public async UniTask DamageTriggerCheck()
+    public async UniTask DamageTriggerCheck(int count)
     {
-        await CardManager.Instance.DeckToDrive(deck, drive);
-        await CardManager.Instance.DriveToDamage(drive, damage);
+        for (int i = 0; i < count; i++)
+        {
+            await CardManager.Instance.DeckToDrive(deck, drive);
+            await UniTask.Delay(1000);
+            await CardManager.Instance.DriveToDamage(drive, damage);
+        }
     }
 
     public async UniTask GetDriveTrigger(Card triggerCard)

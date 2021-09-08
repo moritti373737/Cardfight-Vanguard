@@ -87,6 +87,8 @@ public class GameMaster : MonoBehaviour
         await fighter2.DrawCard(1);
 
         await fighter1.Mulligan();
+        await UniTask.NextFrame();
+        await fighter2.Mulligan();
 
         //await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
@@ -141,24 +143,37 @@ public class GameMaster : MonoBehaviour
 
     async UniTask ButtlePhase()
     {
-        TextManager.Instance.SetPhaseText("バトルフェイズ");
 
         while (true)
 
         {
             await UniTask.NextFrame();
+            TextManager.Instance.SetPhaseText("バトルフェイズ");
 
-            bool result = await AttackFighter.AttackPhase();
-            if (!result)
-                break;
+            (ICardCircle selectedAttackZone, ICardCircle selectedTargetZone) = await AttackFighter.AttackPhase();
+            if (selectedAttackZone == null) break;
 
-            //TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+            await DefenceFighter.GuardPhase();
 
-            //await AttackFighter.DriveTriggerCheck();
+            if (selectedAttackZone.V)
+            {
+                TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+                int checkCount = selectedAttackZone.Card.Skill == Card.SkillType.TwinDrive ? 2 : 1;
+                await AttackFighter.DriveTriggerCheck(checkCount);
+            }
 
-            //TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+            print(selectedAttackZone.Card.Power);
+            print(selectedTargetZone.Card.Power);
+            print(DefenceFighter.guardian.Shield);
 
-            //await DefenceFighter.DamageTriggerCheck();
+            if (selectedAttackZone.Card.Power >= selectedTargetZone.Card.Power + DefenceFighter.guardian.Shield)
+                if (selectedTargetZone.V)
+                {
+                    TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+                    await DefenceFighter.DamageTriggerCheck(selectedAttackZone.Card.Critical);
+                }
+
+            await CardManager.Instance.GuardianToDrop(DefenceFighter.guardian, DefenceFighter.drop);
 
         }
         await EndPhase();
