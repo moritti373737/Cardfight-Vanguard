@@ -181,14 +181,14 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             down = true;
         }
 
-        if (right && SelectObjList[selectZoneIndex[0]].Count - 1 > selectZoneIndex[1] && !IsHand())
+        if (right && SelectObjList[selectZoneIndex[0]].Count - 1 > selectZoneIndex[1] && !HasTag(Tag.Hand))
         {
             // 右端にいない かつ 手札にカーソルがないとき
             selectZoneIndex[1]++;
             changeSelectBox = true;
 
         }
-        else if (left && selectZoneIndex[1] > 0 && !IsHand())
+        else if (left && selectZoneIndex[1] > 0 && !HasTag(Tag.Hand))
         {
             // 左端にいない かつ 手札にカーソルがないとき
             selectZoneIndex[1]--;
@@ -216,7 +216,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             Hand hand = fighter.hand;
 
             // 手札以外の場所から手札に移動したとき
-            if (IsHand() && hand.Count() > 0)
+            if (HasTag(Tag.Hand) && hand.Count() > 0)
             {
                 MultiSelectIndex = hand.Count() / 2; // 手札の数に合わせて初期化
                 SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
@@ -232,7 +232,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             //}
         }
         // カーソルが手札上にある時
-        else if (IsHand())
+        else if (HasTag(Tag.Hand))
         {
             Fighter fighter = GetFighter();
             Hand hand = fighter.hand;
@@ -300,7 +300,11 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.hand.Count() > 0)
         {
             var selectedCard = fighter.hand.transform.GetChild(MultiSelectIndex);
-            if (selectedCard.Find("SelectedBox")) return null;
+            if (selectedCard.Find("SelectedBox"))
+            {
+                Cancel(selectedCard);
+                return null;
+            }
             var selectedBox = Instantiate(SelectedBoxPrefab).FixName();
             SelectedBoxList.Add(selectedBox);
             selectedBox.ChangeParent(selectedCard, true, true, true);
@@ -405,38 +409,23 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     public async UniTask ForceConfirm(Tag tag, FighterID fighterID, Action action)
     {
-        var SelectedZip = SelectedBoxList.Zip(SelectedCardParentList, (box, parent) => (Box: box, Parent: parent));
+        //var SelectedZip = SelectedBoxList.Zip(SelectedCardParentList, (box, parent) => (Box: box, Parent: parent));
         Fighter fighter = GetFighter(fighterID);
 
         MultiSelectIndex = -1;
         SelectBox.transform.parent = null;
 
-        foreach (var selectedZip in SelectedZip)
+        if (tag == Tag.Deck)
         {
-            //if (selectedZip.Parent.Find("SelectBox") == SelectBox.transform)
-            //{
-            //    print("yabai");
-            //    // カーソルを左右に移動させる
-            //    if (MultiSelectIndex > 0)
-            //        MultiSelectIndex
-            //    else
-            //        MultiSelectIndex++;
-            //    if (fighter.hand.Count() > 0) // 手札のカードにカーソルを移動させる
-            //    {
-            //        SelectBox.ChangeParent(fighter.hand.transform.GetChild(MultiSelectIndex), p: true);
-            //    }
-            //    else // 手札がないとき
-            //        SelectBox.ChangeParent(SelectObj.transform, p: true);
-            //}
-            await CardManager.Instance.HandToDeck(fighter.hand, fighter.deck, selectedZip.Parent.FindWithChildTag(Tag.Card).GetComponent<Card>());
+            SelectedCardParentList.ForEach(async parent => await CardManager.Instance.HandToDeck(fighter.hand, fighter.deck, parent.GetCard()));
+        }
+        else if (tag == Tag.Guardian)
+        {
+            SelectedCardParentList.ForEach(async parent => await CardManager.Instance.HandToGuardian(fighter.hand, fighter.guardian, parent.GetCard()));
         }
         SelectedBoxList.Clear();
         SelectedCardParentList.Clear();
         SelectedBoxList.ForEach(selectedBox => Destroy(selectedBox));
-        //foreach (var box in SelectedBoxList)
-        //{
-        //    Destroy(selectedBox);
-        //}
 
         await UniTask.NextFrame();
 
@@ -450,13 +439,25 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     }
 
     /// <summary>
-    /// 選択中のカーソルをキャンセル
+    /// 最後に選択した選択済みカーソルをキャンセル
     /// </summary>
-    public void SingleCansel()
+    public void SingleCancel()
     {
         SelectedCardParentList.Pop();
         Destroy(SelectedBoxList.Last());
         SelectedBoxList.Pop();
+    }
+
+    /// <summary>
+    /// 指定した位置にある選択済みカーソルをキャンセル
+    /// </summary>
+    /// <param name="transform"></param>
+    public void Cancel(Transform transform)
+    {
+        int index = SelectedCardParentList.FindIndex(f => f == transform);
+        SelectedCardParentList.RemoveAt(index);
+        Destroy(SelectedBoxList[index]);
+        SelectedBoxList.RemoveAt(index);
     }
 
     public void MultSelected()

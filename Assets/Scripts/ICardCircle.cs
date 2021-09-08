@@ -4,9 +4,10 @@ using UnityEngine;
 
 public interface ICardCircle : ICardZone
 {
+    int ID { get; }
     bool V { get; }
     bool R { get; }
     bool Front { get; }
     bool Back { get; }
-    public bool IsSameColumn(ICardCircle cardCircle);
+    bool IsSameColumn(ICardCircle cardCircle);
 }

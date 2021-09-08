@@ -56,7 +56,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         //Debug.Log("1second");
         Card pulledCard = hand.Pull(card);
         //card.TurnOver();
-        Card removedCard = cardCircle.GetCard();
+        Card removedCard = cardCircle.Card;
         if (cardCircle.GetTransform().FindWithChildTag(Tag.Card))
         {
             if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()))
@@ -65,7 +65,6 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
                 yield return StartCoroutine(CardToDrop(removedCard));
         }
         cardCircle.Add(pulledCard);
-        hand.DestroyEmpty(card);
         card.SetState(Card.State.FaceUp, true);
     }
 
@@ -171,15 +170,41 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// 手札をデッキに移動
     /// </summary>
     /// <param name="card">移動させるカード</param>
-    /// <returns>コルーチン</returns>
+    /// <returns></returns>
     public async UniTask HandToDeck(Hand hand, Deck deck, Card card)
     {
         hand.Pull(card);
 
-        hand.DestroyEmpty(card);
-
         deck.Add(card);
     }
+
+    /// <summary>
+    /// 手札をガーディアンサークルに移動
+    /// </summary>
+    /// <param name="card">移動させるカード</param>
+    /// <returns></returns>
+    public async UniTask HandToGuardian(Hand hand, Guardian guardian, Card card)
+    {
+        hand.Pull(card);
+
+        guardian.Add(card);
+    }
+
+    public async UniTask GuardianToDrop(Guardian guardian, Drop drop, Card card=null)
+    {
+        if (card == null)
+        {
+            List<Card> cardList = guardian.Clear();
+            cardList.ForEach(card => drop.Add(card));
+        }
+        else
+        {
+            guardian.Pull(card);
+
+            drop.Add(card);
+        }
+    }
+
 
     /// <summary>
     /// カードを裏返す
@@ -193,7 +218,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
     public async UniTask RestCard(ICardCircle cardCircle)
     {
-        Card card = cardCircle.GetCard();
+        Card card = cardCircle.Card;
         //Card card = cardCircle.Pull();
         //card.transform.parent = null;
         await AnimationManager.Instance.RestCard(card, 15);
@@ -205,9 +230,9 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         Card card = cardCircle.Pull();
         if (card == null) return;
-        card.transform.parent = null;
+        //card.transform.parent = null;
         await AnimationManager.Instance.StandCard(card, 15);
-        cardCircle.Add(card);
+        //cardCircle.Add(card);
         card.SetState(Card.State.Stand, true);
     }
 }

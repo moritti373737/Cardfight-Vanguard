@@ -25,7 +25,7 @@ public class Hand : MonoBehaviour
     public void Add(Card _card)
     {
         var emptyCard = Instantiate(EmptyCardPrefab).FixName();
-        emptyCard.GetComponent<EmptyCard>().card = _card;
+        //emptyCard.GetComponent<EmptyCard>().card = _card;
         emptyCard.transform.SetParent(transform);
         emptyCard.transform.position = transform.position;
         emptyCard.transform.localPosition = Vector3.zero;
@@ -58,10 +58,11 @@ public class Hand : MonoBehaviour
         EmptyCardList.Remove(empthObject);
         EmptyCardRemovedList.Add(empthObject);
         SetPosition();
+        DestroyEmpty(card);
         return card;
     }
 
-    public void DestroyEmpty(Card card)
+    private void DestroyEmpty(Card card)
     {
         //foreach (var emptyCard in EmptyCardRemovedList)
         //{

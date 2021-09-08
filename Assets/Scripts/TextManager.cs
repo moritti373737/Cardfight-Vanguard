@@ -45,7 +45,7 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
         }
         else status.gameObject.SetActive(true);
 
-        Card card = cardCircle.GetCard();
+        Card card = cardCircle.Card;
 
         status.transform.Find("Critical").GetComponent<SpriteRenderer>().sprite = CriticalSprite[card.Critical]; // クリティカル値をセット
 

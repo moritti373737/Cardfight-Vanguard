@@ -114,6 +114,7 @@ public class GameMaster : MonoBehaviour
         await AttackFighter.DrawCard(1);
 
         await UniTask.NextFrame();
+        //await AttackFighter.GuardPhase();
 
         await RidePhase();
     }
@@ -143,6 +144,7 @@ public class GameMaster : MonoBehaviour
         TextManager.Instance.SetPhaseText("バトルフェイズ");
 
         while (true)
+
         {
             await UniTask.NextFrame();
 

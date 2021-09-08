@@ -10,12 +10,13 @@ public class Vanguard : MonoBehaviour, ICardCircle
     public bool R { get; } = false;
     public bool Front { get; } = true;
     public bool Back { get; } = false;
+    public Card Card { get => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>(); }
 
     private void Start()
     {
         transform.ObserveEveryValueChanged(x => x.childCount)
                  .Skip(1)
-                 .Where(_ => GetCard() == null)
+                 .Where(_ => Card == null)
                  .Subscribe(_ => TextManager.Instance.DestroyStatusText(this));
     }
 
@@ -31,6 +32,5 @@ public class Vanguard : MonoBehaviour, ICardCircle
 
     public Transform GetTransform() => transform;
 
-    public Card GetCard() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
     public bool IsSameColumn(ICardCircle cardCircle) => ID % 10 == cardCircle.ID % 10;
 }

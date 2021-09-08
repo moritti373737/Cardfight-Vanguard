@@ -10,6 +10,7 @@ public class Rearguard : MonoBehaviour, ICardCircle
     public bool R { get; } = true;
     public bool Front { get; private set; } = false;
     public bool Back { get; private set; } = false;
+    public Card Card { get => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>(); }
 
     private void Start()
     {
@@ -18,7 +19,7 @@ public class Rearguard : MonoBehaviour, ICardCircle
         Back = !Front;
         transform.ObserveEveryValueChanged(x => x.childCount)
                  .Skip(1)
-                 .Where(_ => GetCard() == null)
+                 .Where(_ => Card == null)
                  .Subscribe(_ => TextManager.Instance.DestroyStatusText(this));
     }
 
@@ -32,7 +33,6 @@ public class Rearguard : MonoBehaviour, ICardCircle
     public Card Pull() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
 
     public Transform GetTransform() => transform;
-    public Card GetCard() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
 
     /// <summary>
     /// リアガードサークルが同じ縦の列に存在するか調べる

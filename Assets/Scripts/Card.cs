@@ -15,7 +15,7 @@ public class Card : MonoBehaviour
     public string Nation { get; private set; }   // ‘‰Æ–¼
     public int Grade { get; private set; }
     private int DefaultPower { get; set; }  // Œ³‚Ìƒpƒ[
-    public int Power { get => DefaultPower + OffsetPower; }
+    public int Power { get => DefaultPower + OffsetPower + BoostedPower; }
     private int DefaultCritical { get; set; }
     public int Critical { get => DefaultCritical + OffsetCritical; }
     public int Shield { get; private set; }
@@ -28,6 +28,7 @@ public class Card : MonoBehaviour
     public string Rarity { get; private set; }
 
     public int OffsetPower { get; set; } = 0;
+    public int BoostedPower { get; set; } = 0;
     public int OffsetCritical { get; set; } = 0;
 
     [Flags]
@@ -139,4 +140,10 @@ public class Card : MonoBehaviour
     public bool JudgeState(State judgeState) => state == (state | judgeState);
     public void ChangePower(int power) => OffsetPower += power;
     public void ChangeCritical(int critical) => OffsetCritical += critical;
+
+    public void Reset()
+    {
+        OffsetCritical = 0;
+        OffsetPower = 0;
+    }
 }
