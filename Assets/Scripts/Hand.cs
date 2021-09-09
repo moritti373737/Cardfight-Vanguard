@@ -29,7 +29,7 @@ public class Hand : MonoBehaviour
         emptyCard.transform.SetParent(transform);
         emptyCard.transform.position = transform.position;
         emptyCard.transform.localPosition = Vector3.zero;
-        emptyCard.transform.localScale = new Vector3(0.1F, 1F, 1F);
+        emptyCard.transform.localScale = new Vector3(1F, 1F, 1F);
         emptyCard.transform.localRotation = Quaternion.identity;
 
         var localr = _card.transform.localRotation;
@@ -84,6 +84,7 @@ public class Hand : MonoBehaviour
     //}
 
     public int Count() => cardList.Count;
+    public Card GetCard(int index) => cardList[index];
 
     private void SetPosition()
     {

@@ -123,7 +123,7 @@ public class Fighter : MonoBehaviour
         await UniTask.NextFrame();
         Result result = Result.NONE;
         int i = 0;
-        ICardZone selectedEmpty = null;
+        Card selectedCard = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
 
@@ -133,9 +133,9 @@ public class Fighter : MonoBehaviour
         });
         //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
         functions.Add(async () => {
-            selectedEmpty = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
-            if (selectedEmpty == null) return Result.NO;
-            if (selectedEmpty.Card.Grade > Vanguard.Card.Grade + 1) return Result.NO; // グレードのチェック
+            selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+            if (selectedCard == null) return Result.NO;
+            if (selectedCard.Grade > Vanguard.Card.Grade + 1) return Result.NO; // グレードのチェック
             var result = await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
             if (result != null)
                 return Result.YES;
@@ -184,7 +184,7 @@ public class Fighter : MonoBehaviour
         await UniTask.NextFrame();
         Result result = Result.NONE;
         int i = 0;
-        ICardZone selectedEmpty = null;
+        Card selectedCard = null;
         Transform selectedTransform = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
@@ -201,10 +201,10 @@ public class Fighter : MonoBehaviour
         });
         functionsV.Add(async () =>
         {
-            selectedEmpty = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
-            if (selectedEmpty != null)
+            selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+            if (selectedCard != null)
             {
-                if (selectedEmpty.Card.Grade > Vanguard.Card.Grade) return Result.NO; // グレードのチェック
+                if (selectedCard.Grade > Vanguard.Card.Grade) return Result.NO; // グレードのチェック
                 await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
                 state = functionsC;
                 functions.AddRange(functionsC);
@@ -314,10 +314,11 @@ public class Fighter : MonoBehaviour
         });
         functionsV.Add(async () =>
         {
-            selectedAttackZone = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Circle, ID); // こちらのサークルを選択したかどうか
-            if (selectedAttackZone == null) return Result.NO;
+            Card selectedAttackCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID); // こちらのサークルを選択したかどうか
+            if (selectedAttackCard == null) return Result.NO;
+            selectedAttackZone = selectedAttackCard.GetComponentInParent<ICardCircle>();
 
-            if (!selectedAttackZone.Card.JudgeState(Card.State.Stand)) return Result.NO; // 攻撃可能なカードか判定
+            //if (!selectedAttackZone.Card.JudgeState(Card.State.Stand)) return Result.NO; // 攻撃可能なカードか判定
             if (!selectedAttackZone.Front) return Result.NO;
             state = functionsV2;
             functions.AddRange(functionsV2);
@@ -336,9 +337,10 @@ public class Fighter : MonoBehaviour
         });
         functionsV2.Add(async () =>
         {
-            selectedBoostZone = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Rearguard, ID); // ブーストする
-            if (selectedBoostZone != null)
+            Card selectedBoostCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID); // ブーストする
+            if (selectedBoostCard != null)
             {
+                selectedBoostZone = selectedBoostCard.GetComponentInParent<Rearguard>();
                 if (!selectedBoostZone.Card.JudgeState(Card.State.Stand)) return Result.NO; // ブースト可能なカードか判定
                 if (!selectedBoostZone.IsSameColumn(selectedAttackZone)) return Result.NO;
                 if (selectedBoostZone.Card.Skill != Card.SkillType.Boost) return Result.NO;
@@ -418,8 +420,7 @@ public class Fighter : MonoBehaviour
         await UniTask.NextFrame();
         Result result = Result.NONE;
         int i = 0;
-        ICardZone selectedEmpty = null;
-        Transform selectedTransform = null;
+        Card selectedCard = null;
 
         List<Func<UniTask<Result>>> functionsSelect = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsSubmit = new List<Func<UniTask<Result>>>();
@@ -442,8 +443,8 @@ public class Fighter : MonoBehaviour
 
         functionsSelect.Add(async () =>
         {
-            selectedEmpty = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
-            if (selectedEmpty != null)
+            selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+            if (selectedCard != null)
             {
                 await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
                 functions.AddRange(functionsSelect);
@@ -523,7 +524,7 @@ public class Fighter : MonoBehaviour
         await UniTask.NextFrame();
         Result result = Result.NONE;
         int i = 0;
-        ICardCircle selectedPowerUpCircle = null;
+        Card selectedPowerUpCard = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
 
@@ -535,9 +536,9 @@ public class Fighter : MonoBehaviour
                     return Result.YES;
                 });
                 functions.Add(async () => {
-                    ICardCircle selectedCriticalUpCircle = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Circle, ID);
-                    if (selectedCriticalUpCircle == null) return Result.NO;
-                    selectedCriticalUpCircle.Card.AddCritical(1);
+                    Card selectedCriticalUpCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID);
+                    if (selectedCriticalUpCard == null) return Result.NO;
+                    selectedCriticalUpCard.AddCritical(1);
                     return Result.YES;
                 });
                 break;
@@ -554,6 +555,17 @@ public class Fighter : MonoBehaviour
             case Card.TriggerType.Front:
                 break;
             case Card.TriggerType.Heal:
+                functions.Add(async () => {
+                    if (Damage.Count() < OpponentFighter.Damage.Count()) return Result.YES;
+                    await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+                    return Result.YES;
+                });
+                functions.Add(async () => {
+                    Card selectedDamageCard = await SelectManager.Instance.GetSelect(Tag.Damage, ID);
+                    if (selectedDamageCard == null) return Result.NO;
+                    await CardManager.Instance.DamageToDrop(Damage, Drop, selectedDamageCard);
+                    return Result.YES;
+                });
                 break;
             case Card.TriggerType.Stand:
                 functions.Add(async () => {
@@ -561,8 +573,9 @@ public class Fighter : MonoBehaviour
                     return Result.YES;
                 });
                 functions.Add(async () => {
-                    ICardCircle selectedStandCircle = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Circle, ID);
-                    if (selectedStandCircle == null) return Result.NO;
+                    Card selectedStandCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID);
+                    if (selectedStandCard == null) return Result.NO;
+                    var selectedStandCircle = selectedStandCard.GetComponentInParent<ICardCircle>();
                     if (selectedStandCircle.R == true) await CardManager.Instance.StandCard(selectedStandCircle);
                     return Result.YES;
                 });
@@ -579,9 +592,9 @@ public class Fighter : MonoBehaviour
         });
         //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
         functions.Add(async () => {
-            selectedPowerUpCircle = (ICardCircle)await SelectManager.Instance.GetSelect(Tag.Circle, ID);
-            if (selectedPowerUpCircle == null) return Result.NO;
-            selectedPowerUpCircle.Card.AddPower(triggerCard.TriggerPower);
+            selectedPowerUpCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID);
+            if (selectedPowerUpCard == null) return Result.NO;
+            selectedPowerUpCard.AddPower(triggerCard.TriggerPower);
             return Result.YES;
         });
 

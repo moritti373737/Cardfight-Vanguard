@@ -87,7 +87,7 @@ public class GameMaster : MonoBehaviour
         await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
         await fighter1.DrawCard(5);
-        await fighter2.DrawCard(1);
+        await fighter2.DrawCard(5);
 
         await fighter1.Mulligan();
         await UniTask.NextFrame();

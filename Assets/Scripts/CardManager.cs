@@ -196,6 +196,12 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         }
     }
 
+    public async UniTask DamageToDrop(Damage damage, Drop drop, Card card)
+    {
+        damage.Pull(card);
+        drop.Add(card);
+    }
+
 
     /// <summary>
     /// ƒJ[ƒh‚ğ— •Ô‚·

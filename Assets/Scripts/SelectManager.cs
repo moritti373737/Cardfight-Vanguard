@@ -163,7 +163,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         {
             try
             {
-                SelectBox.ChangeParent(GetFighter().Hand.transform.GetChild(MultiSelectIndex), p: true);
+                SelectBox.ChangeParent(SelectObj.transform.GetChild(MultiSelectIndex), p: true);
             }
             catch (UnityException)
             {
@@ -215,13 +215,13 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             selectZoneIndex[1]--;
             changeSelectBox = true;
         }
-        else if (up && selectZoneIndex[0] > 0)
+        else if (up && selectZoneIndex[0] > 0 && !HasTag(Tag.Damage))
         {
             // 上端にいないとき
             selectZoneIndex[0]--;
             changeSelectBox = true;
         }
-        else if (down && SelectObjList.Count - 1 > selectZoneIndex[0])
+        else if (down && SelectObjList.Count - 1 > selectZoneIndex[0] && !HasTag(Tag.Damage))
         {
             // 下端にいないとき
             selectZoneIndex[0]++;
@@ -230,30 +230,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
         if (MultiSelectIndex == -1) return;
 
-        // エリア移動したとき
-        if (changeSelectBox)
-        {
-            Fighter fighter = GetFighter();
-            Hand hand = fighter.Hand;
-
-            // 手札以外の場所から手札に移動したとき
-            if (HasTag(Tag.Hand) && hand.Count() > 0)
-            {
-                MultiSelectIndex = hand.Count() / 2; // 手札の数に合わせて初期化
-                SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
-            }
-            else
-                SelectBox.ChangeParent(SelectObj.transform, p: true);
-
-            SetZoomCard();
-            // 子オブジェクトを全て取得する
-            //foreach (Transform childTransform in hand.transform)
-            //{
-            //    Debug.Log(childTransform.gameObject.name);
-            //}
-        }
         // カーソルが手札上にある時
-        else if (HasTag(Tag.Hand))
+        if (HasTag(Tag.Hand))
         {
             Fighter fighter = GetFighter();
             Hand hand = fighter.Hand;
@@ -278,10 +256,65 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             //Debug.Log(MultiSelectIndex);
             SetZoomCard();
         }
+        else if (HasTag(Tag.Damage))
+        {
+            Fighter fighter = GetFighter();
+            Damage damage = fighter.Damage;
+
+            // カーソルを上下に移動させる
+            if (down)
+            {
+                if (damage.Count() - 1 > MultiSelectIndex) MultiSelectIndex++;
+                else
+                {
+                    selectZoneIndex[0]++;
+                    changeSelectBox = true;
+                }
+            }
+            else if (up)
+            {
+                if (MultiSelectIndex > 0) MultiSelectIndex--;
+                else
+                {
+                    selectZoneIndex[0]--;
+                    changeSelectBox = true;
+                }
+            }
+        }
+
+        // エリア移動したとき
+        if (changeSelectBox)
+        {
+            Fighter fighter = GetFighter();
+            Hand hand = fighter.Hand;
+            Damage damage = fighter.Damage;
+
+            // 手札以外の場所から手札に移動したとき
+            if (HasTag(Tag.Hand) && hand.Count() > 0)
+            {
+                MultiSelectIndex = hand.Count() / 2; // 手札の数に合わせて初期化
+                ChangeSelectBoxParent(hand.transform.GetChild(MultiSelectIndex).gameObject);
+            }
+            else if (HasTag(Tag.Damage) && damage.Count() > 0)
+            {
+                if (up) MultiSelectIndex = damage.Count() - 1;
+                else MultiSelectIndex = 0;
+                ChangeSelectBoxParent(damage.transform.GetChild(MultiSelectIndex).gameObject);
+
+            }
+            else ChangeSelectBoxParent(SelectObj);
+
+            SetZoomCard();
+            // 子オブジェクトを全て取得する
+            //foreach (Transform childTransform in hand.transform)
+            //{
+            //    Debug.Log(childTransform.gameObject.name);
+            //}
+        }
 
     }
 
-    public async UniTask<ICardZone> GetSelect(Tag tag, FighterID fighterID)
+    public async UniTask<Card> GetSelect(Tag tag, FighterID fighterID)
     {
         Fighter fighter = GetFighter(fighterID);
 
@@ -290,7 +323,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
         if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.Hand.Count() > 0)
         {
-            return fighter.Hand.transform.GetChild(MultiSelectIndex).GetComponent<ICardZone>();
+            return fighter.Hand.GetCard(MultiSelectIndex);
         }
         // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
         //else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
@@ -300,7 +333,12 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
         else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
-            return SelectObj.GetComponent<ICardZone>();
+            return SelectObj.GetComponent<ICardZone>().Card;
+        }
+        // カーソル位置がダメージゾーン かつ カーソル位置が指定したファイターのもの かつ 指定したファイターのダメージゾーンが0枚じゃない
+        else if (HasTag(Tag.Damage) && IsFighter(fighterID) && fighter.Damage.Count() > 0)
+        {
+            return fighter.Damage.GetCard(MultiSelectIndex);
         }
         return null;
     }
@@ -574,5 +612,13 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <param name="fighterID">判定に使うファイターID</param>
     /// <returns>条件を満たすファイター</returns>
     private Fighter GetFighter(FighterID fighterID) => fighter1.ID == fighterID ? fighter1 : fighter2;
+
+    private void ChangeSelectBoxParent(GameObject parentObject)
+    {
+        Transform parentTransform = parentObject.transform;
+        SelectBox.transform.SetParent(parentTransform);
+        SelectBox.transform.position = parentTransform.position;
+        SelectBox.transform.localScale = new Vector3(1.1F, 1.1F, 0F);
+    }
 
 }

@@ -40,7 +40,7 @@ public class Guardian : MonoBehaviour
         emptyCard.transform.localRotation = Quaternion.identity;
         Vector3 defaultScale = emptyCard.transform.lossyScale;
         Vector3 lossyScale, localScale;
-        emptyCard.transform.localRotation = Quaternion.Euler(0, 0, 270);
+        emptyCard.transform.localRotation = Quaternion.Euler(0, 0, 0);
         lossyScale = emptyCard.transform.lossyScale;
         localScale = emptyCard.transform.localScale;
         emptyCard.transform.localScale = new Vector3(
@@ -93,7 +93,7 @@ public class Guardian : MonoBehaviour
     private void SetPosition()
     {
         if (EmptyCardList.Count == 0) return;
-        float cardSizeY = EmptyCardList[0].transform.localScale.y;
+        float cardSizeX = EmptyCardList[0].transform.localScale.x;
         int EmptyCardListCount = EmptyCardList.Count;
         if (EmptyCardListCount % 2 == 0)
         {
@@ -102,11 +102,11 @@ public class Guardian : MonoBehaviour
                 Vector3 pos = EmptyCardList[i - 1].transform.localPosition;
                 if (EmptyCardListCount / 2 - i >= 0)
                 {
-                    pos.x = -(EmptyCardListCount / 2 - i) * cardSizeY - cardSizeY / 2;
+                    pos.y = -(EmptyCardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
                 }
                 else
                 {
-                    pos.x = -(EmptyCardListCount / 2 - i) * cardSizeY - cardSizeY / 2;
+                    pos.y = -(EmptyCardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
                 }
                 EmptyCardList[i - 1].transform.localPosition = pos;
             }
@@ -118,15 +118,15 @@ public class Guardian : MonoBehaviour
                 Vector3 pos = EmptyCardList[i - 1].transform.localPosition;
                 if ((EmptyCardListCount + 1) / 2 - i > 0)
                 {
-                    pos.x = -((EmptyCardListCount + 1) / 2 - i) * cardSizeY;
+                    pos.y = -((EmptyCardListCount + 1) / 2 - i) * cardSizeX;
                 }
                 else if ((EmptyCardListCount + 1) / 2 - i < 0)
                 {
-                    pos.x = (i - (EmptyCardListCount + 1) / 2) * cardSizeY;
+                    pos.y = (i - (EmptyCardListCount + 1) / 2) * cardSizeX;
                 }
                 else
                 {
-                    pos.x = 0;
+                    pos.y = 0;
                 }
                 EmptyCardList[i - 1].transform.localPosition = pos;
             }

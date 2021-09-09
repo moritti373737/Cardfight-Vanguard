@@ -31,6 +31,8 @@ public class Card : MonoBehaviour
     public int BoostedPower { get; set; } = 0;
     public int OffsetCritical { get; set; } = 0;
 
+    public Transform Transform { get => transform; }
+
     [Flags]
     public enum State
     {

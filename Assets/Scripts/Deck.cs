@@ -39,6 +39,7 @@ public class Deck : MonoBehaviour
         for (int i = 1; i <= cardList.Count; i++)
         {
             cardList[cardList.Count - i].transform.localPosition = new Vector3(0, 0, (float)(i * -0.9));
+            cardList[i - 1].transform.SetAsLastSibling();
         }
     }
 }
