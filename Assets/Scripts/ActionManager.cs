@@ -39,6 +39,6 @@ public class ActionData
         FighterID = fighterID;
         Card = card;
         Source = source;
-        Target = target;
+        Target = target ?? source;
     }
 }

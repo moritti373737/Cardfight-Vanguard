@@ -200,19 +200,12 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         SetHistory(card: card, source:hand, target:guardian);
     }
 
-    public async UniTask GuardianToDrop(Guardian guardian, Drop drop, Card card=null)
+    public async UniTask GuardianToDrop(Guardian guardian, Drop drop, Card card)
     {
-        if (card == null)
-        {
-            List<Card> cardList = guardian.Clear();
-            cardList.ForEach(card => drop.Add(card));
-        }
-        else
-        {
-            guardian.Pull(card);
 
-            drop.Add(card);
-        }
+        guardian.Pull(card);
+        drop.Add(card);
+
         SetHistory(card: card, source:guardian, target:drop);
     }
 

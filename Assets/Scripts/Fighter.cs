@@ -350,6 +350,7 @@ public class Fighter : MonoBehaviour
                 if (selectedBoostZone.Card.Skill != Card.SkillType.Boost) return Result.NO;
                 await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
                 selectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
+                ActionManager.Instance.ActionHistory.Add(new ActionData("Boost", ID, selectedBoostZone.Card, selectedBoostZone, selectedAttackZone));
                 state = functionsB;
                 functions.AddRange(functionsB);
                 return Result.YES;
@@ -357,6 +358,7 @@ public class Fighter : MonoBehaviour
             var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
             if (result.Item1 == null) return Result.NO;
             selectedTargetZone = result.Item1;
+            ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, selectedAttackZone.Card, selectedAttackZone, selectedTargetZone));
             state = functionsV3;
             functions.AddRange(functionsV3);
             return Result.YES;
@@ -372,6 +374,7 @@ public class Fighter : MonoBehaviour
             var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
             if (result.Item1 == null) return Result.NO;
             selectedTargetZone = result.Item1;
+            ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, selectedAttackZone.Card, selectedAttackZone, selectedTargetZone));
             state = functionsV3;
             functions.AddRange(functionsV3);
             return Result.YES;
