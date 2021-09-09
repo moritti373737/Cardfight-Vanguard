@@ -219,7 +219,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
     public async UniTask StandCard(ICardCircle cardCircle)
     {
-        Card card = cardCircle.Pull();
+        Card card = cardCircle.Card;
         if (card == null) return;
         //card.transform.parent = null;
         await AnimationManager.Instance.StandCard(card, 15);

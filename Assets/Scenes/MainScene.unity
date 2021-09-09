@@ -219,7 +219,7 @@ GameObject:
   - component: {fileID: 141899825}
   m_Layer: 0
   m_Name: Fighter1
-  m_TagString: Untagged
+  m_TagString: Fighter
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1804,7 +1804,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fighter1: {fileID: 141899824}
   fighter2: {fileID: 1451585532}
-  selectManager: {fileID: 768289826}
 --- !u!4 &1373051666
 Transform:
   m_ObjectHideFlags: 0
@@ -2002,7 +2001,7 @@ GameObject:
   - component: {fileID: 1451585532}
   m_Layer: 0
   m_Name: Fighter2
-  m_TagString: Untagged
+  m_TagString: Fighter
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

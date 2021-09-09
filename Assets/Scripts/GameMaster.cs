@@ -11,11 +11,10 @@ public class GameMaster : MonoBehaviour
     //public Player[] playerList;
     public Fighter fighter1;
     public Fighter fighter2;
-    public SelectManager selectManager;
 
 
-    private Fighter AttackFighter;
-    private Fighter DefenceFighter;
+    private Fighter AttackFighter { get; set; }
+    private Fighter DefenceFighter { get; set; }
 
     //[SerializeField] Animator animator;
 
@@ -57,7 +56,7 @@ public class GameMaster : MonoBehaviour
     {
         if (Input.GetButtonDown("Zoom"))
         {
-            selectManager.ZoomCard();
+            SelectManager.Instance.ZoomCard();
         }
         else if (Input.GetButtonDown("Reset")) ResetScene();
     }
@@ -78,8 +77,8 @@ public class GameMaster : MonoBehaviour
 
         await fighter1.SetFirstVanguard();
         await fighter2.SetFirstVanguard();
-        fighter1.deck.Shuffle();
-        fighter2.deck.Shuffle();
+        fighter1.Deck.Shuffle();
+        fighter2.Deck.Shuffle();
 
         await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
@@ -150,10 +149,10 @@ public class GameMaster : MonoBehaviour
             await UniTask.NextFrame();
             TextManager.Instance.SetPhaseText("バトルフェイズ");
 
-            (ICardCircle selectedAttackZone, ICardCircle selectedTargetZone) = await AttackFighter.AttackPhase();
+            (ICardCircle selectedAttackZone, ICardCircle selectedTargetZone) = await AttackFighter.AttackStep();
             if (selectedAttackZone == null) break;
 
-            await DefenceFighter.GuardPhase();
+            await DefenceFighter.GuardStep();
 
             if (selectedAttackZone.V)
             {
@@ -164,16 +163,24 @@ public class GameMaster : MonoBehaviour
 
             print(selectedAttackZone.Card.Power);
             print(selectedTargetZone.Card.Power);
-            print(DefenceFighter.guardian.Shield);
+            print(DefenceFighter.Guardian.Shield);
 
-            if (selectedAttackZone.Card.Power >= selectedTargetZone.Card.Power + DefenceFighter.guardian.Shield)
+            if (selectedAttackZone.Card.Power >= selectedTargetZone.Card.Power + DefenceFighter.Guardian.Shield)
+            {
                 if (selectedTargetZone.V)
                 {
                     TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
                     await DefenceFighter.DamageTriggerCheck(selectedAttackZone.Card.Critical);
                 }
+                else
+                {
+                    await DefenceFighter.RetireCard(selectedTargetZone);
+                }
+            }
 
-            await CardManager.Instance.GuardianToDrop(DefenceFighter.guardian, DefenceFighter.drop);
+            await CardManager.Instance.GuardianToDrop(DefenceFighter.Guardian, DefenceFighter.Drop);
+
+            await AttackFighter.EndStep();
 
         }
         await EndPhase();

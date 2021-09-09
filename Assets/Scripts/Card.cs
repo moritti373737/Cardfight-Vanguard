@@ -142,8 +142,8 @@ public class Card : MonoBehaviour
         else state &= ~newState;
     }
     public bool JudgeState(State judgeState) => state == (state | judgeState);
-    public void ChangePower(int power) => OffsetPower += power;
-    public void ChangeCritical(int critical) => OffsetCritical += critical;
+    public void AddPower(int power) => OffsetPower += power;
+    public void AddCritical(int critical) => OffsetCritical += critical;
 
     public void Reset()
     {
