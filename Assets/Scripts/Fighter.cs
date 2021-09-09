@@ -185,7 +185,6 @@ public class Fighter : MonoBehaviour
         Result result = Result.NONE;
         int i = 0;
         Card selectedCard = null;
-        Transform selectedTransform = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsV = new List<Func<UniTask<Result>>>();
@@ -211,9 +210,10 @@ public class Fighter : MonoBehaviour
                 return Result.YES;
             }
 
-            selectedTransform = await SelectManager.Instance.NormalSelected(Tag.Rearguard, ID);
-            if (selectedTransform != null)
+            selectedCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
+            if (selectedCard != null)
             {
+                await SelectManager.Instance.NormalSelected(Tag.Rearguard, ID);
                 state = functionsM;
                 functions.AddRange(functionsM);
                 return Result.YES;
@@ -249,9 +249,13 @@ public class Fighter : MonoBehaviour
         });
         functionsM.Add(async () =>
         {
+            //Card targetCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
+            Rearguard targetZone = (Rearguard)await SelectManager.Instance.GetZone(Tag.Rearguard, ID);
+            if (targetZone == null) return Result.NO;
+            Rearguard selectedRearguard = selectedCard.transform.GetComponentInParent<Rearguard>();
+            if (!selectedRearguard.IsSameColumn(targetZone)) return Result.NO;
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-            if (circle == null) return Result.NO;
-            await CardManager.Instance.RearToRear(selectedTransform.GetComponent<Rearguard>(), circle, card.GetComponent<Card>());
+            await CardManager.Instance.RearToRear(selectedRearguard, (Rearguard)circle, card.GetComponent<Card>());
             return Result.YES;
         });
 

@@ -33,7 +33,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     }
 
     /// <summary>
-    /// カードを手札から各種カードサークル(V,R,G)に移動
+    /// カードを手札から各種カードサークル(V,R)に移動
     /// </summary>
     /// <param name="hand"></param>
     /// <param name="cardCircle"></param>
@@ -60,7 +60,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     }
 
     /// <summary>
-    /// カードをデッキから各種カードサークル(V,R,G)に移動
+    /// カードをデッキから各種カードサークル(V,R)に移動
     /// </summary>
     /// <param name="deck"></param>
     /// <param name="cardCircle"></param>
@@ -77,7 +77,14 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return null;
     }
 
-    public IEnumerator RearToRear(ICardCircle cardCircle, ICardCircle targetCircle, Card card)
+    /// <summary>
+    /// カードをRゾーンからRゾーンに移動
+    /// </summary>
+    /// <param name="cardCircle">移動元のR</param>
+    /// <param name="targetCircle">移動先のR</param>
+    /// <param name="card">移動対象のカード</param>
+    /// <returns></returns>
+    public IEnumerator RearToRear(Rearguard cardCircle, Rearguard targetCircle, Card card)
     {
         // ログ出力
         //Debug.Log("1second");
@@ -123,13 +130,13 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         yield return new WaitForSeconds(0.0f);
     }
 
-    public IEnumerator DriveToDrop(Drive drive, Drop drop)
-    {
-        Card card = drive.Pull();
-        drop.Add(card);
+    //public IEnumerator DriveToDrop(Drive drive, Drop drop)
+    //{
+    //    Card card = drive.Pull();
+    //    drop.Add(card);
 
-        yield return new WaitForSeconds(0.0f);
-    }
+    //    yield return new WaitForSeconds(0.0f);
+    //}
 
     /// <summary>
     /// カードをソウルに移動
@@ -216,6 +223,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     public async UniTask RestCard(ICardCircle cardCircle)
     {
         Card card = cardCircle.Card;
+        if (card == null) return;
         //Card card = cardCircle.Pull();
         //card.transform.parent = null;
         await AnimationManager.Instance.RestCard(card, 15);

@@ -343,6 +343,20 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         return null;
     }
 
+    public async UniTask<ICardZone> GetZone(Tag tag, FighterID fighterID)
+    {
+        Fighter fighter = GetFighter(fighterID);
+
+        if (!HasTag(tag)) return null;
+
+        // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの
+        if (HasTag(Tag.Circle) && IsFighter(fighterID))
+        {
+            return SelectObj.GetComponent<ICardZone>();
+        }
+        return null;
+    }
+
     /// <summary>
     /// 1つだけ選択可能なカーソル選択し、選択中を示すオブジェクトを配置
     /// </summary>
@@ -417,14 +431,13 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         {
 
             // 選択したカーソル位置が手札 かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの
-            if (selected.parent.ExistTag(Tag.Hand) && HasTag(Tag.Circle) && IsFighter(fighterID))
+            if (HasTag(Tag.Circle) && IsFighter(fighterID))
             {
                 result = (SelectObj.GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card));
                 goto END;
             }
             // 選択したカーソル位置がリアガード かつ 今のカーソル位置がリアガード かつ 今のカーソル位置が指定したファイターのもの かつ同じ縦列である
-            else if (selected.ExistTag(Tag.Rearguard) && HasTag(Tag.Rearguard) && IsFighter(fighterID)
-                && selected.GetComponent<Rearguard>().IsSameColumn(SelectObj.GetComponent<Rearguard>()))
+            else if (HasTag(Tag.Rearguard) && IsFighter(fighterID))
             {
                 result = (SelectObj.GetComponent<ICardCircle>(), selected.FindWithChildTag(Tag.Card));
                 goto END;
@@ -437,7 +450,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         else if (action == Action.ATTACK)
         {
             // 選択したカーソル位置がサークル かつ 今のカーソル位置がサークル かつ 今のカーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
-            if (selected.ExistTag(Tag.Circle) && HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
+            if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
             {
                 //Debug.Log("Vにアタック");
                 result = (SelectObj.GetComponent<ICardCircle>(), null);
