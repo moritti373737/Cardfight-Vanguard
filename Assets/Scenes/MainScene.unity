@@ -809,6 +809,7 @@ GameObject:
   - component: {fileID: 768289824}
   - component: {fileID: 768289827}
   - component: {fileID: 768289828}
+  - component: {fileID: 768289829}
   - component: {fileID: 768289826}
   m_Layer: 0
   m_Name: Manager
@@ -904,6 +905,18 @@ MonoBehaviour:
   CanvasPrefab: {fileID: 3591121207522500120, guid: 48c5ce90bc0e5ef44a5a89ee4e5d5b36, type: 3}
   StatusPrefab: {fileID: 4859931527790025104, guid: b5d0a57596726ef4c9523d93d15965f2, type: 3}
   CriticalSprite: []
+--- !u!114 &768289829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768289823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec37302ca742d414686dd4b4abeadb93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &823091539
 GameObject:
   m_ObjectHideFlags: 0

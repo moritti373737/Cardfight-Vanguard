@@ -14,10 +14,14 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 {
     public GameObject SelectBox { get; private set; }   // カーソル
     private List<GameObject> SelectedBoxList = new List<GameObject>(); // 選択中のカードを占めるカーソル
+    [SerializeField]
     public Fighter fighter1;
+    [SerializeField]
     public Fighter fighter2;
 
+    [SerializeField]
     public GameObject SelectBoxPrefab;
+    [SerializeField]
     public GameObject SelectedBoxPrefab;
 
     private Image ZoomImage;
@@ -333,7 +337,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
         else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
         {
-            return SelectObj.GetComponent<ICardZone>().Card;
+            return SelectObj.GetComponent<ICardCircle>().Card;
         }
         // カーソル位置がダメージゾーン かつ カーソル位置が指定したファイターのもの かつ 指定したファイターのダメージゾーンが0枚じゃない
         else if (HasTag(Tag.Damage) && IsFighter(fighterID) && fighter.Damage.Count() > 0)

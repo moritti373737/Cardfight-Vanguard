@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Deck : MonoBehaviour
+public class Deck : MonoBehaviour, IMultiCardZone
 {
     /// <summary>
     /// 山札に含まれるカード一覧
@@ -42,4 +42,5 @@ public class Deck : MonoBehaviour
             cardList[i - 1].transform.SetAsLastSibling();
         }
     }
+
 }

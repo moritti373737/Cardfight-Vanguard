@@ -4,9 +4,6 @@ using UnityEngine;
 
 public interface ICardZone
 {
-    void Add(Card card);
-    Card Pull();
+    Transform transform { get; }
 
-    Transform GetTransform();
-    Card Card { get; }
 }

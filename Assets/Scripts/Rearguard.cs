@@ -32,8 +32,6 @@ public class Rearguard : MonoBehaviour, ICardCircle
     }
     public Card Pull() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
 
-    public Transform GetTransform() => transform;
-
     /// <summary>
     /// リアガードサークルが同じ縦の列に存在するか調べる
     /// 相手のサークルの判定はしていない

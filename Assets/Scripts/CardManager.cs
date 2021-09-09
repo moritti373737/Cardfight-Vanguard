@@ -1,6 +1,8 @@
 using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 /// <summary>
@@ -27,7 +29,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         hand.Add(card);
 
         //yield return StartCoroutine(AnimationManager.Instance.CardToHand(card));
-
+        SetHistory(card: card, source:deck, target:hand);
         // ‘Ò‚Â
         yield return new WaitForSeconds(0.1f);
     }
@@ -48,9 +50,10 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         Card removedCard = cardCircle.Pull();
         cardCircle.Add(pulledCard);
         card.SetState(Card.State.FaceUp, true);
+        SetHistory(card: card, source:hand, target:cardCircle);
         //if (removedCard != null)
         //{
-            return removedCard;
+        return removedCard;
             //if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()))
             //    yield return StartCoroutine(CardToSoul(removedCardCircle, removedCard));
             //else if (cardCircle.GetTransform().tag.Contains(Tag.Rearguard.ToString()))
@@ -74,6 +77,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         //card.TurnOver();
         cardCircle.Add(card);
 
+        SetHistory(card: card, source:deck, target:cardCircle);
         yield return null;
     }
 
@@ -100,6 +104,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         targetCircle.Add(card);
 
         // ‘Ò‚Â
+        SetHistory(card: card, source:cardCircle, target:targetCircle);
         yield return new WaitForSeconds(0.0f);
     }
 
@@ -111,6 +116,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         drive.Add(card);
         card.TurnOver();
 
+        SetHistory(card: card, source:deck, target:drive);
         //yield return new WaitForSeconds(0.0f);
     }
 
@@ -119,6 +125,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         Card card = drive.Pull();
         hand.Add(card);
 
+        SetHistory(card: card, source:drive, target:hand);
         yield return new WaitForSeconds(0.0f);
     }
 
@@ -127,6 +134,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         Card card = drive.Pull();
         damage.Add(card);
 
+        SetHistory(card: card, source:drive, target:damage);
         yield return new WaitForSeconds(0.0f);
     }
 
@@ -147,6 +155,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         soul.Add(card);
 
+        SetHistory(card: card, source:null, target:soul);
         // ‘Ò‚Â
         yield return new WaitForSeconds(0.0f);
     }
@@ -160,6 +169,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         drop.Add(card);
 
+        SetHistory(card: card, source:null, target:drop);
         // ‘Ò‚Â
         yield return new WaitForSeconds(0.0f);
     }
@@ -174,6 +184,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         hand.Pull(card);
 
         deck.Add(card);
+        SetHistory(card: card, source:hand, target:deck);
     }
 
     /// <summary>
@@ -186,6 +197,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         hand.Pull(card);
 
         guardian.Add(card);
+        SetHistory(card: card, source:hand, target:guardian);
     }
 
     public async UniTask GuardianToDrop(Guardian guardian, Drop drop, Card card=null)
@@ -201,12 +213,14 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
             drop.Add(card);
         }
+        SetHistory(card: card, source:guardian, target:drop);
     }
 
     public async UniTask DamageToDrop(Damage damage, Drop drop, Card card)
     {
         damage.Pull(card);
         drop.Add(card);
+        SetHistory(card: card, source:damage, target:drop);
     }
 
 
@@ -218,6 +232,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     public async UniTask RotateCard(Card card)
     {
         await AnimationManager.Instance.RotateFieldCard(card);
+        SetHistory(card: card, source:card.GetComponentInParent<ICardZone>());
     }
 
     public async UniTask RestCard(ICardCircle cardCircle)
@@ -229,6 +244,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         await AnimationManager.Instance.RestCard(card, 15);
         //cardCircle.Add(card);
         card.SetState(Card.State.Stand, false);
+        SetHistory(card: card, source: card.GetComponentInParent<ICardZone>());
     }
 
     public async UniTask StandCard(ICardCircle cardCircle)
@@ -239,5 +255,8 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         await AnimationManager.Instance.StandCard(card, 15);
         //cardCircle.Add(card);
         card.SetState(Card.State.Stand, true);
+        SetHistory(card: card, source: card.GetComponentInParent<ICardZone>());
     }
+
+    public void SetHistory([CallerMemberName]string name=null, Card card=null, object source=null, object target =null) => ActionManager.Instance.ActionHistory.Add(new ActionData(name, card.FighterID, card, source, target));
 }

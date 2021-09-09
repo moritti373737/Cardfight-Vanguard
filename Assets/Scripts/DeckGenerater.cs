@@ -21,7 +21,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
     }*/
     private int Offset = 0;
 
-    public void Generate(Deck _deck)
+    public void Generate(Deck _deck, FighterID fighterID)
     {
         (List<Texture2D> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) = LoadDeckData();
         int spriteNumber = 0;
@@ -57,6 +57,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             Card card = cardObj.GetComponent<Card>();
             card.transform.Find("Face").GetComponent<MeshRenderer>().material = material;
             card.SetStatus(cardTextList[spriteNumber]);
+            card.FighterID = fighterID;
             //card.cardModel.face = cardSpriteList[0];
             //card.CardModel.ToggleFace(true);
             //card.Load(cardDataList[i]);

@@ -36,12 +36,12 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
 
     public void SetStatusText(ICardCircle cardCircle)
     {
-        print($"{cardCircle}, {cardCircle.GetTransform().root}");
-        Transform status = cardCircle.GetTransform().FindWithChildTag(Tag.StatusText);
+        print($"{cardCircle}, {cardCircle.transform.root}");
+        Transform status = cardCircle.transform.FindWithChildTag(Tag.StatusText);
         if (status == null) // 初めてテキストを作るとき
         {
             status = Instantiate(StatusPrefab).FixName().transform;
-            status.gameObject.ChangeParent(cardCircle.GetTransform(), true, true, true);
+            status.gameObject.ChangeParent(cardCircle.transform, true, true, true);
         }
         else status.gameObject.SetActive(true);
 
@@ -69,6 +69,6 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
 
     public void DestroyStatusText(ICardCircle cardCircle)
     {
-        cardCircle.GetTransform().FindWithChildTag(Tag.StatusText)?.gameObject.SetActive(false);
+        cardCircle.transform.FindWithChildTag(Tag.StatusText)?.gameObject.SetActive(false);
     }
 }

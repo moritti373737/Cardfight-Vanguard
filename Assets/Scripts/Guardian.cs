@@ -4,7 +4,7 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
-public class Guardian : MonoBehaviour
+public class Guardian : MonoBehaviour, IMultiCardZone
 {
     /// <summary>
     /// èD‚ÉŠÜ‚Ü‚ê‚éƒJ[ƒhˆê——
@@ -131,5 +131,10 @@ public class Guardian : MonoBehaviour
                 EmptyCardList[i - 1].transform.localPosition = pos;
             }
         }
+    }
+
+    public Card Pull(int index)
+    {
+        throw new System.NotImplementedException();
     }
 }

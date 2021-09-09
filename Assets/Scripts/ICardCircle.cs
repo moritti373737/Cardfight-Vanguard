@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface ICardCircle : ICardZone
+public interface ICardCircle : ISingleCardZone
 {
     int ID { get; }
     bool V { get; }

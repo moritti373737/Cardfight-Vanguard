@@ -8,6 +8,10 @@ public class Card : MonoBehaviour
 {
     public int ID { get; private set; } // カード固有のID
 
+    public FighterID FighterID { get; set; }
+
+    public ICardZone Parent { get => GetComponentInParent<ICardZone>(); }
+
     public string Name { get; private set; }     // カード名
     public string UnitType { get; private set; } // ノーマル or トリガーユニット
     public string Clan { get; private set; }     // クラン名

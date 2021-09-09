@@ -5,7 +5,7 @@ using UniRx;
 using System;
 using Cysharp.Threading.Tasks;
 
-public class Hand : MonoBehaviour
+public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
 {
     /// <summary>
     /// èD‚ÉŠÜ‚Ü‚ê‚éƒJ[ƒhˆê——
@@ -127,6 +127,11 @@ public class Hand : MonoBehaviour
                 EmptyCardList[i - 1].transform.localPosition = pos;
             }
         }
+    }
+
+    public Card Pull(int index)
+    {
+        throw new NotImplementedException();
     }
 }
 

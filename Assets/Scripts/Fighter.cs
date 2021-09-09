@@ -59,7 +59,7 @@ public class Fighter : MonoBehaviour
 
     public void CreateDeck()
     {
-        DeckGenerater.Instance.Generate(Deck);
+        DeckGenerater.Instance.Generate(Deck, ID);
     }
 
     public async UniTask SetFirstVanguard()

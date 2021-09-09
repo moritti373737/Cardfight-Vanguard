@@ -4,7 +4,7 @@ using UnityEngine;
 using UniRx;
 using System;
 
-public class Drop : MonoBehaviour
+public class Drop : MonoBehaviour, IMultiCardZone
 {
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();
 

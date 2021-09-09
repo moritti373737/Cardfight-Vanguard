@@ -4,11 +4,9 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
-public class Damage : MonoBehaviour, ICardZone
+public class Damage : MonoBehaviour, IMultiCardZone
 {
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();
-
-    public Card Card => throw new System.NotImplementedException();
 
     void Start()
     {
@@ -40,11 +38,8 @@ public class Damage : MonoBehaviour, ICardZone
 
     public Card GetCard(int index) => cardList[index];
 
-    public Card Pull()
+    public Card Pull(int index)
     {
         throw new System.NotImplementedException();
     }
-
-    public Transform GetTransform() => transform;
-
 }

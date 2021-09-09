@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Soul : MonoBehaviour
+public class Soul : MonoBehaviour, IMultiCardZone
 {
     public List<Card> cardList = new List<Card>();
 
