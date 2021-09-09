@@ -395,7 +395,7 @@ public class Fighter : MonoBehaviour
                     i++;
                     break;
                 case Result.NO:
-                    i -= 1;
+                    i--;
                     break;
                 case Result.CANCEL:
                     functions.RemoveRange(functions.Count - state.Count, state.Count);
@@ -476,6 +476,9 @@ public class Fighter : MonoBehaviour
             {
                 case Result.YES:
                     i++;      // 1Ç¬éüÇ…êiÇﬁ
+                    break;
+                case Result.NO:
+                    i--;
                     break;
                 case Result.CANCEL:
                     functions.RemoveRange(functions.Count - state.Count, state.Count);
