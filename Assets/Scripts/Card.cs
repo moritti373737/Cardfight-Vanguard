@@ -26,7 +26,7 @@ public class Card : MonoBehaviour
     public SkillType Skill { get; private set; }
     public TriggerType Trigger { get; private set; }
     public int TriggerPower { get; private set; } = 0;
-    public string Effect { get; private set; }
+    public AbilityData Ability { get; private set; }
     public string Flavor { get; private set; }
     public string Number { get; private set; }
     public string Rarity { get; private set; }
@@ -126,7 +126,7 @@ public class Card : MonoBehaviour
             else if (text[0] == "オーバートリガー") Trigger = TriggerType.Over;
             TriggerPower = int.Parse(text[1]);
         }
-        Effect = cardTextList[12].SplitEx(',')[1];
+        Ability = Resources.Load<AbilityData>("TD01/001");
         Flavor = cardTextList[13].SplitEx(',')[1];
         Number = cardTextList[14].SplitEx(',')[1].Replace("/", "-");
         Rarity = cardTextList[15].SplitEx(',')[1];

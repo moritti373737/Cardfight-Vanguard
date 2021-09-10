@@ -244,7 +244,7 @@ public class Fighter : MonoBehaviour
                     return Result.YES;
                 }
             }
-            else if (act == "Skill")
+            else if (act == "Ability")
             {
                 print("ƒXƒLƒ‹”­“®");
             }

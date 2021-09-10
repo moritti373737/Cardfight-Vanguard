@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5c7bcfdcdae1c94ba2059cbc24cba6f, type: 3}
+  m_Name: 012data
+  m_EditorClassIdentifier: 
+  Name: "\u30B9\u30BF\u30FC\u30C0\u30B9\u30C8\u30FB\u30C8\u30E9\u30F3\u30DA\u30C3\u30BF\u30FC"
+  UnitType: "\u30CE\u30FC\u30DE\u30EB\u30E6\u30CB\u30C3\u30C8"
+  Clan: "\u30ED\u30A4\u30E4\u30EB\u30D1\u30E9\u30C7\u30A3\u30F3"
+  Race: "\u30A8\u30F3\u30B8\u30A7\u30EB"
+  Nation: "\u30E6\u30CA\u30A4\u30C6\u30C3\u30C9\u30B5\u30F3\u30AF\u30C1\u30E5\u30A2\u30EA"
+  Grade: 0
+  DefaultPower: 6000
+  DefaultCritical: 1
+  Shield: 10000
+  Skill: 0
+  Trigger: 0
+  TriggerPower: 0
+  Ability: {fileID: 11400000, guid: 5e1c6baec51d86b47bb792a7df974ad6, type: 2}
+  Flavor: "\u30C8\u30E9\u30F3\u30DA\u30C3\u30C8\u3092\u5439\u304D\u306A\u3089\u305B\uFF01\u3000\u3055\u3042\u6226\u3044\u306E\u59CB\u307E\u308A\u3060\uFF01"
+  Number: TD01-012
+  Rarity: TD
