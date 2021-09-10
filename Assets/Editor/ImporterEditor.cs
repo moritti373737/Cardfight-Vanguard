@@ -45,7 +45,6 @@ public class ImpoterEditor : Editor
             List<string> cardText = textAsset.text.Replace("\r\n", "\n").SplitEx('\n');
 
             cardData.Name = cardText[1].SplitEx(',')[1];
-            cardData.Name = cardText[1].SplitEx(',')[1];
             cardData.UnitType = cardText[2].SplitEx(',')[1];
             cardData.Clan = cardText[3].SplitEx(',')[1];
             cardData.Race = cardText[4].SplitEx(',')[1];
@@ -72,7 +71,7 @@ public class ImpoterEditor : Editor
                 else if (text[0] == "オーバートリガー") cardData.Trigger = Card.TriggerType.Over;
                 cardData.TriggerPower = int.Parse(text[1]);
             }
-            cardData.Ability = Resources.Load<AbilityData>("TD01/001abc");
+            cardData.Ability = Resources.Load<AbilityData>(cardText[14].SplitEx(',')[1] + "ability");
             cardData.Flavor = cardText[13].SplitEx(',')[1];
             cardData.Number = cardText[14].SplitEx(',')[1].Replace("/", "-");
             cardData.Rarity = cardText[15].SplitEx(',')[1];

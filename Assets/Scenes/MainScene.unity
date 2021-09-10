@@ -252,7 +252,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c710798998a9184db12319c47a4c83d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ID: 0
+  <ID>k__BackingField: 0
+  <Turn>k__BackingField: 1
 --- !u!114 &141899825
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -860,6 +861,7 @@ MonoBehaviour:
   fighter2: {fileID: 1451585532}
   SelectBoxPrefab: {fileID: 8287165649421381882, guid: 273e194a4cc31fb44b5cba4f4645448f, type: 3}
   SelectedBoxPrefab: {fileID: 5417325479911120163, guid: 170c1fa0ad4b61648b1a4756009105c4, type: 3}
+  MultiSelectIndex: 0
   SelectObjList1:
   - {fileID: 746849161}
   - {fileID: 241021720}
@@ -1861,8 +1863,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b0bed5568626184cadbc8629fa3ef34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <Turn>k__BackingField: 1
   fighter1: {fileID: 141899824}
   fighter2: {fileID: 1451585532}
+  <AttackFighter>k__BackingField: {fileID: 0}
+  <DefenceFighter>k__BackingField: {fileID: 0}
 --- !u!4 &1373051666
 Transform:
   m_ObjectHideFlags: 0
@@ -2077,7 +2082,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c710798998a9184db12319c47a4c83d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ID: 1
+  <ID>k__BackingField: 1
+  <Turn>k__BackingField: 1
 --- !u!4 &1451585533
 Transform:
   m_ObjectHideFlags: 0

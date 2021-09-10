@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 public class Fighter : MonoBehaviour
 {
-
-    public FighterID ID;
+    [field: SerializeField]
+    public FighterID ID { get; private set; }
+    [field: SerializeField]
     private int Turn { get; set; } = 1;
 
     private Fighter OpponentFighter { get; set; }

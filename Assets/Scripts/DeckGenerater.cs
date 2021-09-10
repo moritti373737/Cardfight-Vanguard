@@ -23,7 +23,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
 
     public void Generate(Deck _deck, FighterID fighterID)
     {
-        (List<Texture2D> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) = LoadDeckData();
+        (List<Texture2D> cardSpriteList, List<string> filename, List<int> cardNumber) = LoadDeckData();
         int spriteNumber = 0;
         int nextSpriteCardNumber = cardNumber[spriteNumber];
         int sum = cardNumber.Sum();
@@ -56,34 +56,36 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
 
             Card card = cardObj.GetComponent<Card>();
             card.transform.Find("Face").GetComponent<MeshRenderer>().material = material;
-            card.SetStatus(cardTextList[spriteNumber]);
+            //Debug.Log(cardSpriteList[spriteNumber].name.Substring(0, cardSpriteList[spriteNumber].name.Length - 3));
+            //Debug.Log(filename[spriteNumber]);
+            card.SetStatus(filename[spriteNumber]);
             card.FighterID = fighterID;
             //card.cardModel.face = cardSpriteList[0];
             //card.CardModel.ToggleFace(true);
             //card.Load(cardDataList[i]);
             _deck.Add(card);
             //Debug.Log(i);
-            cardTextList.ForEach(cardText => Resources.UnloadAsset(cardText));
+            //cardTextList.ForEach(cardText => Resources.UnloadAsset(cardText));
 
         }
 
         Offset += 50;
     }
 
-    private (List<Texture2D> cardSpriteList, List<TextAsset> cardTextList, List<int> cardNumber) LoadDeckData()
+    private (List<Texture2D> cardSpriteList, List<string> cardTextList, List<int> cardNumber) LoadDeckData()
     {
         string dirName;
         string[,] saveData = LoadSave();
         List<Texture2D> cardSpriteList = new List<Texture2D>();
-        List<TextAsset> cardTextList = new List<TextAsset>();
+        List<string> cardTextList = new List<string>();
         List<int> cardNumber = new List<int>();
 
         for (int i = 0; i < saveData.GetLength(0); i++)
         {
             dirName = saveData[i, 0] + "/" + saveData[i, 1] + "png";
             cardSpriteList.Add(Resources.Load<Texture2D>(dirName));
-            dirName = saveData[i, 0] + "/" + saveData[i, 1] + "txt";
-            cardTextList.Add(Resources.Load(dirName) as TextAsset);
+            dirName = saveData[i, 0] + "/" + saveData[i, 1];
+            cardTextList.Add(dirName);
             cardNumber.Add(int.Parse(saveData[i, 2]));
 
             //Debug.Log(saveData[i,0]);

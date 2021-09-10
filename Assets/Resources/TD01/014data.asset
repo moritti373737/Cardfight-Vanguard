@@ -24,7 +24,7 @@ MonoBehaviour:
   Skill: 0
   Trigger: 4
   TriggerPower: 5000
-  Ability: {fileID: 11400000, guid: 5e1c6baec51d86b47bb792a7df974ad6, type: 2}
+  Ability: {fileID: 0}
   Flavor: "\u5927\u4E08\u592B\u3001\u3042\u306A\u305F\u306F\u307E\u3060\u6226\u3048\u308B\u3002"
   Number: TD01-014
   Rarity: TD

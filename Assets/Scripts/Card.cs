@@ -3,36 +3,63 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
+using System.Linq;
 
 public class Card : MonoBehaviour
 {
+    [field: SerializeField]
     public int ID { get; private set; } // カード固有のID
 
+    [field: SerializeField]
     public FighterID FighterID { get; set; }
 
+    [SerializeField]
     public ICardZone Parent { get => GetComponentInParent<ICardZone>(); }
 
+    [field: Space(10)]
+    [field: Header("↓カードデータ↓")]
+    [field: Space(10)]
+
+    [field: SerializeField]
     public string Name { get; private set; }     // カード名
+    [field: SerializeField]
     public string UnitType { get; private set; } // ノーマル or トリガーユニット
+    [field: SerializeField]
     public string Clan { get; private set; }     // クラン名
+    [field: SerializeField]
     public string Race { get; private set; }     // 種族名
+    [field: SerializeField]
     public string Nation { get; private set; }   // 国家名
+    [field: SerializeField]
     public int Grade { get; private set; }
+    [field: SerializeField]
     private int DefaultPower { get; set; }  // 元のパワー
     public int Power { get => DefaultPower + OffsetPower + BoostedPower; }
-    private int DefaultCritical { get; set; }
+    [field: SerializeField]
+    private int DefaultCritical { get; set; } // 元のクリティカル
     public int Critical { get => DefaultCritical + OffsetCritical; }
+    [field: SerializeField]
     public int Shield { get; private set; }
+    [field: SerializeField]
     public SkillType Skill { get; private set; }
+    [field: SerializeField]
     public TriggerType Trigger { get; private set; }
+    [field: SerializeField]
     public int TriggerPower { get; private set; } = 0;
+    [field: SerializeField]
     public AbilityData Ability { get; private set; }
+    [field: SerializeField]
     public string Flavor { get; private set; }
+    [field: SerializeField]
     public string Number { get; private set; }
+    [field: SerializeField]
     public string Rarity { get; private set; }
 
+    [field: SerializeField]
     public int OffsetPower { get; set; } = 0;
+    [field: SerializeField]
     public int BoostedPower { get; set; } = 0;
+    [field: SerializeField]
     public int OffsetCritical { get; set; } = 0;
 
     public Transform Transform { get => transform; }
@@ -92,46 +119,32 @@ public class Card : MonoBehaviour
             .Skip(1)
             .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
             .AddTo(this);
+
+        List<CardData> cardData = Resources.LoadAll<CardData>("TD01").ToList();
+        //print(cardData[0].Name);
     }
 
 
-    public void SetStatus(TextAsset cardText)
+    public void SetStatus(string filename)
+
     {
-        List<string> cardTextList = cardText.text.Replace("\r\n", "\n").SplitEx('\n');
-
-        Name = cardTextList[1].SplitEx(',')[1];
-        UnitType = cardTextList[2].SplitEx(',')[1];
-        Clan = cardTextList[3].SplitEx(',')[1];
-        Race = cardTextList[4].SplitEx(',')[1];
-        Nation = cardTextList[5].SplitEx(',')[1];
-        Grade = int.Parse(cardTextList[6].SplitEx(',')[1]);
-        DefaultPower = int.Parse(cardTextList[7].SplitEx(',')[1]);
-        DefaultCritical = int.Parse(cardTextList[8].SplitEx(',')[1]);
-        Shield = int.Parse(cardTextList[9].SplitEx(',')[1].Replace("-", "0"));
-        var skillText = cardTextList[10].SplitEx(',')[1];
-        if (skillText == "ブースト") Skill = SkillType.Boost;
-        else if (skillText == "インターセプト") Skill = SkillType.Intercept;
-        else if (skillText == "ツインドライブ") Skill = SkillType.TwinDrive;
-        else if (skillText == "トリプルドライブ") Skill = SkillType.TripleDrive;
-        var triggerText = cardTextList[11].SplitEx(',')[1];
-        if (triggerText == "-") Trigger = TriggerType.None;
-        else
-        {
-            var text = triggerText.SplitEx('+');
-            if (text[0] == "クリティカルトリガー") Trigger = TriggerType.Critical;
-            else if (text[0] == "ドロートリガー") Trigger = TriggerType.Draw;
-            else if (text[0] == "フロントトリガー") Trigger = TriggerType.Front;
-            else if (text[0] == "ヒールトリガー") Trigger = TriggerType.Heal;
-            else if (text[0] == "スタンドトリガー") Trigger = TriggerType.Stand;
-            else if (text[0] == "オーバートリガー") Trigger = TriggerType.Over;
-            TriggerPower = int.Parse(text[1]);
-        }
-        Ability = Resources.Load<AbilityData>("TD01/001");
-        Flavor = cardTextList[13].SplitEx(',')[1];
-        Number = cardTextList[14].SplitEx(',')[1].Replace("/", "-");
-        Rarity = cardTextList[15].SplitEx(',')[1];
-
-        //if (ID == 0) print(cardText);
+        CardData cardData = Resources.Load<CardData>(filename + "data");
+        Name = cardData.Name;
+        UnitType = cardData.UnitType;
+        Clan = cardData.Clan;
+        Race = cardData.Race;
+        Nation = cardData.Nation;
+        Grade = cardData.Grade;
+        DefaultPower = cardData.DefaultPower;
+        DefaultCritical = cardData.DefaultCritical;
+        Shield = cardData.Shield;
+        Skill = cardData.Skill;
+        Trigger = cardData.Trigger;
+        TriggerPower = cardData.TriggerPower;
+        Ability = cardData.Ability;
+        Flavor = cardData.Flavor;
+        Number = cardData.Number;
+        Rarity = cardData.Rarity;
     }
 
     public void TurnOver()

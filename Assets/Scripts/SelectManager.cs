@@ -48,6 +48,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <summary>
     /// 一つのマス目内で移動可能な場合用のインデックス
     /// </summary>
+    [SerializeField]
     private int MultiSelectIndex = 0;
 
     private List<List<GameObject>> SelectObjList;

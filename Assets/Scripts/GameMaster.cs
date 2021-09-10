@@ -7,14 +7,18 @@ using UnityEngine.SceneManagement;
 
 public class GameMaster : MonoBehaviour
 {
+    [field: SerializeField]
     private int Turn { get; set; } = 1;
+
 
     //public Player[] playerList;
     public Fighter fighter1;
     public Fighter fighter2;
 
 
+    [field: SerializeField]
     private Fighter AttackFighter { get; set; }
+    [field: SerializeField]
     private Fighter DefenceFighter { get; set; }
 
     //[SerializeField] Animator animator;
