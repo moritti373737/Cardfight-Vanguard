@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Soul : MonoBehaviour, IMultiCardZone
@@ -30,4 +31,6 @@ public class Soul : MonoBehaviour, IMultiCardZone
         cardList.Remove(card);
         return card;
     }
+    public bool HasCard() => cardList.ToList().Any();
+    public Card GetCard(int index) => cardList[index];
 }

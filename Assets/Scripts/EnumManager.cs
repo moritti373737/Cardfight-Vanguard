@@ -20,6 +20,7 @@ public enum Tag
     Field,
     Power,
     StatusText,
+    Action
 }
 
 public enum FighterID
@@ -43,6 +44,7 @@ public enum Result
     NO,
     CANCEL,
     END,
+    RESTART,
     NONE,
 }
 

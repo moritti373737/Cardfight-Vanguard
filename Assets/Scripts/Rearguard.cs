@@ -40,4 +40,5 @@ public class Rearguard : MonoBehaviour, ICardCircle
     /// <returns></returns>
     public bool IsSameColumn(ICardCircle cardCircle) => ID % 10 == cardCircle.ID % 10;
 
+    public bool HasCard() => Card != null;
 }

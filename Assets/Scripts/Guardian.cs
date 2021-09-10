@@ -137,4 +137,6 @@ public class Guardian : MonoBehaviour, IMultiCardZone
     {
         throw new System.NotImplementedException();
     }
+    public bool HasCard() => cardList.Any();
+    public Card GetCard(int index) => cardList[index];
 }

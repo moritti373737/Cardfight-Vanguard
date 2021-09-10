@@ -20,4 +20,5 @@ public class EmptyCard : MonoBehaviour, ICardZone
     {
         throw new System.NotImplementedException();
     }
+    public bool HasCard() => Card != null;
 }

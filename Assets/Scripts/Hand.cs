@@ -4,6 +4,7 @@ using UnityEngine;
 using UniRx;
 using System;
 using Cysharp.Threading.Tasks;
+using System.Linq;
 
 public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
 {
@@ -133,6 +134,8 @@ public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
     {
         throw new NotImplementedException();
     }
+    public bool HasCard() => cardList.ToList().Any();
+
 }
 
 /*

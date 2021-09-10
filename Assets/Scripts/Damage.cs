@@ -42,4 +42,5 @@ public class Damage : MonoBehaviour, IMultiCardZone
     {
         throw new System.NotImplementedException();
     }
+    public bool HasCard() => cardList.Any();
 }

@@ -10,7 +10,7 @@ public class ActionManager : SingletonMonoBehaviour<ActionManager>
 
     void Start()
     {
-        ActionHistory.ObserveCountChanged().Subscribe(count => Debug.Log(count));
+        //ActionHistory.ObserveCountChanged().Subscribe(count => Debug.Log(count));
     }
 
     void Update()
@@ -22,7 +22,7 @@ public class ActionManager : SingletonMonoBehaviour<ActionManager>
     /// </summary>
     private void OnApplicationQuit()
     {
-        ActionHistory.ToList().ForEach(t => Debug.Log($"{t.Title}, {t.FighterID} || {t.Source?.ToString()} = {t.Card} => {t.Target?.ToString()}"));
+        ActionHistory.ToList().ForEach(t => Debug.Log($"{t.FighterID}, {t.Title} || {t.Source?.ToString()} = {t.Card} => {t.Target?.ToString()}"));
     }
 }
 

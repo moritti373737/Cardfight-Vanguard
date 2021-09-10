@@ -58,6 +58,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     private List<Transform> SelectedCardParentList = new List<Transform>();
 
+    private GameObject SelectActObj;
+
 // Start is called before the first frame update
     void Start()
     {
@@ -206,33 +208,49 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             down = true;
         }
 
-        if (right && SelectObjList[selectZoneIndex[0]].Count - 1 > selectZoneIndex[1] && !HasTag(Tag.Hand))
+        if (right && SelectObjList[selectZoneIndex[0]].Count - 1 > selectZoneIndex[1] && !HasTag(Tag.Hand) && !IsAction())
         {
-            // 右端にいない かつ 手札にカーソルがないとき
+            // 右端にいない かつ
             selectZoneIndex[1]++;
             changeSelectBox = true;
 
         }
-        else if (left && selectZoneIndex[1] > 0 && !HasTag(Tag.Hand))
+        else if (left && selectZoneIndex[1] > 0 && !HasTag(Tag.Hand) && !IsAction())
         {
-            // 左端にいない かつ 手札にカーソルがないとき
+            // 左端にいない かつ
             selectZoneIndex[1]--;
             changeSelectBox = true;
         }
-        else if (up && selectZoneIndex[0] > 0 && !HasTag(Tag.Damage))
+        else if (up && selectZoneIndex[0] > 0 && !HasTag(Tag.Damage) && !IsAction())
         {
-            // 上端にいないとき
+            // 上端にいない かつ
             selectZoneIndex[0]--;
             changeSelectBox = true;
         }
-        else if (down && SelectObjList.Count - 1 > selectZoneIndex[0] && !HasTag(Tag.Damage))
+        else if (down && SelectObjList.Count - 1 > selectZoneIndex[0] && !HasTag(Tag.Damage) && !IsAction())
         {
-            // 下端にいないとき
+            // 下端にいない かつ
             selectZoneIndex[0]++;
             changeSelectBox = true;
         }
 
         if (MultiSelectIndex == -1) return;
+        if (SelectActObj != null)
+        {
+            // カーソルを上下に移動させる
+            if (down)
+            {
+                ChangeSelectBoxParent(SelectActObj.transform.GetChild(1).gameObject);
+                changeSelectBox = true;
+            }
+            else if (up)
+            {
+                ChangeSelectBoxParent(SelectActObj.transform.GetChild(0).gameObject);
+                changeSelectBox = true;
+            }
+            return;
+        }
+
 
         // カーソルが手札上にある時
         if (HasTag(Tag.Hand))
@@ -322,6 +340,18 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     {
         Fighter fighter = GetFighter(fighterID);
 
+        if (tag == Tag.None && IsFighter(fighterID))
+        {
+            if (SelectObj.GetComponent<ICardZone>().GetType().GetInterfaces().Contains(typeof(ISingleCardZone)))
+            {
+                return SelectObj.GetComponent<ISingleCardZone>().Card;
+            }
+            else
+            {
+                return SelectObj.GetComponent<IMultiCardZone>().GetCard(MultiSelectIndex);
+            }
+        }
+
         if (!HasTag(tag)) return null;
 
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
@@ -349,9 +379,9 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     public async UniTask<ICardZone> GetZone(Tag tag, FighterID fighterID)
     {
-        Fighter fighter = GetFighter(fighterID);
+        //Fighter fighter = GetFighter(fighterID);
 
-        if (!HasTag(tag)) return null;
+        //if (!HasTag(tag)) return null;
 
         // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの
         if (HasTag(Tag.Circle) && IsFighter(fighterID))
@@ -519,6 +549,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// </summary>
     public void SingleCancel()
     {
+        if (!SelectedCardParentList.Any()) return;
         SelectedCardParentList.Pop();
         Destroy(SelectedBoxList.Last());
         SelectedBoxList.Pop();
@@ -597,6 +628,29 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         //}
     }
 
+    public void SetActionObj(Transform transform)
+    {
+        SelectActObj = transform.gameObject;
+        ChangeSelectBoxParent(transform.GetChild(0).gameObject);
+    }
+
+    public string ActionConfirm()
+    {
+
+        string select = SelectBox.transform.parent.name;
+        if (IsSingle(SelectObj))
+            SelectBox.ChangeParent(SelectObj.transform);
+        else
+            ChangeSelectBoxParent(SelectObj.transform.GetChild(MultiSelectIndex).gameObject);
+        CancelAction();
+        return select;
+    }
+
+    public void CancelAction()
+    {
+        Destroy(SelectActObj);
+        SelectActObj = null;
+    }
     //private bool IsHand() => !ReferenceEquals(SelectObj.GetComponent<Hand>(), null);
 
     //private bool IsCardCircle() => SelectObjList[selectZoneIndex.Item1][selectZoneIndex[1]].tag.Contains("Circle");
@@ -609,6 +663,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <param name="tag">判定に使うタグ</param>
     /// <returns>部分一致したかどうか</returns>
     private bool HasTag(Tag tag) => SelectObj.tag.Contains(tag.ToString());
+    private bool IsAction() => SelectObj?.FindWithChildTag(Tag.Card)?.FindWithChildTag(Tag.Action);
 
     /// <summary>
     /// 現在のカーソル位置にあるオブジェクトを所有するファイターと指定したファイターが一致しているか調べる
@@ -630,11 +685,14 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <returns>条件を満たすファイター</returns>
     private Fighter GetFighter(FighterID fighterID) => fighter1.ID == fighterID ? fighter1 : fighter2;
 
+    private bool IsSingle(GameObject gameObject) => gameObject.GetComponent<ICardZone>().GetType().GetInterfaces().Contains(typeof(ISingleCardZone));
+
     private void ChangeSelectBoxParent(GameObject parentObject)
     {
         Transform parentTransform = parentObject.transform;
         SelectBox.transform.SetParent(parentTransform);
-        SelectBox.transform.position = parentTransform.position;
+        //SelectBox.transform.position = parentTransform.position;
+        SelectBox.transform.localPosition = new Vector3(0, 0, -1);
         SelectBox.transform.localScale = new Vector3(1.1F, 1.1F, 0F);
     }
 

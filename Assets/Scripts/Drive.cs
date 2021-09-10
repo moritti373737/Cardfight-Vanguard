@@ -18,4 +18,6 @@ public class Drive : MonoBehaviour, ISingleCardZone
 
     public Transform GetTransform() => transform;
     public Card GetCard() => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>();
+
+    public bool HasCard() => Card != null;
 }

@@ -188,6 +188,7 @@ public class Fighter : MonoBehaviour
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsV = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsV2 = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsC = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsM = new List<Func<UniTask<Result>>>();
 
@@ -200,25 +201,56 @@ public class Fighter : MonoBehaviour
         });
         functionsV.Add(async () =>
         {
-            selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
-            if (selectedCard != null)
+            selectedCard = await SelectManager.Instance.GetSelect(Tag.None, ID);
+            //ICardZone selectedZone = await SelectManager.Instance.GetZone(Tag.None, ID);
+            if (selectedCard == null) return Result.NO;
+            print(selectedCard);
+            Transform action = TextManager.Instance.SetActionList(selectedCard);
+            SelectManager.Instance.SetActionObj(action);
+            state = functionsV2;
+            functions.AddRange(functionsV2);
+            return Result.YES;
+        });
+
+        functionsV2.Add(async () =>
+        {
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            return resultInt.ToEnum("YES", "CANCEL");
+        });
+        functionsV2.Add(async () =>
+        {
+            string act = SelectManager.Instance.ActionConfirm();
+            //return Result.YES;
+
+            if (act == "Call")
             {
-                if (selectedCard.Grade > Vanguard.Card.Grade) return Result.NO; // グレードのチェック
-                await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
-                state = functionsC;
-                functions.AddRange(functionsC);
-                return Result.YES;
+                selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+                if (selectedCard != null)
+                {
+                    if (selectedCard.Grade > Vanguard.Card.Grade) return Result.RESTART; // グレードのチェック
+                    await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
+                    state = functionsC;
+                    functions.AddRange(functionsC);
+                    return Result.YES;
+                }
+
+
+                selectedCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
+                if (selectedCard != null)
+                {
+                    await SelectManager.Instance.NormalSelected(Tag.Rearguard, ID);
+                    state = functionsM;
+                    functions.AddRange(functionsM);
+                    return Result.YES;
+                }
+            }
+            else if (act == "Skill")
+            {
+                print("スキル発動");
             }
 
-            selectedCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
-            if (selectedCard != null)
-            {
-                await SelectManager.Instance.NormalSelected(Tag.Rearguard, ID);
-                state = functionsM;
-                functions.AddRange(functionsM);
-                return Result.YES;
-            }
-            return Result.NO;
+            return Result.RESTART;
+
         });
 
         // ここまで共通処理
@@ -278,6 +310,12 @@ public class Fighter : MonoBehaviour
                     i -= state.Count; // 直前の分岐点に戻る
                     state = functionsV;
                     SelectManager.Instance.SingleCancel();
+                    SelectManager.Instance.ActionConfirm();
+                    break;
+                case Result.RESTART:
+                    i = 0;
+                    functions.Clear();
+                    functions.AddRange(functionsV);
                     break;
                 case Result.END:
                     return false;

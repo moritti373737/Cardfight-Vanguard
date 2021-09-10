@@ -12,6 +12,9 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
 
     public GameObject StatusPrefab;
 
+    public GameObject ActionListPrefab;
+    private GameObject ActionList { get; set; }
+
     public Sprite[] CriticalSprite;
 
     // Start is called before the first frame update
@@ -70,5 +73,15 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
     public void DestroyStatusText(ICardCircle cardCircle)
     {
         cardCircle.transform.FindWithChildTag(Tag.StatusText)?.gameObject.SetActive(false);
+    }
+
+    public Transform SetActionList(Card card)
+    {
+        ActionList = Instantiate(ActionListPrefab).FixName();
+        ActionList.transform.parent = card.transform;
+        ActionList.transform.localRotation = Quaternion.Euler(0, 180, 0);
+        ActionList.transform.localPosition = new Vector3(0, 0, 0.01F);
+        ActionList.transform.localScale = card.transform.localScale;
+        return ActionList.transform;
     }
 }

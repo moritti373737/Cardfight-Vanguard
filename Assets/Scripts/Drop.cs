@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
 using System;
+using System.Linq;
 
 public class Drop : MonoBehaviour, IMultiCardZone
 {
@@ -35,4 +36,6 @@ public class Drop : MonoBehaviour, IMultiCardZone
         cardList.Remove(card);
         return card;
     }
+    public bool HasCard() => cardList.ToList().Any();
+    public Card GetCard(int index) => cardList[index];
 }

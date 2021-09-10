@@ -904,6 +904,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CanvasPrefab: {fileID: 3591121207522500120, guid: 48c5ce90bc0e5ef44a5a89ee4e5d5b36, type: 3}
   StatusPrefab: {fileID: 4859931527790025104, guid: b5d0a57596726ef4c9523d93d15965f2, type: 3}
+  ActionListPrefab: {fileID: 5936672625578618832, guid: ee45c0b1763b64a4bb95ec843e42e8c6, type: 3}
   CriticalSprite: []
 --- !u!114 &768289829
 MonoBehaviour:

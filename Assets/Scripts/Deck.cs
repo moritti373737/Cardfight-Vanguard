@@ -43,4 +43,6 @@ public class Deck : MonoBehaviour, IMultiCardZone
         }
     }
 
+    public bool HasCard() => cardList.Any();
+    public Card GetCard(int index) => cardList[index];
 }

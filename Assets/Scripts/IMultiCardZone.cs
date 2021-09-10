@@ -7,5 +7,5 @@ public interface IMultiCardZone: ICardZone
     void Add(Card card);
     Card Pull(int index);
 
-    Transform transform { get; }
+    public Card GetCard(int index);
 }

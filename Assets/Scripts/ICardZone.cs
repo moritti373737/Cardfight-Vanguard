@@ -6,4 +6,5 @@ public interface ICardZone
 {
     Transform transform { get; }
 
+    bool HasCard();
 }
