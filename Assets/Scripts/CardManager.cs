@@ -216,6 +216,15 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         SetHistory(card: card, source:damage, target:drop);
     }
 
+    public async UniTask HandToDrop(Hand hand, Drop drop, Card card)
+    {
+        hand.Pull(card);
+
+        drop.Add(card);
+        SetHistory(card: card, source: hand, target: drop);
+    }
+
+
 
     /// <summary>
     /// ƒJ[ƒh‚ğ— •Ô‚·

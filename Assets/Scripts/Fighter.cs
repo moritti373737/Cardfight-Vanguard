@@ -248,7 +248,7 @@ public class Fighter : MonoBehaviour
             else if (act == "Ability")
             {
                 print("ƒXƒLƒ‹”­“®");
-                AbilityManager.Instance.StartActivate(selectedCard, 0);
+                await AbilityManager.Instance.StartActivate(selectedCard, 0);
             }
 
             return Result.RESTART;

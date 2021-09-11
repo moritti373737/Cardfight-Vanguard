@@ -20,7 +20,7 @@ MonoBehaviour:
     condition: 0
     cost:
     - Type: 1
-      Count: 1
+      Count: 2
     ability:
     - TargetFighter: 1
       TargetCard: 1

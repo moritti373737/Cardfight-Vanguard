@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,17 +55,18 @@ public class AbilityManager : SingletonMonoBehaviour<AbilityManager>
         };
     }
 
-    public bool StartActivate(Card card, int skillIndex)
+    public async UniTask<bool> StartActivate(Card card, int skillIndex)
     {
         Ability ability = SearchAbility(CategoryType.Activated, card.ID)[skillIndex];
         //if (!abilityList.Any()) return false;
         if (!card.Parent.transform.tag.Contains(ability.place.ToString())) return false;
 
-        if (!costManager.PayCost(ability.cost)) return false;
+        if (!await costManager.PayCost(card, ability.cost)) return false;
 
         activateAbility.Activate(card, ability.ability);
 
-        Debug.Log($"{card.Name} (id = {card.ID}) のスキル発動！ {ability.place} で {ability.cost[0].Type} を {ability.cost[0].Count} 枚行うことで {ability.ability[0].TargetCard} に {ability.ability[0].Option} だけ {ability.ability[0].Type} の効果を与える");
+        Debug.Log($"{card.Name} (id = {card.ID}) のスキル発動！ {ability.place} で {ability.cost[0].Type} を {ability.cost[0].Count} 枚行うことで →");
+        Debug.Log($"  → {ability.finish} まで {ability.ability[0].TargetCard} に {ability.ability[0].Option} だけ {ability.ability[0].Type} の効果を与える");
 
         return true;
     }
