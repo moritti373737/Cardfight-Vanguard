@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System;
 using Cysharp.Threading.Tasks;
 using System.Linq;
+using System.Reflection;
 
 /// <summary>
 /// カーソル選択を管理する
@@ -23,6 +24,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     public GameObject SelectBoxPrefab;
     [SerializeField]
     public GameObject SelectedBoxPrefab;
+
+    public int SelectedCount { get => SelectedCardParentList.Count; }
 
     private Image ZoomImage;
     //public GameObject R13;
@@ -260,7 +263,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             Hand hand = fighter.Hand;
 
             // カーソルを左右に移動させる
-            if (right && hand.Count() - 1 > MultiSelectIndex)
+            if (right && hand.Count - 1 > MultiSelectIndex)
             {
                 MultiSelectIndex++;
             }
@@ -269,8 +272,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 MultiSelectIndex--;
             }
 
-            //if (hand.Count() > 0) SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
-            //if (hand.Count() > 0) // 手札のカードにカーソルを移動させる
+            //if (hand.Count > 0) SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
+            //if (hand.Count > 0) // 手札のカードにカーソルを移動させる
             //{
             //}
             //else // 手札がないとき
@@ -287,7 +290,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             // カーソルを上下に移動させる
             if (down)
             {
-                if (damage.Count() - 1 > MultiSelectIndex) MultiSelectIndex++;
+                if (damage.Count - 1 > MultiSelectIndex) MultiSelectIndex++;
                 else
                 {
                     selectZoneIndex[0]++;
@@ -313,14 +316,14 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             Damage damage = fighter.Damage;
 
             // 手札以外の場所から手札に移動したとき
-            if (HasTag(Tag.Hand) && hand.Count() > 0)
+            if (HasTag(Tag.Hand) && hand.Count > 0)
             {
-                MultiSelectIndex = hand.Count() / 2; // 手札の数に合わせて初期化
+                MultiSelectIndex = hand.Count / 2; // 手札の数に合わせて初期化
                 ChangeSelectBoxParent(hand.transform.GetChild(MultiSelectIndex).gameObject);
             }
-            else if (HasTag(Tag.Damage) && damage.Count() > 0)
+            else if (HasTag(Tag.Damage) && damage.Count > 0)
             {
-                if (up) MultiSelectIndex = damage.Count() - 1;
+                if (up) MultiSelectIndex = damage.Count - 1;
                 else MultiSelectIndex = 0;
                 ChangeSelectBoxParent(damage.transform.GetChild(MultiSelectIndex).gameObject);
 
@@ -339,11 +342,13 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     public async UniTask<Card> GetSelect(Tag tag, FighterID fighterID)
     {
+        if (!IsFighter(fighterID)) return null;
+
         Fighter fighter = GetFighter(fighterID);
 
-        if (tag == Tag.None && IsFighter(fighterID))
+        if (tag == Tag.None)
         {
-            if (SelectObj.GetComponent<ICardZone>().GetType().GetInterfaces().Contains(typeof(ISingleCardZone)))
+            if (IsSingle(SelectObj))
             {
                 return SelectObj.GetComponent<ISingleCardZone>().Card;
             }
@@ -355,26 +360,41 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
         if (!HasTag(tag)) return null;
 
+        if (IsSingle(SelectObj))
+        {
+            if (SelectObj.FindWithChildTag(Tag.Card) != null)
+                return SelectObj.GetComponent<ISingleCardZone>().Card;
+        }
+        else
+        {
+            IMultiCardZone multiCardZone = (IMultiCardZone)fighter.GetType().GetProperty(tag.ToString()).GetValue(fighter);
+            if (multiCardZone.Count > 0)
+                return SelectObj.GetComponent<IMultiCardZone>().GetCard(MultiSelectIndex);
+        }
+
+
+
+
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
-        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.Hand.Count() > 0)
-        {
-            return fighter.Hand.GetCard(MultiSelectIndex);
-        }
-        // カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
-        //else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
+        //if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.Hand.Count > 0)
         //{
-        //    return Result.YES;
+        //    return fighter.Hand.GetCard(MultiSelectIndex);
         //}
-        // カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
-        else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
-        {
-            return SelectObj.GetComponent<ICardCircle>().Card;
-        }
-        // カーソル位置がダメージゾーン かつ カーソル位置が指定したファイターのもの かつ 指定したファイターのダメージゾーンが0枚じゃない
-        else if (HasTag(Tag.Damage) && IsFighter(fighterID) && fighter.Damage.Count() > 0)
-        {
-            return fighter.Damage.GetCard(MultiSelectIndex);
-        }
+        //// カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
+        ////else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
+        ////{
+        ////    return Result.YES;
+        ////}
+        //// カーソル位置がダメージゾーン かつ カーソル位置が指定したファイターのもの かつ 指定したファイターのダメージゾーンが0枚じゃない
+        //else if (HasTag(Tag.Damage) && IsFighter(fighterID) && fighter.Damage.Count > 0)
+        //{
+        //    return fighter.Damage.GetCard(MultiSelectIndex);
+        //}
+        //// カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
+        //else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
+        //{
+        //    return SelectObj.GetComponent<ICardCircle>().Card;
+        //}
         return null;
     }
 
@@ -405,7 +425,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         if (!HasTag(tag)) return null;
 
         // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
-        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.Hand.Count() > 0)
+        if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.Hand.Count > 0)
         {
             var selectedCard = fighter.Hand.transform.GetChild(MultiSelectIndex);
             if (selectedCard.Find("SelectedBox"))
@@ -530,6 +550,10 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         {
             SelectedCardParentList.ForEach(async parent => await CardManager.Instance.HandToGuardian(fighter.Hand, fighter.Guardian, parent.GetCard()));
         }
+        else if (tag == Tag.Drop)
+        {
+            SelectedCardParentList.ForEach(async parent => await CardManager.Instance.HandToDrop(fighter.Hand, fighter.Drop, parent.GetCard()));
+        }
         SelectedBoxList.Clear();
         SelectedCardParentList.Clear();
         SelectedBoxList.ForEach(selectedBox => Destroy(selectedBox));
@@ -537,7 +561,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         await UniTask.NextFrame();
 
         MultiSelectIndex = 0;
-        if (fighter.Hand.Count() > 0) // 手札のカードにカーソルを移動させる
+        if (fighter.Hand.Count > 0) // 手札のカードにカーソルを移動させる
         {
             SelectBox.ChangeParent(fighter.Hand.transform.GetChild(MultiSelectIndex), p: false);
         }
@@ -568,12 +592,6 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         SelectedBoxList.RemoveAt(index);
     }
 
-    public void MultSelected()
-    {
-
-    }
-
-    public int SelectedCount() => SelectedCardParentList.Count;
 
     /// <summary>
     /// カードの拡大機能のオンオフを切り替える
@@ -591,19 +609,24 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     {
         if (!ZoomImage.enabled) return;
         if (HasTag(Tag.Deck)) return;
-        if (HasTag(Tag.Hand) && GetFighter(FighterID.ONE).Hand.Count() > 0)
+        if (IsSingle(SelectObj))
+        {
+            if (SelectObj.FindWithChildTag(Tag.Card) != null)
+            {
+                var card = SelectObj.FindWithChildTag(Tag.Card).GetComponent<Card>();
+                //if (!card.JudgeState(Card.State.FaceUp)) return;
+                var cardTexture = (Texture2D)card.GetTexture();
+                ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f);
+            }
+
+        }
+        else if (HasTag(Tag.Hand) && GetFighter(FighterID.ONE).Hand.Count > 0)
         {
             var card = SelectObj.transform.GetChild(MultiSelectIndex).FindWithChildTag(Tag.Card).GetComponent<Card>();
             var cardTexture = (Texture2D)card.GetTexture();
-            ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f); ;
+            ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f);
         }
-        else if (SelectObj.FindWithChildTag(Tag.Card) != null)
-        {
-            var card = SelectObj.FindWithChildTag(Tag.Card).GetComponent<Card>();
-            //if (!card.JudgeState(Card.State.FaceUp)) return;
-            var cardTexture = (Texture2D)card.GetTexture();
-            ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f); ;
-        }
+
     }
 
     /// <summary>
@@ -615,7 +638,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         //Hand hand = fighter.hand;
         MultiSelectIndex = hand.cardList.Count -1;
 
-        if (hand.Count() > 0) // 手札のカードにカーソルを移動させる
+        if (hand.Count > 0) // 手札のカードにカーソルを移動させる
         {
             SelectBox.ChangeParent(hand.transform.GetChild(MultiSelectIndex), p: true);
         }

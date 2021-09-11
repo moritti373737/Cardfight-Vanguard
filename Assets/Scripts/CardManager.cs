@@ -19,6 +19,10 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <returns>コルーチン</returns>
     public IEnumerator DeckToHand(Deck deck, Hand hand, int index)
     {
+        //MethodInfo method = this.GetType().GetMethod("DeckToHand");
+        //var p = method.GetParameters();
+        //var deck1 = p[0];
+
         // ログ出力
         //Debug.Log("1second");
         Card card = deck.Pull(index);

@@ -54,10 +54,10 @@ public class ImpoterEditor : Editor
             cardData.DefaultCritical = int.Parse(cardText[8].SplitEx(',')[1]);
             cardData.Shield = int.Parse(cardText[9].SplitEx(',')[1].Replace("-", "0"));
             var skillText = cardText[10].SplitEx(',')[1];
-            if (skillText == "ブースト") cardData.Skill = Card.SkillType.Boost;
-            else if (skillText == "インターセプト") cardData.Skill = Card.SkillType.Intercept;
-            else if (skillText == "ツインドライブ") cardData.Skill = Card.SkillType.TwinDrive;
-            else if (skillText == "トリプルドライブ") cardData.Skill = Card.SkillType.TripleDrive;
+            if (skillText == "ブースト") cardData.Ability = Card.AbilityType.Boost;
+            else if (skillText == "インターセプト") cardData.Ability = Card.AbilityType.Intercept;
+            else if (skillText == "ツインドライブ") cardData.Ability = Card.AbilityType.TwinDrive;
+            else if (skillText == "トリプルドライブ") cardData.Ability = Card.AbilityType.TripleDrive;
             var triggerText = cardText[11].SplitEx(',')[1];
             if (triggerText == "-") cardData.Trigger = Card.TriggerType.None;
             else
@@ -71,7 +71,7 @@ public class ImpoterEditor : Editor
                 else if (text[0] == "オーバートリガー") cardData.Trigger = Card.TriggerType.Over;
                 cardData.TriggerPower = int.Parse(text[1]);
             }
-            cardData.Ability = Resources.Load<AbilityData>(cardText[14].SplitEx(',')[1] + "ability");
+            cardData.Skill = Resources.Load<SkillData>(cardText[14].SplitEx(',')[1] + "skill");
             cardData.Flavor = cardText[13].SplitEx(',')[1];
             cardData.Number = cardText[14].SplitEx(',')[1];
             cardData.Rarity = cardText[15].SplitEx(',')[1];

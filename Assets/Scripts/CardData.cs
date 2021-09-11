@@ -14,10 +14,10 @@ public class CardData : ScriptableObject
     public int DefaultPower;  // Œ³‚Ìƒpƒ[
     public int DefaultCritical;
     public int Shield;
-    public Card.SkillType Skill;
+    public Card.AbilityType Ability;
     public Card.TriggerType Trigger;
     public int TriggerPower;
-    public AbilityData Ability;
+    public SkillData Skill;
     public string Flavor;
     public string Number;
     public string Rarity;

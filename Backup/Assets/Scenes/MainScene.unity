@@ -1685,6 +1685,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1330672763}
   - component: {fileID: 1330672762}
+  - component: {fileID: 1330672765}
+  - component: {fileID: 1330672764}
   m_Layer: 0
   m_Name: Ability
   m_TagString: Untagged
@@ -1704,6 +1706,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21acfa07bc4ee5144b61d71eff46c30c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  costManager: {fileID: 1330672765}
+  activateSkill: {fileID: 0}
   Fighter1: {fileID: 141899824}
   Fighter2: {fileID: 1451585532}
 --- !u!4 &1330672763
@@ -1720,6 +1724,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1330672764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1330672761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45f4907393ccf1f42ac6c7c8a6998f9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Fighter1: {fileID: 141899824}
+  Fighter2: {fileID: 1451585532}
+--- !u!114 &1330672765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1330672761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 998f6f1a5f97f6d449ee15355dc2f8d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Fighter1: {fileID: 141899824}
+  Fighter2: {fileID: 1451585532}
 --- !u!1 &1337145230
 GameObject:
   m_ObjectHideFlags: 0

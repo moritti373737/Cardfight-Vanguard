@@ -8,6 +8,7 @@ using System.Linq;
 public class Drop : MonoBehaviour, IMultiCardZone
 {
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();
+    public int Count { get => cardList.Count; }
 
     // Start is called before the first frame update
     void Start()

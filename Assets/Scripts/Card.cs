@@ -41,13 +41,13 @@ public class Card : MonoBehaviour
     [field: SerializeField]
     public int Shield { get; private set; }
     [field: SerializeField]
-    public SkillType Skill { get; private set; }
+    public AbilityType Ability { get; private set; }
     [field: SerializeField]
     public TriggerType Trigger { get; private set; }
     [field: SerializeField]
     public int TriggerPower { get; private set; } = 0;
     [field: SerializeField]
-    public AbilityData Ability { get; private set; }
+    public SkillData Skill { get; private set; }
     [field: SerializeField]
     public string Flavor { get; private set; }
     [field: SerializeField]
@@ -74,7 +74,7 @@ public class Card : MonoBehaviour
     }
     public State state { get; set; }
 
-    public enum SkillType
+    public enum AbilityType
     {
         Boost,
         Intercept,
@@ -137,10 +137,10 @@ public class Card : MonoBehaviour
         DefaultPower = cardData.DefaultPower;
         DefaultCritical = cardData.DefaultCritical;
         Shield = cardData.Shield;
-        Skill = cardData.Skill;
+        Ability = cardData.Ability;
         Trigger = cardData.Trigger;
         TriggerPower = cardData.TriggerPower;
-        Ability = cardData.Ability;
+        Skill = cardData.Skill;
         Flavor = cardData.Flavor;
         Number = cardData.Number;
         Rarity = cardData.Rarity;

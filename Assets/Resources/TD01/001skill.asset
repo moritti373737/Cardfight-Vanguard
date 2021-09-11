@@ -9,21 +9,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9564a2ed7c9ce304cb31747822175ffb, type: 3}
-  m_Name: 001ability
+  m_Script: {fileID: 11500000, guid: 141f345f4dc44de4b90ec99c6ee9dc7a, type: 3}
+  m_Name: 001skill
   m_EditorClassIdentifier: 
-  CardNumber: 001ability
-  AbilityList:
+  CardNumber: 001skill
+  SkillList:
   - cardNumber: TD01/001
     category: 1
-    place: 7
-    condition: 0
+    place: 3
+    condition:
+    - SourceFighter: 1
+      SourceCard: 3
+      TargetFighter: 2
+      TargetCard: 3
+      Action: 2
     cost:
     - Type: 1
       Count: 2
-    ability:
+    skill:
     - TargetFighter: 1
       TargetCard: 1
       Type: 0
-      Option: 3000
+      Option: 5000
     finish: 1

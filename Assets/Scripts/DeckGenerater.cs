@@ -61,7 +61,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             card.SetStatus(filename[spriteNumber]);
             card.FighterID = fighterID;
 
-            AbilityManager.Instance.InitAbility(card);
+            SkillManager.Instance.InitSkill(card);
             //card.cardModel.face = cardSpriteList[0];
             //card.CardModel.ToggleFace(true);
             //card.Load(cardDataList[i]);

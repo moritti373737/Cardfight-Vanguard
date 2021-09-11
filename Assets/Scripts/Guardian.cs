@@ -14,6 +14,7 @@ public class Guardian : MonoBehaviour, IMultiCardZone
 
     private List<GameObject> EmptyCardList = new List<GameObject>();
     public GameObject EmptyCardPrefab;
+    public int Count { get => cardList.Count; }
 
     public int Shield { get => cardList.Sum(card => card.Shield); }
 
@@ -87,8 +88,6 @@ public class Guardian : MonoBehaviour, IMultiCardZone
 
 
     public Transform GetTransform() => transform;
-
-    public int Count() => cardList.Count;
 
     private void SetPosition()
     {

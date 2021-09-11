@@ -77,11 +77,11 @@ public class Fighter : MonoBehaviour
             int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
 
             if (inputIndex == 0) await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
-            else if (inputIndex == 1 && SelectManager.Instance.SelectedCount() == 0) return; // Submit入力時
+            else if (inputIndex == 1 && SelectManager.Instance.SelectedCount == 0) return; // Submit入力時
             else break;
         }
 
-        int ToDeckCount = SelectManager.Instance.SelectedCount();
+        int ToDeckCount = SelectManager.Instance.SelectedCount;
         await SelectManager.Instance.ForceConfirm(Tag.Deck, ID, Action.MOVE);
 
         await DrawCard(ToDeckCount);
@@ -245,10 +245,10 @@ public class Fighter : MonoBehaviour
                     return Result.YES;
                 }
             }
-            else if (act == "Ability")
+            else if (act == "Skill")
             {
                 print("スキル発動");
-                await AbilityManager.Instance.StartActivate(selectedCard, 0);
+                await SkillManager.Instance.StartActivate(selectedCard, 0);
             }
 
             return Result.RESTART;
@@ -387,7 +387,7 @@ public class Fighter : MonoBehaviour
                 selectedBoostZone = selectedBoostCard.GetComponentInParent<Rearguard>();
                 if (!selectedBoostZone.Card.JudgeState(Card.State.Stand)) return Result.NO; // ブースト可能なカードか判定
                 if (!selectedBoostZone.IsSameColumn(selectedAttackZone)) return Result.NO;
-                if (selectedBoostZone.Card.Skill != Card.SkillType.Boost) return Result.NO;
+                if (selectedBoostZone.Card.Ability != Card.AbilityType.Boost) return Result.NO;
                 await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
                 selectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
                 ActionManager.Instance.ActionHistory.Add(new ActionData("Boost", ID, selectedBoostZone.Card, selectedBoostZone, selectedAttackZone));
@@ -436,7 +436,7 @@ public class Fighter : MonoBehaviour
         while (i < functions.Count)
         {
             await UniTask.NextFrame();
-            print($"{ i}, { result}, { SelectManager.Instance.SelectedCount()}, {functions.Count}");
+            print($"{ i}, { result}, { SelectManager.Instance.SelectedCount}, {functions.Count}");
             result = await functions[i]();
             switch (result)
             {
@@ -502,7 +502,7 @@ public class Fighter : MonoBehaviour
 
         functionsSubmit.Add(async () =>
         {
-            print(SelectManager.Instance.SelectedCount());
+            print(SelectManager.Instance.SelectedCount);
             await SelectManager.Instance.ForceConfirm(Tag.Guardian, ID, Action.MOVE);
             return Result.YES;
         });
@@ -603,7 +603,7 @@ public class Fighter : MonoBehaviour
                 break;
             case Card.TriggerType.Heal:
                 functions.Add(async () => {
-                    if (Damage.Count() < OpponentFighter.Damage.Count()) return Result.YES;
+                    if (Damage.Count < OpponentFighter.Damage.Count) return Result.YES;
                     await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
                     return Result.YES;
                 });

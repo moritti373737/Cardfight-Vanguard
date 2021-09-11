@@ -165,7 +165,7 @@ public class GameMaster : MonoBehaviour
             if (selectedAttackZone.V)
             {
                 TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
-                int checkCount = selectedAttackZone.Card.Skill == Card.SkillType.TwinDrive ? 2 : 1;
+                int checkCount = selectedAttackZone.Card.Ability == Card.AbilityType.TwinDrive ? 2 : 1;
                 await AttackFighter.DriveTriggerCheck(checkCount);
             }
 

@@ -8,6 +8,7 @@ public class Damage : MonoBehaviour, IMultiCardZone
 {
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();
 
+    public int Count { get => cardList.Count; }
     void Start()
     {
         cardList.ObserveCountChanged().Subscribe(_ => ChangeCount());
@@ -34,8 +35,6 @@ public class Damage : MonoBehaviour, IMultiCardZone
         cardList.Remove(card);
         return card;
     }
-    public int Count() => cardList.Count;
-
     public Card GetCard(int index) => cardList[index];
 
     public Card Pull(int index)

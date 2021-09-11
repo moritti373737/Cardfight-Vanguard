@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 public class Deck : MonoBehaviour, IMultiCardZone
@@ -11,6 +12,7 @@ public class Deck : MonoBehaviour, IMultiCardZone
     /// がデッキトップ
     /// </summary>
     public List<Card> cardList = new List<Card>();
+    public int Count { get => cardList.Count; }
 
     private void Start()
     {
@@ -45,4 +47,5 @@ public class Deck : MonoBehaviour, IMultiCardZone
 
     public bool HasCard() => cardList.Any();
     public Card GetCard(int index) => cardList[index];
+
 }

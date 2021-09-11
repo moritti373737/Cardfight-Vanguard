@@ -19,6 +19,8 @@ public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
     private List<GameObject> EmptyCardRemovedList = new List<GameObject>();
     public GameObject EmptyCardPrefab;
 
+    public int Count { get => cardList.Count; }
+
     private void Start()
     {
         //cardList.ObserveCountChanged().Subscribe(count => SetPosition());
@@ -84,7 +86,6 @@ public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
     //    return card;
     //}
 
-    public int Count() => cardList.Count;
     public Card GetCard(int index) => cardList[index];
 
     private void SetPosition()

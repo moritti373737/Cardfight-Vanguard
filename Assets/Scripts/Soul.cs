@@ -6,18 +6,8 @@ using UnityEngine;
 public class Soul : MonoBehaviour, IMultiCardZone
 {
     public List<Card> cardList = new List<Card>();
+    public int Count { get => cardList.Count; }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     public void Add(Card _card)
     {

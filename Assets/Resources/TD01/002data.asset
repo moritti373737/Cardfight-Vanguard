@@ -21,10 +21,10 @@ MonoBehaviour:
   DefaultPower: 10000
   DefaultCritical: 1
   Shield: 0
-  Skill: 2
+  Ability: 2
   Trigger: 0
   TriggerPower: 0
-  Ability: {fileID: 0}
+  Skill: {fileID: 0}
   Flavor: "\u305D\u306E\u7F6A\u3001\u4E07\u6B7B\u306B\u5024\u3059\u308B\uFF01"
   Number: TD01/002
   Rarity: TD
