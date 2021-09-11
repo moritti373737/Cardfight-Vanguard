@@ -54,8 +54,8 @@ public class Fighter : MonoBehaviour
         }
 
         OpponentFighter = GameObject.FindGameObjectsWithTag("Fighter")
-                                     .Select(obj => obj.GetComponent<Fighter>())
-                                     .First(fighter => fighter.ID != ID);
+                                    .Select(obj => obj.GetComponent<Fighter>())
+                                    .First(fighter => fighter.ID != ID);
     }
 
     public void CreateDeck()
@@ -228,7 +228,7 @@ public class Fighter : MonoBehaviour
                 selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
                 if (selectedCard != null)
                 {
-                    if (selectedCard.Grade > Vanguard.Card.Grade) return Result.RESTART; // グレードのチェック
+                    //if (selectedCard.Grade > Vanguard.Card.Grade) return Result.RESTART; // グレードのチェック
                     await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
                     state = functionsC;
                     functions.AddRange(functionsC);
@@ -248,6 +248,7 @@ public class Fighter : MonoBehaviour
             else if (act == "Ability")
             {
                 print("スキル発動");
+                AbilityManager.Instance.StartActivate(selectedCard, 0);
             }
 
             return Result.RESTART;

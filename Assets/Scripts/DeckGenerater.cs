@@ -60,6 +60,8 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             //Debug.Log(filename[spriteNumber]);
             card.SetStatus(filename[spriteNumber]);
             card.FighterID = fighterID;
+
+            AbilityManager.Instance.InitAbility(card);
             //card.cardModel.face = cardSpriteList[0];
             //card.CardModel.ToggleFace(true);
             //card.Load(cardDataList[i]);

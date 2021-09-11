@@ -4,17 +4,9 @@ using UnityEngine;
 
 public class CostManager : MonoBehaviour
 {
-
-
-    // Start is called before the first frame update
-    void Start()
+    public bool PayCost(List<CostData> cost)
     {
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        return true;
     }
 }

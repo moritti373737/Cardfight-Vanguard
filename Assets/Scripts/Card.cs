@@ -8,7 +8,7 @@ using System.Linq;
 public class Card : MonoBehaviour
 {
     [field: SerializeField]
-    public int ID { get; private set; } // カード固有のID
+    public int ID { get => int.Parse(transform.name.Substring(4)); } // カード固有のID
 
     [field: SerializeField]
     public FighterID FighterID { get; set; }
@@ -95,7 +95,6 @@ public class Card : MonoBehaviour
 
     void Start()
     {
-        ID = int.Parse(transform.name.Substring(4));
         state = State.Stand;
         transform.ObserveEveryValueChanged(x => x.parent)
                  .Skip(1)
@@ -120,7 +119,7 @@ public class Card : MonoBehaviour
             .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
             .AddTo(this);
 
-        List<CardData> cardData = Resources.LoadAll<CardData>("TD01").ToList();
+        //List<CardData> cardData = Resources.LoadAll<CardData>("TD01").ToList();
         //print(cardData[0].Name);
     }
 

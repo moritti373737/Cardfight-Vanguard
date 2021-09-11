@@ -26,5 +26,5 @@ MonoBehaviour:
   TriggerPower: 0
   Ability: {fileID: 0}
   Flavor: "\u4FE1\u3058\u3066\u304F\u308C\u308B\u53CB\u304C\u3044\u308B\u304B\u3089\u2026\u2026\u5C11\u5E74\u306F\u52C7\u8005\u306B\u306A\u308B\u3002"
-  Number: TD01-009
+  Number: TD01/009
   Rarity: TD

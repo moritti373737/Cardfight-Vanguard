@@ -73,7 +73,7 @@ public class ImpoterEditor : Editor
             }
             cardData.Ability = Resources.Load<AbilityData>(cardText[14].SplitEx(',')[1] + "ability");
             cardData.Flavor = cardText[13].SplitEx(',')[1];
-            cardData.Number = cardText[14].SplitEx(',')[1].Replace("/", "-");
+            cardData.Number = cardText[14].SplitEx(',')[1];
             cardData.Rarity = cardText[15].SplitEx(',')[1];
 
             string path = "Assets/Resources/" + cardText[14].SplitEx(',')[1] + "data.asset";

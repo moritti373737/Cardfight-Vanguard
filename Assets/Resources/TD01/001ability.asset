@@ -12,12 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9564a2ed7c9ce304cb31747822175ffb, type: 3}
   m_Name: 001ability
   m_EditorClassIdentifier: 
-  CardNumber: 001
+  CardNumber: 001ability
   AbilityList:
-  - category: 0
-    place: 2
-    cost: 1
-    targetFighter: test
-    targetCard: 1
-    ability: "\u3042\u3044\u3046\u3048\u304A"
-    end: end
+  - cardNumber: TD01/001
+    category: 1
+    place: 7
+    condition: 0
+    cost:
+    - Type: 1
+      Count: 1
+    ability:
+    - TargetFighter: 1
+      TargetCard: 1
+      Type: 0
+      Option: 3000
+    finish: 1
