@@ -17,7 +17,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="hand"></param>
     /// <param name="index">デッキから取り出すためのインデックス</param>
     /// <returns>コルーチン</returns>
-    public IEnumerator DeckToHand(Deck deck, Hand hand, int index)
+    public async UniTask DeckToHand(Deck deck, Hand hand, int index)
     {
         //MethodInfo method = this.GetType().GetMethod("DeckToHand");
         //var p = method.GetParameters();
@@ -27,15 +27,15 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         //Debug.Log("1second");
         Card card = deck.Pull(index);
 
-        //yield return StartCoroutine(AnimationManager.Instance.DeckToCard(card));
+        await AnimationManager.Instance.DeckToCard(card);
 
         card.TurnOver();
         hand.Add(card);
 
-        //yield return StartCoroutine(AnimationManager.Instance.CardToHand(card));
+        await AnimationManager.Instance.CardToHand(card);
         SetHistory(card: card, source:deck, target:hand);
         // 待つ
-        yield return new WaitForSeconds(0.1f);
+        await UniTask.Delay(100);
     }
 
     /// <summary>

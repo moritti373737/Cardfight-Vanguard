@@ -1688,7 +1688,7 @@ GameObject:
   - component: {fileID: 1330672765}
   - component: {fileID: 1330672764}
   m_Layer: 0
-  m_Name: Ability
+  m_Name: Skill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1707,7 +1707,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   costManager: {fileID: 1330672765}
-  activateSkill: {fileID: 0}
+  activateSkill: {fileID: 1330672764}
   Fighter1: {fileID: 141899824}
   Fighter2: {fileID: 1451585532}
 --- !u!4 &1330672763

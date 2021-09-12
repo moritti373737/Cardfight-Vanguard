@@ -15,22 +15,12 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
     /// <returns></returns>
-    public IEnumerator DeckToCard(Card card)
+    public async UniTask DeckToCard(Card card)
     {
+        //_ = ChangeAlphaCard(card, 50, 1, 0);
+        //await MoveCard(card, 50, true, targetY: -1);
+        await UniTask.WhenAll(MoveCard(card, 5, true, targetY: -0.3F), ChangeAlphaCard(card, 5, 0.5F, 0));
 
-        StartCoroutine(MoveCard(card, 50, true, targetY:-1));
-        for (int i = 0; i <= 50; i++)
-        {
-            MeshRenderer[] meshRenderer = card.transform.GetComponentsInChildren<MeshRenderer>();
-            foreach (var mesh in meshRenderer)
-            {
-                Color color = mesh.material.color;
-                color.a -= 0.02F;
-                mesh.material.color = color;
-
-            }
-            yield return null;
-        }
     }
 
     /// <summary>
@@ -38,36 +28,20 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
     /// <returns></returns>
-    public IEnumerator CardToHand(Card card)
+    public async UniTask CardToHand(Card card)
     {
 
-        Vector3 startPosition = card.transform.localPosition;
-        Vector3 endPosition = new Vector3(startPosition.x, startPosition.y - 1, startPosition.z);
-        for (int i = 0; i < 20; i++)
-        {
-            MeshRenderer[] meshRenderer = card.transform.GetComponentsInChildren<MeshRenderer>();
-            foreach (var mesh in meshRenderer)
-            {
-                Color color = mesh.material.color;
-                color.a += 0.05F;
-                mesh.material.color = color;
-
-            }
-            Vector3 position = card.transform.localPosition;
-            if (i == 0) position.y -= 0.1F;
-            position.y += 0.005F;
-            card.transform.localPosition = position;
-            yield return null;
-        }
+        //Vector3 startPosition = card.transform.localPosition;
+        //Vector3 endPosition = new Vector3(startPosition.x, startPosition.y - 1, startPosition.z);
+        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: 0.1F, offsetY: -0.1F), ChangeAlphaCard(card, 10, 0, 1));
     }
 
     /// <summary>
     /// フィールド上のカードをめくるアニメーション
-    /// その場でめくるとフィールドにめり込むため少し浮かす
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
     /// <returns></returns>
-    public IEnumerator RotateFieldCard(Card card)
+    public async UniTask RotateFieldCard(Card card)
     {
         //List<Coroutine> parallel = new List<Coroutine>();
 
@@ -78,9 +52,9 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         //foreach (var c in parallel)
         //    yield return c;
 
-        StartCoroutine(RotateCard(card, 60));
-        yield return MoveCard(card, 20, false, targetY:0.01F);
-        yield return MoveCard(card, 40, false, targetY:-0.01F);
+        await RotateCard(card, 60);
+        //await MoveCard(card, 20, false, targetY:0.01F);
+        //await MoveCard(card, 40, false, targetY:-0.01F);
     }
     public async UniTask RestCard(Card card, int frame)
     {
@@ -176,12 +150,12 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     }
 
 
-    IEnumerator RotateCard(Card card, int frame)
+    async UniTask RotateCard(Card card, int frame)
     {
         for (int i = 0; i < frame; i++)
         {
-            card.transform.Rotate(0, -3, 0);
-            yield return null;
+            card.transform.Rotate(0, -180 / frame, 0);
+            await UniTask.NextFrame();
         }
     }
 
@@ -195,19 +169,44 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// <param name="targetY">Y方向の移動量</param>
     /// <param name="targetZ">Z方向の移動量</param>
     /// <returns></returns>
-    IEnumerator MoveCard(Card card, int frame, bool local, float targetX = 0, float targetY = 0, float targetZ = 0)
+    async UniTask MoveCard(Card card, int frame, bool local, float targetX = 0, float targetY = 0, float targetZ = 0, float offsetX = 0, float offsetY = 0, float offsetZ = 0)
     {
         Vector3 startPosition = local ? card.transform.localPosition : card.transform.position;
+        startPosition = new Vector3(startPosition.x + offsetX, startPosition.y + offsetY, startPosition.z + offsetZ);
         Vector3 endPosition = new Vector3(startPosition.x + targetX, startPosition.y + targetY, startPosition.z + targetZ);
         for (int i = 0; i <= frame; i++)
         {
-            if(local)
+            if (local)
                 card.transform.localPosition = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
             else
                 card.transform.position = Vector3.Lerp(startPosition, endPosition, (float)i / frame);
             //Debug.Log(i);
-            yield return null;
+            await UniTask.NextFrame();
         }
     }
 
+    async UniTask ChangeAlphaCard(Card card, int frame, float source, float target)
+    {
+        MeshRenderer[] meshRenderer = card.transform.GetComponentsInChildren<MeshRenderer>();
+
+        for (int i = 0; i <= frame; i++)
+        {
+            foreach (var mesh in meshRenderer)
+            {
+                Color color = mesh.material.color;
+                color.a += (target - source) / frame;
+                mesh.material.color = color;
+
+            }
+            await UniTask.NextFrame();
+        }
+
+        foreach (var mesh in meshRenderer)
+        {
+            Color color = mesh.material.color;
+            color.a = target;
+            mesh.material.color = color;
+        }
+
+    }
 }

@@ -22,13 +22,13 @@ public class SkillData : ScriptableObject
 [System.Serializable]
 public class Skill
 {
-    public string cardNumber;
-    public CategoryType category;
-    public Tag place;
-    public List<ConditionData> condition;
-    public List<CostData> cost;
-    public List<MainSkillData> skill;
-    public FinishType finish;
+    public string cardNumber;             // このスキルを保有するカード（パック名とID）
+    public CategoryType category;         // 自動 or 起動 or 永続
+    public Tag place;                     // スキル発動可能な場所
+    public List<ConditionData> condition; // 自動 or 永続スキルの発動条件
+    public List<CostData> cost;           // スキル発動に必要なコスト
+    public List<MainSkillData> skill;     // スキル内容
+    public FinishType finish;             // スキルの効果終了タイミング
 }
 
 public enum CategoryType
@@ -57,6 +57,7 @@ public enum ConditionType
     Own,
     Rearguard,
     Vanguard,
+    Other,
 }
 
 public enum ActionType
@@ -64,6 +65,7 @@ public enum ActionType
     None,
     DeckToHand,
     Attack,
+    Hit,
 }
 
 
@@ -81,26 +83,30 @@ public enum FinishType
 [System.Serializable]
 public class ConditionData
 {
-    public FighterType SourceFighter;
-    public ConditionType SourceCard;
-    public FighterType TargetFighter;
-    public ConditionType TargetCard;
-    public ActionType Action;
+    public FighterType SourceFighter; // 変化前のファイター
+    public ConditionType SourceCard;  // 変化前のカード
+    public string SourceCardOption;   // 上記の追加オプション
+    public FighterType TargetFighter; // 変化後のファイター
+    public ConditionType TargetCard;  // 変化後のカード
+    public string TargetCardOption;   // 上記の追加オプション
+    public ActionType Action;         // 変化の内容
+    public ActionType Result;         // 変化の結果
+    public bool SameClan;             // 同クラン制限の有無
 }
 
 
 [System.Serializable]
 public class CostData
 {
-    public CostType Type;
-    public int Count;
+    public CostType Type; // コストの種類
+    public int Count;     // コストを支払う回数
 }
 
 [System.Serializable]
 public class MainSkillData
 {
-    public FighterType TargetFighter;
-    public ConditionType TargetCard;
-    public SkillType Type;
-    public int Option;
+    public FighterType TargetFighter; // 効果対象のファイター
+    public ConditionType TargetCard;  // 効果対象のカード
+    public SkillType Type;            // 効果内容
+    public string Option;             // 効果のオプション
 }

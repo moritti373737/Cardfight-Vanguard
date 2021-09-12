@@ -40,6 +40,6 @@ public class ActivateSkill : MonoBehaviour
         }
     }
 
-    private void PowerUp(Card card, int power) => card.AddPower(power);
+    private void PowerUp(Card card, string power) => card.AddPower(int.Parse(power));
 
 }

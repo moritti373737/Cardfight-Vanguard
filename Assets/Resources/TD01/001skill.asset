@@ -18,11 +18,15 @@ MonoBehaviour:
     category: 1
     place: 3
     condition:
-    - SourceFighter: 1
-      SourceCard: 3
-      TargetFighter: 2
-      TargetCard: 3
-      Action: 2
+    - SourceFighter: 0
+      SourceCard: 0
+      SourceCardOption: 
+      TargetFighter: 0
+      TargetCard: 0
+      TargetCardOption: 
+      Action: 0
+      Result: 0
+      SameClan: 0
     cost:
     - Type: 1
       Count: 2
