@@ -51,7 +51,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         //Debug.Log("1second");
         Card pulledCard = hand.Pull(card);
 
-        await AnimationManager.Instance.HandToZone(card, cardCircle);
+        await AnimationManager.Instance.HandToCircle(card, cardCircle);
 
         //card.TurnOver();
         Card removedCard = cardCircle.Pull();
@@ -107,11 +107,11 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         Card targetCard = targetCircle.Pull();
         if (targetCard != null)
         {
-            _ = AnimationManager.Instance.HandToZone(targetCard, cardCircle);
+            //_ = AnimationManager.Instance.HandToCircle(targetCard, cardCircle);
             cardCircle.Add(targetCard);
         }
 
-        await AnimationManager.Instance.HandToZone(card, targetCircle);
+        //await AnimationManager.Instance.HandToCircle(card, targetCircle);
 
         targetCircle.Add(card);
 

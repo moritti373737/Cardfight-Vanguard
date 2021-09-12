@@ -10,6 +10,12 @@ using UnityEngine;
 /// </summary>
 public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
 {
+    [SerializeField]
+    GameObject VanguardEffectPrefab;
+
+    [SerializeField]
+    GameObject RearguardEffectPrefab;
+
     /// <summary>
     /// デッキからカードを引くアニメーション
     /// </summary>
@@ -18,7 +24,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     {
         //_ = ChangeAlphaCard(card, 50, 1, 0);
         //await MoveCard(card, 50, true, targetY: -1);
-        await UniTask.WhenAll(MoveCard(card, 5, true, targetY: -0.3F), ChangeAlphaCard(card, 5, 1, 0));
+        await UniTask.WhenAll(MoveCard(card, 5, true, targetY: -0.3F), ChangeAlpha(card.transform, 5, 1, 0));
 
     }
 
@@ -31,25 +37,74 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
 
         //Vector3 startPosition = card.transform.localPosition;
         //Vector3 endPosition = new Vector3(startPosition.x, startPosition.y - 1, startPosition.z);
-        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: 0.1F, offsetY: -0.1F), ChangeAlphaCard(card, 10, 0, 1));
+        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: 0.1F, offsetY: -0.1F), ChangeAlpha(card.transform, 10, 0, 1));
     }
 
-    public async UniTask HandToZone(Card card, ICardZone cardZone)
+    public async UniTask HandToCircle(Card card, ICardCircle cardCircle)
     {
+        async UniTask task1(GameObject effect)
+        {
+            Vector3 startScale = effect.transform.localScale;
+            Vector3 endScale = new Vector3(startScale.x + 0.1F, startScale.y + 0.1F, startScale.z);
+
+            for (int i = 0; i < 20; i++)
+            {
+                effect.transform.localScale = Vector3.Lerp(startScale, endScale, (float)i / 30);
+                effect.transform.Rotate(0, 0, -3);
+                await UniTask.NextFrame();
+            }
+        }
+
+        async UniTask task2(GameObject effect)
+        {
+            await UniTask.Delay(70);
+            await ChangeAlpha(effect.transform, 15, 1, 0);
+            effect.SetActive(false);
+        }
+
+        card.transform.parent = null;
+
         Vector3 startPosition = card.transform.position;
-        Vector3 endPosition = cardZone.transform.position;
+        Vector3 endPosition = cardCircle.transform.position;
+
+        Quaternion startRotation = card.transform.rotation;
+        Quaternion endRotation = Quaternion.Euler(270, 0, 180);
+
         for (int i = 0; i < 10; i++)
         {
             card.transform.position = Vector3.Lerp(startPosition, endPosition, (float)i / 10);
+            card.transform.rotation = Quaternion.Lerp(startRotation, endRotation, (float)i / 10);
             await UniTask.NextFrame();
         }
+
+        card.transform.position = cardCircle.transform.position;
+        card.transform.rotation = Quaternion.Euler(270, 0, 180);
+
+        GameObject effect = null;
+        if (cardCircle.GetType() == typeof(Vanguard))
+            effect = Instantiate(VanguardEffectPrefab);
+        else if (cardCircle.GetType() == typeof(Rearguard))
+            effect = Instantiate(RearguardEffectPrefab);
+        else return;
+
+        effect.transform.position = cardCircle.transform.position;
+
+        Material material = effect.transform.GetComponent<MeshRenderer>().material;
+        material.EnableKeyword("_EMISSION");
+        int intensity = 2;
+        float factor = Mathf.Pow(2, intensity);
+        material.SetColor("_EmissionColor", new Color(0.0f * factor, 0.6f * factor, 0.6f * factor));
+
+        await UniTask.WhenAll(task1(effect), task2(effect));
+
+        Destroy(effect);
     }
 
     public async UniTask DriveToCard(Card card)
     {
         //_ = ChangeAlphaCard(card, 50, 1, 0);
         //await MoveCard(card, 50, true, targetY: -1);
-        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: -0.3F), ChangeAlphaCard(card, 10, 1, 0));
+        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: -0.3F), ChangeAlpha(card.transform, 10, 1, 0));
 
     }
 
@@ -57,7 +112,7 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     {
         //Vector3 startPosition = card.transform.localPosition;
         //Vector3 endPosition = new Vector3(startPosition.x, startPosition.y - 1, startPosition.z);
-        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: 0.1F, offsetY: -0.1F), ChangeAlphaCard(card, 10, 0, 1));
+        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: 0.1F, offsetY: -0.1F), ChangeAlpha(card.transform, 10, 0, 1));
     }
 
     /// <summary>
@@ -208,9 +263,9 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         }
     }
 
-    async UniTask ChangeAlphaCard(Card card, int frame, float source, float target)
+    async UniTask ChangeAlpha(Transform transform, int frame, float source, float target)
     {
-        MeshRenderer[] meshRenderer = card.transform.GetComponentsInChildren<MeshRenderer>();
+        MeshRenderer[] meshRenderer = transform.GetComponentsInChildren<MeshRenderer>();
 
         for (int i = 0; i <= frame; i++)
         {
@@ -218,6 +273,8 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
             {
                 Color color = mesh.material.color;
                 color.a += (target - source) / frame;
+                if (color.a < 0) color.a = 0;
+                else if (color.a > 1) color.a = 1;
                 mesh.material.color = color;
 
             }

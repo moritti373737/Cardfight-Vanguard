@@ -24,7 +24,7 @@ public class Vanguard : MonoBehaviour, ICardCircle
     {
         //var localr = card.transform.localRotation;
         card.transform.SetParent(transform);
-        card.transform.position = transform.position;
+        card.transform.localPosition = new Vector3(0, 0, -1);
         //card.transform.localRotation = localr;
 
     }
