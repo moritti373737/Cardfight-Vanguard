@@ -50,9 +50,14 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         // ログ出力
         //Debug.Log("1second");
         Card pulledCard = hand.Pull(card);
+
+        await AnimationManager.Instance.HandToZone(card, cardCircle);
+
         //card.TurnOver();
         Card removedCard = cardCircle.Pull();
         cardCircle.Add(pulledCard);
+        hand.DestroyEmpty();
+
         card.SetState(Card.State.FaceUp, true);
         SetHistory(card: card, source:hand, target:cardCircle);
         //if (removedCard != null)
@@ -92,24 +97,25 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="targetCircle">移動先のR</param>
     /// <param name="card">移動対象のカード</param>
     /// <returns></returns>
-    public IEnumerator RearToRear(Rearguard cardCircle, Rearguard targetCircle, Card card)
+    public async UniTask RearToRear(Rearguard cardCircle, Rearguard targetCircle, Card card)
     {
         // ログ出力
         //Debug.Log("1second");
         //Card card = deck.Pull(index);
         //card.TurnOver();
-        //Card card = cardCircle.GetTransform().FindWithChildTag(Tag.Card).GetComponent<Card>();
+
         Card targetCard = targetCircle.Pull();
         if (targetCard != null)
         {
+            _ = AnimationManager.Instance.HandToZone(targetCard, cardCircle);
             cardCircle.Add(targetCard);
         }
 
+        await AnimationManager.Instance.HandToZone(card, targetCircle);
+
         targetCircle.Add(card);
 
-        // 待つ
         SetHistory(card: card, source:cardCircle, target:targetCircle);
-        yield return new WaitForSeconds(0.0f);
     }
 
     public async UniTask DeckToDrive(Deck deck, Drive drive)
@@ -121,25 +127,37 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         card.TurnOver();
 
         SetHistory(card: card, source:deck, target:drive);
-        //yield return new WaitForSeconds(0.0f);
     }
 
-    public IEnumerator DriveToHand(Drive drive, Hand hand)
+    public async UniTask DriveToHand(Drive drive, Hand hand)
     {
         Card card = drive.Pull();
+
+        await UniTask.Delay(1000);
+
+        await AnimationManager.Instance.DriveToCard(card);
+
         hand.Add(card);
 
+        await AnimationManager.Instance.CardToHand(card);
+
         SetHistory(card: card, source:drive, target:hand);
-        yield return new WaitForSeconds(0.0f);
     }
 
-    public IEnumerator DriveToDamage(Drive drive, Damage damage)
+    public async UniTask DriveToDamage(Drive drive, Damage damage)
     {
         Card card = drive.Pull();
+
+        await UniTask.Delay(1000);
+        await AnimationManager.Instance.DriveToCard(card);
+
         damage.Add(card);
 
+        await AnimationManager.Instance.CardToDamage(card);
+
+
         SetHistory(card: card, source:drive, target:damage);
-        yield return new WaitForSeconds(0.0f);
+
     }
 
     //public IEnumerator DriveToDrop(Drive drive, Drop drop)
@@ -188,6 +206,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         hand.Pull(card);
 
         deck.Add(card);
+        hand.DestroyEmpty();
         SetHistory(card: card, source:hand, target:deck);
     }
 
@@ -201,6 +220,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         hand.Pull(card);
 
         guardian.Add(card);
+        hand.DestroyEmpty();
         SetHistory(card: card, source:hand, target:guardian);
     }
 
@@ -225,6 +245,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         hand.Pull(card);
 
         drop.Add(card);
+        hand.DestroyEmpty();
         SetHistory(card: card, source: hand, target: drop);
     }
 

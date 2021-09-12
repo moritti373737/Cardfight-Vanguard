@@ -561,7 +561,6 @@ public class Fighter : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             await CardManager.Instance.DeckToDrive(Deck, Drive);
-            await UniTask.Delay(1000);
             await CardManager.Instance.DriveToDamage(Drive, Damage);
         }
     }
@@ -603,6 +602,7 @@ public class Fighter : MonoBehaviour
                 break;
             case Card.TriggerType.Heal:
                 functions.Add(async () => {
+                    if (Damage.Count == 0) return Result.YES;
                     if (Damage.Count < OpponentFighter.Damage.Count) return Result.YES;
                     await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
                     return Result.YES;

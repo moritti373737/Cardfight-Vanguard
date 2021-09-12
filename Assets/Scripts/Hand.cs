@@ -61,11 +61,10 @@ public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
         EmptyCardList.Remove(empthObject);
         EmptyCardRemovedList.Add(empthObject);
         SetPosition();
-        DestroyEmpty(card);
         return card;
     }
 
-    private void DestroyEmpty(Card card)
+    public void DestroyEmpty()
     {
         //foreach (var emptyCard in EmptyCardRemovedList)
         //{

@@ -14,12 +14,11 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// デッキからカードを引くアニメーション
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
-    /// <returns></returns>
     public async UniTask DeckToCard(Card card)
     {
         //_ = ChangeAlphaCard(card, 50, 1, 0);
         //await MoveCard(card, 50, true, targetY: -1);
-        await UniTask.WhenAll(MoveCard(card, 5, true, targetY: -0.3F), ChangeAlphaCard(card, 5, 0.5F, 0));
+        await UniTask.WhenAll(MoveCard(card, 5, true, targetY: -0.3F), ChangeAlphaCard(card, 5, 1, 0));
 
     }
 
@@ -27,10 +26,35 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// カードを手札に加えるアニメーション
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
-    /// <returns></returns>
     public async UniTask CardToHand(Card card)
     {
 
+        //Vector3 startPosition = card.transform.localPosition;
+        //Vector3 endPosition = new Vector3(startPosition.x, startPosition.y - 1, startPosition.z);
+        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: 0.1F, offsetY: -0.1F), ChangeAlphaCard(card, 10, 0, 1));
+    }
+
+    public async UniTask HandToZone(Card card, ICardZone cardZone)
+    {
+        Vector3 startPosition = card.transform.position;
+        Vector3 endPosition = cardZone.transform.position;
+        for (int i = 0; i < 10; i++)
+        {
+            card.transform.position = Vector3.Lerp(startPosition, endPosition, (float)i / 10);
+            await UniTask.NextFrame();
+        }
+    }
+
+    public async UniTask DriveToCard(Card card)
+    {
+        //_ = ChangeAlphaCard(card, 50, 1, 0);
+        //await MoveCard(card, 50, true, targetY: -1);
+        await UniTask.WhenAll(MoveCard(card, 10, true, targetY: -0.3F), ChangeAlphaCard(card, 10, 1, 0));
+
+    }
+
+    public async UniTask CardToDamage(Card card)
+    {
         //Vector3 startPosition = card.transform.localPosition;
         //Vector3 endPosition = new Vector3(startPosition.x, startPosition.y - 1, startPosition.z);
         await UniTask.WhenAll(MoveCard(card, 10, true, targetY: 0.1F, offsetY: -0.1F), ChangeAlphaCard(card, 10, 0, 1));
@@ -40,7 +64,6 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// フィールド上のカードをめくるアニメーション
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
-    /// <returns></returns>
     public async UniTask RotateFieldCard(Card card)
     {
         //List<Coroutine> parallel = new List<Coroutine>();
