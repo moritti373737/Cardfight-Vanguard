@@ -7,12 +7,16 @@ using System;
 using Cysharp.Threading.Tasks;
 using System.Linq;
 using System.Reflection;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// カーソル選択を管理する
 /// </summary>
 public class SelectManager : SingletonMonoBehaviour<SelectManager>
 {
+    [SerializeField]
+    private PlayerInput input;
+
     public GameObject SelectBox { get; private set; }   // カーソル
     private List<GameObject> SelectedBoxList = new List<GameObject>(); // 選択中のカードを占めるカーソル
     [SerializeField]
@@ -195,22 +199,10 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         bool changeSelectBox = false;
 
         // 上下左右の入力判定
-        if (Input.GetButtonDown("Horizontal") && Input.GetAxisRaw("Horizontal") == 1)
-        {
-            right = true;
-        }
-        else if (Input.GetButtonDown("Horizontal") && Input.GetAxisRaw("Horizontal") == -1)
-        {
-            left = true;
-        }
-        else if (Input.GetButtonDown("Vertical") && Input.GetAxisRaw("Vertical") == 1)
-        {
-            up = true;
-        }
-        else if (Input.GetButtonDown("Vertical") && Input.GetAxisRaw("Vertical") == -1)
-        {
-            down = true;
-        }
+        if (input.GetDown("Right"))     right = true;
+        else if (input.GetDown("Left")) left = true;
+        else if (input.GetDown("Up"))   up = true;
+        else if (input.GetDown("Down")) down = true;
 
         if (right && SelectObjList[selectZoneIndex[0]].Count - 1 > selectZoneIndex[1] && !HasTag(Tag.Hand) && SelectActObj == null)
         {

@@ -289,8 +289,6 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         _ = sequence.Join(circle.transform.DOMove(targetTransform.position, 0.15F));
         _ = sequence.Join(circle.transform.DORotate(targetTransform.rotation.eulerAngles, 0.15F));
         await sequence.Play();
-
-        print("‚Ü‚Â‚¤‚¤");
     }
 
 

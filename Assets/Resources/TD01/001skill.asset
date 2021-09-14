@@ -29,7 +29,7 @@ MonoBehaviour:
       SameClan: 0
     cost:
     - Type: 1
-      Count: 2
+      Count: 1
     skill:
     - TargetFighter: 1
       TargetCard: 1

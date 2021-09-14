@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class GameMaster : MonoBehaviour
@@ -10,6 +11,8 @@ public class GameMaster : MonoBehaviour
     [field: SerializeField]
     private int Turn { get; set; } = 1;
 
+    [SerializeField]
+    private PlayerInput input;
 
     //public Player[] playerList;
     public Fighter fighter1;
@@ -33,40 +36,27 @@ public class GameMaster : MonoBehaviour
         Debug.Log("RESET!");
     }
 
-    private enum Phase
-    {
-        INIT,
-        STAND,
-        DRAW,
-        BATTLE,
-        END,
-    };
-
-    //Phase phase;
-
 
     async void Start()
     {
         fighter1.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter1} の負け</color>"));
         fighter2.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter2} の負け</color>"));
 
-        //phase = Phase.INIT;
         await InitPhase();
 
         while (true)
         {
             await StandPhase();
         }
-        //TextManager.Instance.SetPhaseText("エンドフェイズ");
     }
 
     void Update()
     {
-        if (Input.GetButtonDown("Zoom"))
+        if (input.GetDown("Zoom"))
         {
             SelectManager.Instance.ZoomCard();
         }
-        else if (Input.GetButtonDown("Reset")) ResetScene();
+        else if (input.GetDown("Reset")) ResetScene();
     }
 
     async UniTask InitPhase()
@@ -88,7 +78,7 @@ public class GameMaster : MonoBehaviour
         fighter1.Deck.Shuffle();
         fighter2.Deck.Shuffle();
 
-        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+        await UniTask.WaitUntil(() => input.GetDown("Enter"));
 
         await UniTask.WhenAll(fighter1.DrawCard(5), fighter2.DrawCard(5));
 
@@ -117,7 +107,7 @@ public class GameMaster : MonoBehaviour
     {
         TextManager.Instance.SetPhaseText("ドローフェイズ");
 
-        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+        await UniTask.WaitUntil(() => input.GetDown("Enter"));
 
         await AttackFighter.DrawCard(1);
 

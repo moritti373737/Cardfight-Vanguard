@@ -254,6 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c710798998a9184db12319c47a4c83d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  input: {fileID: 768289830}
   <ID>k__BackingField: 0
   <Turn>k__BackingField: 1
 --- !u!114 &141899825
@@ -815,6 +816,7 @@ GameObject:
   - component: {fileID: 768289828}
   - component: {fileID: 768289829}
   - component: {fileID: 768289826}
+  - component: {fileID: 768289830}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -860,6 +862,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b30d7cb95913eb348bd79d783ce7a9c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  input: {fileID: 768289830}
   fighter1: {fileID: 141899824}
   fighter2: {fileID: 1451585532}
   SelectBoxPrefab: {fileID: 8287165649421381882, guid: 273e194a4cc31fb44b5cba4f4645448f,
@@ -932,6 +935,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec37302ca742d414686dd4b4abeadb93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &768289830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768289823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: cd83a267ae3b89c46a413d2a3056bd24,
+    type: 3}
+  m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents: []
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Fighter
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
 --- !u!1 &817001136
 GameObject:
   m_ObjectHideFlags: 0
@@ -1459,7 +1493,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &942602057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2075,6 +2109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Turn>k__BackingField: 1
+  input: {fileID: 768289830}
   fighter1: {fileID: 141899824}
   fighter2: {fileID: 1451585532}
   <AttackFighter>k__BackingField: {fileID: 0}
@@ -2293,6 +2328,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c710798998a9184db12319c47a4c83d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  input: {fileID: 768289830}
   <ID>k__BackingField: 1
   <Turn>k__BackingField: 1
 --- !u!4 &1451585533

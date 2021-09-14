@@ -5,9 +5,13 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine.InputSystem;
 
 public class Fighter : MonoBehaviour
 {
+    [SerializeField]
+    private PlayerInput input;
+
     [field: SerializeField]
     public FighterID ID { get; private set; }
     [field: SerializeField]
@@ -74,7 +78,7 @@ public class Fighter : MonoBehaviour
         {
             await UniTask.NextFrame();
 
-            int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+            int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
 
             if (inputIndex == 0) await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
             else if (inputIndex == 1 && SelectManager.Instance.SelectedCount == 0) return; // Submit“ü—ÍŽž
@@ -100,7 +104,7 @@ public class Fighter : MonoBehaviour
     {
         print("stand");
         await UniTask.NextFrame();
-        await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+        await UniTask.WaitUntil(() => input.GetDown("Enter"));
         print("enter");
         await CardManager.Instance.StandCard(Vanguard);
         Rearguards.ForEach(async rear => await CardManager.Instance.StandCard(rear));
@@ -129,7 +133,7 @@ public class Fighter : MonoBehaviour
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
 
         functions.Add(async () => {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
             return resultInt.ToEnum("YES", "END");
         });
         //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
@@ -144,7 +148,7 @@ public class Fighter : MonoBehaviour
                 return Result.NO;
         });
         functions.Add(async () => {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functions.Add(async () => {
@@ -197,7 +201,7 @@ public class Fighter : MonoBehaviour
 
         functionsV.Add(async () =>
         {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
             return resultInt.ToEnum("YES", "END");
         });
         functionsV.Add(async () =>
@@ -215,7 +219,7 @@ public class Fighter : MonoBehaviour
 
         functionsV2.Add(async () =>
         {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsV2.Add(async () =>
@@ -262,7 +266,7 @@ public class Fighter : MonoBehaviour
         functionsC.Add(async () =>
         {
             print("C");
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsC.Add(async () =>
@@ -278,7 +282,7 @@ public class Fighter : MonoBehaviour
         functionsM.Add(async () =>
         {
             print("M");
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsM.Add(async () =>
@@ -353,7 +357,7 @@ public class Fighter : MonoBehaviour
 
         functionsV.Add(async () =>
         {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
             return resultInt.ToEnum("YES", "END");
         });
         functionsV.Add(async () =>
@@ -376,7 +380,7 @@ public class Fighter : MonoBehaviour
 
         functionsV2.Add(async () =>
         {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsV2.Add(async () =>
@@ -407,7 +411,7 @@ public class Fighter : MonoBehaviour
         functionsB.Add(async () =>
         {
             print("T");
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Cancel")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsB.Add(async () => {
@@ -423,7 +427,7 @@ public class Fighter : MonoBehaviour
         functionsV3.Add(async () =>
         {
             print("V3");
-            await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+            await UniTask.WaitUntil(() => input.GetDown("Enter"));
             print("V3Enter");
             await CardManager.Instance.RestCard(selectedAttackZone);
             if (selectedBoostZone != null) await CardManager.Instance.RestCard(selectedBoostZone);
@@ -478,7 +482,7 @@ public class Fighter : MonoBehaviour
 
         functionsSelect.Add(async () =>
         {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => Input.GetButtonDown("Enter")), UniTask.WaitUntil(() => Input.GetButtonDown("Submit")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
             if (resultInt == 1)
             {
                 state = functionsSubmit;
@@ -509,7 +513,7 @@ public class Fighter : MonoBehaviour
 
         functionsSubmit.Add(async () =>
         {
-            await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+            await UniTask.WaitUntil(() => input.GetDown("Enter"));
             //await CardManager.Instance.GuardianToDrop(guardian, drop);
             return Result.YES;
         });
@@ -578,7 +582,7 @@ public class Fighter : MonoBehaviour
         {
             case Card.TriggerType.Critical:
                 functions.Add(async () => {
-                    await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+                    await UniTask.WaitUntil(() => input.GetDown("Enter"));
                     return Result.YES;
                 });
                 functions.Add(async () => {
@@ -590,7 +594,7 @@ public class Fighter : MonoBehaviour
                 break;
             case Card.TriggerType.Draw:
                 functions.Add(async () => {
-                    await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+                    await UniTask.WaitUntil(() => input.GetDown("Enter"));
                     return Result.YES;
                 });
                 functions.Add(async () => {
@@ -604,7 +608,7 @@ public class Fighter : MonoBehaviour
                 functions.Add(async () => {
                     if (Damage.Count == 0) return Result.YES;
                     if (Damage.Count < OpponentFighter.Damage.Count) return Result.YES;
-                    await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+                    await UniTask.WaitUntil(() => input.GetDown("Enter"));
                     return Result.YES;
                 });
                 functions.Add(async () => {
@@ -616,7 +620,7 @@ public class Fighter : MonoBehaviour
                 break;
             case Card.TriggerType.Stand:
                 functions.Add(async () => {
-                    await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+                    await UniTask.WaitUntil(() => input.GetDown("Enter"));
                     return Result.YES;
                 });
                 functions.Add(async () => {
@@ -634,7 +638,7 @@ public class Fighter : MonoBehaviour
         }
 
         functions.Add(async () => {
-            await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
+            await UniTask.WaitUntil(() => input.GetDown("Enter"));
             return Result.YES;
         });
         //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
