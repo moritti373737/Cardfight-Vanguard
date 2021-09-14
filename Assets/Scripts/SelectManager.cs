@@ -186,7 +186,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     }
 
     // Update is called once per frame
-    void Update()
+    async UniTask Update()
     {
         bool right = false;
         bool left = false;
@@ -212,26 +212,26 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             down = true;
         }
 
-        if (right && SelectObjList[selectZoneIndex[0]].Count - 1 > selectZoneIndex[1] && !HasTag(Tag.Hand) && !IsAction())
+        if (right && SelectObjList[selectZoneIndex[0]].Count - 1 > selectZoneIndex[1] && !HasTag(Tag.Hand) && SelectActObj == null)
         {
             // 右端にいない かつ
             selectZoneIndex[1]++;
             changeSelectBox = true;
 
         }
-        else if (left && selectZoneIndex[1] > 0 && !HasTag(Tag.Hand) && !IsAction())
+        else if (left && selectZoneIndex[1] > 0 && !HasTag(Tag.Hand) && SelectActObj == null)
         {
             // 左端にいない かつ
             selectZoneIndex[1]--;
             changeSelectBox = true;
         }
-        else if (up && selectZoneIndex[0] > 0 && !HasTag(Tag.Damage) && !IsAction())
+        else if (up && selectZoneIndex[0] > 0 && !HasTag(Tag.Damage) && SelectActObj == null)
         {
             // 上端にいない かつ
             selectZoneIndex[0]--;
             changeSelectBox = true;
         }
-        else if (down && SelectObjList.Count - 1 > selectZoneIndex[0] && !HasTag(Tag.Damage) && !IsAction())
+        else if (down && SelectObjList.Count - 1 > selectZoneIndex[0] && !HasTag(Tag.Damage) && SelectActObj == null)
         {
             // 下端にいない かつ
             selectZoneIndex[0]++;
@@ -239,6 +239,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         }
 
         if (MultiSelectIndex == -1) return;
+
         if (SelectActObj != null)
         {
             // カーソルを上下に移動させる
@@ -315,6 +316,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             Hand hand = fighter.Hand;
             Damage damage = fighter.Damage;
 
+            await AnimationManager.Instance.MoveCircle(SelectBox, SelectObj.transform);
+
             // 手札以外の場所から手札に移動したとき
             if (HasTag(Tag.Hand) && hand.Count > 0)
             {
@@ -329,7 +332,6 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
             }
             else ChangeSelectBoxParent(SelectObj);
-
             SetZoomCard();
             // 子オブジェクトを全て取得する
             //foreach (Transform childTransform in hand.transform)

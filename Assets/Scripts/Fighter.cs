@@ -92,7 +92,7 @@ public class Fighter : MonoBehaviour
     {
         var card = Vanguard.Card;
         card.SetState(Card.State.FaceUp, true);
-        await CardManager.Instance.RotateCard(card);
+        await CardManager.Instance.RotateCard(Vanguard);
         print("standup");
     }
 

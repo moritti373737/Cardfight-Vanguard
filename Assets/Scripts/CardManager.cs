@@ -256,10 +256,13 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// </summary>
     /// <param name="card">カード</param>
     /// <returns>コルーチン</returns>
-    public async UniTask RotateCard(Card card)
+    public async UniTask RotateCard(ICardCircle cardCircle)
     {
+        Card card = cardCircle.Card;
+        card.transform.parent = null;
         await AnimationManager.Instance.RotateFieldCard(card);
-        SetHistory(card: card, source:card.GetComponentInParent<ICardZone>());
+        card.transform.SetParent(cardCircle.transform);
+        SetHistory(card: card, source: cardCircle);
     }
 
     public async UniTask RestCard(ICardCircle cardCircle)

@@ -196,6 +196,15 @@ public static class Extensions
     public static Card GetCard(this Transform parentTransform) => parentTransform.GetComponentInChildren<Card>();
 
     public static List<string> SplitEx(this string text, char separator) => text.Split(new char[] { separator }, options: StringSplitOptions.RemoveEmptyEntries).ToList();
+
+    public static void MoveX(this Transform transform, float move) => transform.position = new Vector3(transform.position.x + move, transform.position.y, transform.position.z);
+    public static void MoveY(this Transform transform, float move) => transform.position = new Vector3(transform.position.x, transform.position.y + move, transform.position.z);
+    public static void MoveZ(this Transform transform, float move) => transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + move);
+    public static void LocalMoveX(this Transform transform, float move) => transform.localPosition = new Vector3(transform.localPosition.x + move, transform.localPosition.y, transform.localPosition.z);
+    public static void LocalMoveY(this Transform transform, float move) => transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + move, transform.localPosition.z);
+    public static void LocalMoveZ(this Transform transform, float move) => transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z + move);
+
+
 }
 
 public static class ListExtensions

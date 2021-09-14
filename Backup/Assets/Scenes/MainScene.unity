@@ -899,6 +899,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   VanguardEffectPrefab: {fileID: 6828535558447242161, guid: 279af72c94cb7cd45a1bb010db1000f1,
     type: 3}
+  RearguardEffectPrefab: {fileID: 3024389735728645810, guid: b2bfb26ba00092344848e59bf29ae4e3,
+    type: 3}
 --- !u!114 &768289828
 MonoBehaviour:
   m_ObjectHideFlags: 0
