@@ -45,6 +45,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a51be52fd548c2a47a026e444dc96f53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <FighterID>k__BackingField: 0
+  <Face>k__BackingField: {fileID: 6920610177890272648}
+  <Back>k__BackingField: {fileID: 6920610178803563341}
+  <Name>k__BackingField: 
+  <UnitType>k__BackingField: 
+  <Clan>k__BackingField: 
+  <Race>k__BackingField: 
+  <Nation>k__BackingField: 
+  <Grade>k__BackingField: 0
+  <DefaultPower>k__BackingField: 0
+  <DefaultCritical>k__BackingField: 0
+  <Shield>k__BackingField: 0
+  <Ability>k__BackingField: 0
+  <Trigger>k__BackingField: 0
+  <TriggerPower>k__BackingField: 0
+  <Skill>k__BackingField: {fileID: 0}
+  <Flavor>k__BackingField: 
+  <Number>k__BackingField: 
+  <Rarity>k__BackingField: 
+  <OffsetPower>k__BackingField: 0
+  <BoostedPower>k__BackingField: 0
+  <OffsetCritical>k__BackingField: 0
 --- !u!1 &6920610177890272645
 GameObject:
   m_ObjectHideFlags: 0

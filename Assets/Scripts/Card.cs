@@ -7,7 +7,6 @@ using System.Linq;
 
 public class Card : MonoBehaviour
 {
-    [field: SerializeField]
     public int ID { get => int.Parse(transform.name.Substring(4)); } // カード固有のID
 
     [field: SerializeField]
@@ -15,6 +14,12 @@ public class Card : MonoBehaviour
 
     [SerializeField]
     public ICardZone Parent { get => GetComponentInParent<ICardZone>(); }
+
+    [field: SerializeField]
+    public MeshRenderer Face { get; private set; }
+
+    [field: SerializeField]
+    public MeshRenderer Back { get; private set; }
 
     [field: Space(10)]
     [field: Header("↓カードデータ↓")]

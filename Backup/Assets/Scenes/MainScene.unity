@@ -254,6 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c710798998a9184db12319c47a4c83d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  input: {fileID: 768289830}
   <ID>k__BackingField: 0
   <Turn>k__BackingField: 1
 --- !u!114 &141899825
@@ -861,6 +862,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b30d7cb95913eb348bd79d783ce7a9c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  input: {fileID: 768289830}
   fighter1: {fileID: 141899824}
   fighter2: {fileID: 1451585532}
   SelectBoxPrefab: {fileID: 8287165649421381882, guid: 273e194a4cc31fb44b5cba4f4645448f,
@@ -901,6 +903,8 @@ MonoBehaviour:
   VanguardEffectPrefab: {fileID: 6828535558447242161, guid: 279af72c94cb7cd45a1bb010db1000f1,
     type: 3}
   RearguardEffectPrefab: {fileID: 3024389735728645810, guid: b2bfb26ba00092344848e59bf29ae4e3,
+    type: 3}
+  RetireEffectPrefab: {fileID: 4055640829947961741, guid: dd01a8580a07f444285065d87187b309,
     type: 3}
 --- !u!114 &768289828
 MonoBehaviour:
@@ -2107,7 +2111,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Turn>k__BackingField: 1
-  playerInput: {fileID: 768289830}
+  input: {fileID: 768289830}
   fighter1: {fileID: 141899824}
   fighter2: {fileID: 1451585532}
   <AttackFighter>k__BackingField: {fileID: 0}
@@ -2326,6 +2330,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c710798998a9184db12319c47a4c83d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  input: {fileID: 768289830}
   <ID>k__BackingField: 1
   <Turn>k__BackingField: 1
 --- !u!4 &1451585533

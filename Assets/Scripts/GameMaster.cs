@@ -175,8 +175,12 @@ public class GameMaster : MonoBehaviour
                 }
             }
 
-            new List<Card>(DefenceFighter.Guardian.cardList).ForEach(async card => await CardManager.Instance.GuardianToDrop(DefenceFighter.Guardian, DefenceFighter.Drop, card));
-
+            List<Card> guardian = new List<Card>(DefenceFighter.Guardian.cardList);
+            //guardian.ForEach(async card => await CardManager.Instance.GuardianToDrop(DefenceFighter.Guardian, DefenceFighter.Drop, card));
+            foreach (var card in guardian)
+            {
+                await CardManager.Instance.GuardianToDrop(DefenceFighter.Guardian, DefenceFighter.Drop, card);
+            }
             await AttackFighter.EndStep();
 
         }

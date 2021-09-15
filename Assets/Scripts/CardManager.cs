@@ -103,7 +103,6 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         //Debug.Log("1second");
         //Card card = deck.Pull(index);
         //card.TurnOver();
-
         Card targetCard = targetCircle.Pull();
         if (targetCard != null)
         {
@@ -187,13 +186,15 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// </summary>
     /// <param name="card">移動させるカード</param>
     /// <returns>コルーチン</returns>
-    public IEnumerator CardToDrop(Drop drop, Card card)
+    public async UniTask CardToDrop(Drop drop, Card card)
     {
+        await AnimationManager.Instance.RetireCard(card);
+
         drop.Add(card);
 
+        await AnimationManager.Instance.CardToHand(card);
+
         SetHistory(card: card, source:null, target:drop);
-        // 待つ
-        yield return new WaitForSeconds(0.0f);
     }
 
     /// <summary>
@@ -227,8 +228,14 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     public async UniTask GuardianToDrop(Guardian guardian, Drop drop, Card card)
     {
 
+
+        await AnimationManager.Instance.RetireCard(card);
+
         guardian.Pull(card);
+
         drop.Add(card);
+
+        await AnimationManager.Instance.CardToHand(card);
 
         SetHistory(card: card, source:guardian, target:drop);
     }

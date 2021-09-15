@@ -205,7 +205,7 @@ public static class Extensions
     public static void LocalMoveY(this Transform transform, float move) => transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + move, transform.localPosition.z);
     public static void LocalMoveZ(this Transform transform, float move) => transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z + move);
 
-    public static bool GetDown(this PlayerInput playerInput, string Command) => playerInput.actions[Command].triggered;
+    public static bool GetDown(this PlayerInput playerInput, string Command) => playerInput != null && playerInput.actions[Command].triggered;
 }
 
 public static class ListExtensions

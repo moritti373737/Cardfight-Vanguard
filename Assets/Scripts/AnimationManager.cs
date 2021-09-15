@@ -3,6 +3,7 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     [SerializeField]
     GameObject RearguardEffectPrefab;
 
+    [SerializeField]
+    GameObject RetireEffectPrefab;
     /// <summary>
     /// デッキからカードを引くアニメーション
     /// </summary>
@@ -289,6 +292,28 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         _ = sequence.Join(circle.transform.DOMove(targetTransform.position, 0.15F));
         _ = sequence.Join(circle.transform.DORotate(targetTransform.rotation.eulerAngles, 0.15F));
         await sequence.Play();
+    }
+
+    public async UniTask RetireCard(Card card)
+    {
+        var effect = Instantiate(RetireEffectPrefab);
+        effect.transform.position = card.transform.position;
+        effect.transform.MoveY(0.01F);
+        effect.transform.Rotate(90, card.transform.eulerAngles.y, 0); // カードの向きに合わせる
+        //await UniTask.Delay(300);
+        Color color = card.Face.material.color;
+        color.a = 0;
+        card.Face.material.color = color;
+        color = card.Back.material.color;
+        color.a = 0;
+        card.Back.material.color = color;
+        ParticleSystem[] particle = effect.GetComponentsInChildren<ParticleSystem>();
+
+        //await UniTask.WaitUntil(() => particle.All(particle => !particle.isPlaying));
+
+        //await UniTask.WaitUntil(() => !particle[0].isPlaying);
+        Destroy(effect, 3);
+        await UniTask.Delay(500);
     }
 
 

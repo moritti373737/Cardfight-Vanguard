@@ -65,7 +65,9 @@ public class Guardian : MonoBehaviour, IMultiCardZone
     public Card Pull(Card card)
     {
         GameObject empthObject = card.transform.parent.gameObject;
+        card.transform.parent = null;
         cardList.Remove(card);
+        EmptyCardList.Remove(empthObject);
         SetPosition();
         Destroy(empthObject);
         return card;
@@ -74,6 +76,7 @@ public class Guardian : MonoBehaviour, IMultiCardZone
     public List<Card> Clear()
     {
         var retList = new List<Card>(cardList);
+        cardList.ForEach(card => card.transform.parent = null);
         cardList.Clear();
         EmptyCardList.ForEach(emptyCard => Destroy(emptyCard));
         EmptyCardList.Clear();

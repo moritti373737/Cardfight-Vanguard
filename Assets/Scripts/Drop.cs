@@ -24,10 +24,14 @@ public class Drop : MonoBehaviour, IMultiCardZone
         }
     }
 
-    public void Add(Card _card)
+    public void Add(Card card)
     {
-        _card.transform.SetParent(transform, false);
-        cardList.Add(_card);
+        card.transform.SetParent(transform, false);
+        card.transform.localPosition = Vector3.zero;
+        card.transform.localScale = Vector3.one;
+        card.transform.localRotation = Quaternion.Euler(0, 180, 0);
+
+        cardList.Add(card);
 
     }
 

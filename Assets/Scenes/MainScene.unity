@@ -904,6 +904,8 @@ MonoBehaviour:
     type: 3}
   RearguardEffectPrefab: {fileID: 3024389735728645810, guid: b2bfb26ba00092344848e59bf29ae4e3,
     type: 3}
+  RetireEffectPrefab: {fileID: 4055640829947961741, guid: dd01a8580a07f444285065d87187b309,
+    type: 3}
 --- !u!114 &768289828
 MonoBehaviour:
   m_ObjectHideFlags: 0

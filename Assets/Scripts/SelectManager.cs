@@ -305,6 +305,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         if (changeSelectBox)
         {
             Fighter fighter = GetFighter();
+            print(fighter);
             Hand hand = fighter.Hand;
             Damage damage = fighter.Damage;
 
@@ -711,7 +712,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         SelectBox.transform.SetParent(parentTransform);
         //SelectBox.transform.position = parentTransform.position;
         SelectBox.transform.localPosition = new Vector3(0, 0, -1);
-        SelectBox.transform.localScale = new Vector3(1.1F, 1.1F, 0F);
+        SelectBox.transform.localScale = new Vector3(1.1F, 1.1F, 1.1F);
     }
 
 }
