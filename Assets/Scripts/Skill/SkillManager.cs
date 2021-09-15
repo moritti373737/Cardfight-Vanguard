@@ -47,8 +47,8 @@ public class SkillManager : SingletonMonoBehaviour<SkillManager>
         if (skill.category == CategoryType.Automatic) AutomaticSkill.Add(skill);
         else if (skill.category == CategoryType.Activated) ActivatedSkill.Add((card.ID, skill));
         else if (skill.category == CategoryType.Continuous) ContinuousSkill.Add(skill);
-        print(ActivatedSkill.Count);
-        ActivatedSkill.ToList().ForEach(a => print(a.CardID));
+        //print(ActivatedSkill.Count);
+        //ActivatedSkill.ToList().ForEach(a => print(a.CardID));
     }
 
     /// <summary>

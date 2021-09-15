@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// プロジェクトで使用する拡張メソッド
 /// </summary>
-public static class Extensions
+public static class AllExtensions
 {
     // 今のX位置から引数のX分だけ追加で移動
     //public static void AddPosX(this Transform transform, float x)
