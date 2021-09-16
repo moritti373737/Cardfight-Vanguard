@@ -72,8 +72,8 @@ public class PhotonController : MonoBehaviourPunCallbacks
     [PunRPC]
     public void ReceivedData(object[] args)
     {
-        if (fighter1.ActorNumber == (int)args[0]) fighter1.ReceivedData(args.Skip(1).ToList());
-        else if (fighter2.ActorNumber == (int)args[0]) fighter2.ReceivedData(args.Skip(1).ToList());
+        if (fighter1.ActorNumber == (int)args[0]) _ = fighter1.ReceivedData(args.Skip(1).ToList());
+        else if (fighter2.ActorNumber == (int)args[0]) _ = fighter2.ReceivedData(args.Skip(1).ToList());
     }
 
 }

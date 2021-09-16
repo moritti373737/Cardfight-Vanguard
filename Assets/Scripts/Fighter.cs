@@ -41,6 +41,7 @@ public class Fighter : MonoBehaviour
     public Soul Soul { get; private set; }
 
     public Dictionary<int, Card> CardDic;
+    private bool next = false;
 
     private void Start()
     {
@@ -111,6 +112,7 @@ public class Fighter : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             photonController.SendData("DeckToHand", card: Deck.GetCard(0));
+            await UniTask.WaitUntil(() => IsNext());
             //await CardManager.Instance.DeckToHand(Deck, Hand, 0);
         }
 
@@ -729,10 +731,19 @@ public class Fighter : MonoBehaviour
         };
         await (UniTask)method.Invoke(CardManager.Instance, args2);
 
+        print("èIÇÌÇ¡ÇΩÇÊ");
+        next = true;
         //foreach (var arg in args)
         //{
         //    Debug.Log(arg);
         //}
+    }
+
+    private bool IsNext()
+    {
+        if (!next) return false;
+        next = false;
+        return true;
     }
 
     //public IEnumerator Attack()
