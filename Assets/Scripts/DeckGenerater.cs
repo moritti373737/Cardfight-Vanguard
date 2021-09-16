@@ -19,10 +19,9 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             _deck.Add(card);
         }
     }*/
-    private int Offset = 0;
-
-    public void Generate(Deck deck, FighterID fighterID)
+    public void Generate(Deck deck, int ActorNumber)
     {
+        int offset = (ActorNumber - 1) * 50;
         (List<Texture2D> cardSpriteList, List<string> filename, List<int> cardNumber) = LoadDeckData();
         int spriteNumber = 0;
         int nextSpriteCardNumber = cardNumber[spriteNumber];
@@ -36,7 +35,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             }
 
             GameObject cardObj = Instantiate(cardPrefab);
-            cardObj.name = "Card" + (i + Offset);
+            cardObj.name = "Card" + (i + offset);
 
             Material material = new Material(Shader.Find("Standard"));
             material.SetTexture("_MainTex", cardSpriteList[spriteNumber]);
@@ -59,7 +58,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             //Debug.Log(cardSpriteList[spriteNumber].name.Substring(0, cardSpriteList[spriteNumber].name.Length - 3));
             //Debug.Log(filename[spriteNumber]);
             card.SetStatus(filename[spriteNumber]);
-            card.FighterID = fighterID;
+            card.FighterID = ActorNumber == 1 ? FighterID.ONE : FighterID.TWO;
 
             SkillManager.Instance.InitSkill(card);
             //card.cardModel.face = cardSpriteList[0];
@@ -70,8 +69,6 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             //cardTextList.ForEach(cardText => Resources.UnloadAsset(cardText));
 
         }
-
-        Offset += 50;
     }
 
     private (List<Texture2D> cardSpriteList, List<string> cardTextList, List<int> cardNumber) LoadDeckData()

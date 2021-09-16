@@ -17,7 +17,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="hand"></param>
     /// <param name="index">デッキから取り出すためのインデックス</param>
     /// <returns>コルーチン</returns>
-    public async UniTask DeckToHand(Deck deck, Hand hand, int index)
+    public async UniTask DeckToHand(Deck deck, Hand hand, Card card)
     {
         //MethodInfo method = this.GetType().GetMethod("DeckToHand");
         //var p = method.GetParameters();
@@ -25,7 +25,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
         // ログ出力
         //Debug.Log("1second");
-        Card card = deck.Pull(index);
+        deck.Pull(card);
 
         await AnimationManager.Instance.DeckToCard(card);
 

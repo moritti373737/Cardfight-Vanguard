@@ -73,7 +73,7 @@ public class Fighter : MonoBehaviour
 
     public void CreateDeck()
     {
-        DeckGenerater.Instance.Generate(Deck, ID);
+        DeckGenerater.Instance.Generate(Deck, ActorNumber);
     }
 
     public async UniTask SetFirstVanguard()
@@ -95,7 +95,10 @@ public class Fighter : MonoBehaviour
         }
 
         int ToDeckCount = SelectManager.Instance.SelectedCount;
-        await SelectManager.Instance.ForceConfirm(Tag.Deck, ID, Action.MOVE);
+
+        Action<string, Card> endAction = (funcname, card) => photonController.SendData(funcname, card);
+
+        await SelectManager.Instance.ForceConfirm(Tag.Deck, ID, Action.MOVE, endAction);
 
         await DrawCard(ToDeckCount);
 
@@ -726,7 +729,7 @@ public class Fighter : MonoBehaviour
         {
             this.GetType().GetProperty(funcname.Substring(0, toIndex)).GetValue(this),
             this.GetType().GetProperty(funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2)).GetValue(this),
-            0,
+            CardDic[(int)args[1]],
         };
         await (UniTask)method.Invoke(CardManager.Instance, args2);
 

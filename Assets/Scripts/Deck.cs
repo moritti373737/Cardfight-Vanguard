@@ -34,6 +34,12 @@ public class Deck : MonoBehaviour, IMultiCardZone
         return card;
     }
 
+    public Card Pull(Card card)
+    {
+        cardList.Remove(card);
+        return card;
+    }
+
     public void Shuffle()
     {
 

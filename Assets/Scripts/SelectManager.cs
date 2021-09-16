@@ -529,17 +529,19 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     }
 
-    public async UniTask ForceConfirm(Tag tag, FighterID fighterID, Action action)
+    public async UniTask ForceConfirm(Tag tag, FighterID fighterID, Action action, Action<string, Card> endAction = null)
     {
         //var SelectedZip = SelectedBoxList.Zip(SelectedCardParentList, (box, parent) => (Box: box, Parent: parent));
         Fighter fighter = GetFighter(fighterID);
-
         MultiSelectIndex = -1;
         SelectBox.transform.parent = null;
 
         if (tag == Tag.Deck)
         {
-            SelectedCardParentList.ForEach(async parent => await CardManager.Instance.HandToDeck(fighter.Hand, fighter.Deck, parent.GetCard()));
+            SelectedCardParentList.ForEach(async parent => {
+                //await CardManager.Instance.HandToDeck(fighter.Hand, fighter.Deck, parent.GetCard());
+                endAction("HandToDeck", parent.GetCard());
+            });
         }
         else if (tag == Tag.Guardian)
         {
