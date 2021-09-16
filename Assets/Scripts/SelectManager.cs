@@ -609,7 +609,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             if (SelectObj.FindWithChildTag(Tag.Card) != null)
             {
                 var card = SelectObj.FindWithChildTag(Tag.Card).GetComponent<Card>();
-                //if (!card.JudgeState(Card.State.FaceUp)) return;
+                //if (!card.JudgeStep(Card.State.FaceUp)) return;
                 var cardTexture = (Texture2D)card.GetTexture();
                 ZoomImage.sprite = Sprite.Create(cardTexture, new Rect(0.0f, 0.0f, cardTexture.width, cardTexture.height), new Vector2(0.5f, 0.5f), 100.0f);
             }

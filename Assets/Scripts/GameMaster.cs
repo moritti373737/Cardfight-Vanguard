@@ -38,7 +38,20 @@ public class GameMaster : MonoBehaviour
     }
 
 
-    async void Start()
+    //async void Start()
+    //{
+    //    fighter1.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter1} ‚Ì•‰‚¯</color>"));
+    //    fighter2.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter2} ‚Ì•‰‚¯</color>"));
+
+    //    await InitPhase();
+
+    //    while (true)
+    //    {
+    //        await StandPhase();
+    //    }
+    //}
+
+    public async UniTask GameStart()
     {
         fighter1.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter1} ‚Ì•‰‚¯</color>"));
         fighter2.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter2} ‚Ì•‰‚¯</color>"));
@@ -88,8 +101,11 @@ public class GameMaster : MonoBehaviour
         await fighter1.DrawCard(5);
 
         await fighter1.Mulligan();
-        await UniTask.NextFrame();
-        await fighter2.Mulligan();
+
+        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllNext());
+
+        //await UniTask.NextFrame();
+        //await fighter2.Mulligan();
 
         //await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 

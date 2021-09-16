@@ -41,8 +41,6 @@ public class Fighter : MonoBehaviour
     public Soul Soul { get; private set; }
 
     public Dictionary<int, Card> CardDic;
-    private bool next = false;
-
     private void Start()
     {
         //子オブジェクトを全て取得する
@@ -101,6 +99,7 @@ public class Fighter : MonoBehaviour
 
         await DrawCard(ToDeckCount);
 
+        photonController.SendNext(ActorNumber);
     }
 
     public async UniTask DrawCard(int count)
@@ -112,7 +111,7 @@ public class Fighter : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             photonController.SendData("DeckToHand", card: Deck.GetCard(0));
-            await UniTask.WaitUntil(() => IsNext());
+            await UniTask.WaitUntil(() => NextController.Instance.IsNext());
             //await CardManager.Instance.DeckToHand(Deck, Hand, 0);
         }
 
@@ -382,7 +381,7 @@ public class Fighter : MonoBehaviour
             if (selectedAttackCard == null) return Result.NO;
             selectedAttackZone = selectedAttackCard.GetComponentInParent<ICardCircle>();
 
-            //if (!selectedAttackZone.Card.JudgeState(Card.State.Stand)) return Result.NO; // 攻撃可能なカードか判定
+            //if (!selectedAttackZone.Card.JudgeStep(Card.State.Stand)) return Result.NO; // 攻撃可能なカードか判定
             if (!selectedAttackZone.Front) return Result.NO;
             state = functionsV2;
             functions.AddRange(functionsV2);
@@ -732,19 +731,14 @@ public class Fighter : MonoBehaviour
         await (UniTask)method.Invoke(CardManager.Instance, args2);
 
         print("終わったよ");
-        next = true;
+        NextController.Instance.SetNext(true);
         //foreach (var arg in args)
         //{
         //    Debug.Log(arg);
         //}
     }
 
-    private bool IsNext()
-    {
-        if (!next) return false;
-        next = false;
-        return true;
-    }
+
 
     //public IEnumerator Attack()
     //{

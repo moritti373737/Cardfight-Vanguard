@@ -1047,7 +1047,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 817001136}
   m_LocalRotation: {x: 0, y: 0.7826082, z: -0.6225146, w: 0}
-  m_LocalPosition: {x: 0, y: 1.486, z: 0.624}
+  m_LocalPosition: {x: 0, y: 0.496, z: 0.396}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -2681,6 +2681,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e97d1fcd9f26305499cd87e271c46098, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameMaster: {fileID: 1373051665}
   fighter1: {fileID: 141899824}
   fighter2: {fileID: 1451585532}
 --- !u!4 &1645979629

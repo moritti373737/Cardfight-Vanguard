@@ -9,6 +9,9 @@ using UnityEngine;
 public class PhotonController : MonoBehaviourPunCallbacks
 {
     [SerializeField]
+    GameMaster gameMaster;
+
+    [SerializeField]
     private Fighter fighter1;
     [SerializeField]
     private Fighter fighter2;
@@ -40,6 +43,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
             Debug.Log($"‘ŠŽè‚ÌID = {PhotonNetwork.PlayerListOthers.First().ActorNumber}");
             fighter1.ActorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
             fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber;
+            _ = gameMaster.GameStart();
         }
     }
 
@@ -55,6 +59,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
             Debug.Log($"‘ŠŽè‚ÌID = {PhotonNetwork.PlayerListOthers.First().ActorNumber}");
             fighter1.ActorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
             fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber;
+            _ = gameMaster.GameStart();
         }
     }
 
@@ -75,5 +80,17 @@ public class PhotonController : MonoBehaviourPunCallbacks
         if (fighter1.ActorNumber == (int)args[0]) _ = fighter1.ReceivedData(args.Skip(1).ToList());
         else if (fighter2.ActorNumber == (int)args[0]) _ = fighter2.ReceivedData(args.Skip(1).ToList());
     }
+
+    public void SendNext(int actorNumber)
+    {
+        photonView.RPC("ReceivedNext", RpcTarget.All, actorNumber);
+    }
+
+    [PunRPC]
+    public void ReceivedNext(int actorNumber)
+    {
+        NextController.Instance.SetNext(actorNumber, true);
+    }
+
 
 }
