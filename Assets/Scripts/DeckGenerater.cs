@@ -21,7 +21,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
     }*/
     private int Offset = 0;
 
-    public void Generate(Deck _deck, FighterID fighterID)
+    public void Generate(Deck deck, FighterID fighterID)
     {
         (List<Texture2D> cardSpriteList, List<string> filename, List<int> cardNumber) = LoadDeckData();
         int spriteNumber = 0;
@@ -65,7 +65,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             //card.cardModel.face = cardSpriteList[0];
             //card.CardModel.ToggleFace(true);
             //card.Load(cardDataList[i]);
-            _deck.Add(card);
+            deck.Add(card);
             //Debug.Log(i);
             //cardTextList.ForEach(cardText => Resources.UnloadAsset(cardText));
 

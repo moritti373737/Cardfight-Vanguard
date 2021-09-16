@@ -6,14 +6,22 @@ using Cysharp.Threading.Tasks;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine.InputSystem;
+using System.Reflection;
 
 public class Fighter : MonoBehaviour
 {
     [SerializeField]
     private PlayerInput input;
 
+    [SerializeField]
+    private PhotonController photonController;
+
     [field: SerializeField]
     public FighterID ID { get; private set; }
+
+    [SerializeField]
+    public int ActorNumber;
+
     [field: SerializeField]
     private int Turn { get; set; } = 1;
 
@@ -31,6 +39,8 @@ public class Fighter : MonoBehaviour
     public Guardian Guardian { get; private set; }
     public Order Order { get; private set; }
     public Soul Soul { get; private set; }
+
+    public Dictionary<int, Card> CardDic;
 
     private void Start()
     {
@@ -92,24 +102,6 @@ public class Fighter : MonoBehaviour
 
     }
 
-    public async UniTask StandUpVanguard()
-    {
-        var card = Vanguard.Card;
-        card.SetState(Card.State.FaceUp, true);
-        await CardManager.Instance.RotateCard(Vanguard);
-        print("standup");
-    }
-
-    public async UniTask StandPhase()
-    {
-        print("stand");
-        await UniTask.NextFrame();
-        await UniTask.WaitUntil(() => input.GetDown("Enter"));
-        print("enter");
-        await CardManager.Instance.StandCard(Vanguard);
-        Rearguards.ForEach(async rear => await CardManager.Instance.StandCard(rear));
-    }
-
     public async UniTask DrawCard(int count)
     {
         //Debug.Log("Draw‚·‚é");
@@ -118,9 +110,31 @@ public class Fighter : MonoBehaviour
         //CardManager.DeckToHand(deck, hand);
         for (int i = 0; i < count; i++)
         {
-            await CardManager.Instance.DeckToHand(Deck, Hand, 0);
+            photonController.SendData("DeckToHand", card: Deck.GetCard(0));
+            //await CardManager.Instance.DeckToHand(Deck, Hand, 0);
         }
 
+    }
+
+    public async UniTask StandUpVanguard()
+    {
+        var card = Vanguard.Card;
+        card.SetState(Card.State.FaceUp, true);
+        await CardManager.Instance.RotateCard(Vanguard);
+    }
+
+    public async UniTask StandPhase()
+    {
+        await UniTask.NextFrame();
+        await UniTask.WaitUntil(() => input.GetDown("Enter"));
+        await CardManager.Instance.StandCard(Vanguard);
+        Rearguards.ForEach(async rear => await CardManager.Instance.StandCard(rear));
+    }
+
+
+    public async UniTask DrawPhase()
+    {
+        await DrawCard(1);
     }
 
     public async UniTask RidePhase()
@@ -691,6 +705,34 @@ public class Fighter : MonoBehaviour
     public async UniTask RetireCard(ICardCircle circle)
     {
         await CardManager.Instance.CardToDrop(Drop, circle.Pull());
+    }
+
+    public async UniTask ReceivedData(List<object> args)
+    {
+        string funcname = (string)args[0];
+        int toIndex = funcname.IndexOf("To");
+        Debug.Log(ActorNumber);
+        Debug.Log(args[0]);
+        Debug.Log(funcname.Substring(0, toIndex));
+        Debug.Log(funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2));
+
+        Debug.Log(CardDic[(int)args[1]]);
+
+
+        Type type = CardManager.Instance.GetType();
+        MethodInfo method = type.GetMethod(funcname);
+        object[] args2 =
+        {
+            this.GetType().GetProperty(funcname.Substring(0, toIndex)).GetValue(this),
+            this.GetType().GetProperty(funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2)).GetValue(this),
+            0,
+        };
+        await (UniTask)method.Invoke(CardManager.Instance, args2);
+
+        //foreach (var arg in args)
+        //{
+        //    Debug.Log(arg);
+        //}
     }
 
     //public IEnumerator Attack()

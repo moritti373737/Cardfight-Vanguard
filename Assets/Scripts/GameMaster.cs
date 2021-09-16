@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -65,6 +66,9 @@ public class GameMaster : MonoBehaviour
 
         fighter1.CreateDeck();
         fighter2.CreateDeck();
+        var CardDic = fighter1.Deck.cardList.Concat(fighter2.Deck.cardList).ToDictionary(card => card.ID);
+        fighter1.CardDic = CardDic;
+        fighter2.CardDic = CardDic;
 
         // ここで、カード生成したので1フレーム待って、CardのStart()メソッドを実行させる
         await UniTask.NextFrame();
@@ -80,7 +84,8 @@ public class GameMaster : MonoBehaviour
 
         await UniTask.WaitUntil(() => input.GetDown("Enter"));
 
-        await UniTask.WhenAll(fighter1.DrawCard(5), fighter2.DrawCard(5));
+        //await UniTask.WhenAll(fighter1.DrawCard(5), fighter2.DrawCard(5));
+        await fighter1.DrawCard(5);
 
         await fighter1.Mulligan();
         await UniTask.NextFrame();
@@ -109,7 +114,7 @@ public class GameMaster : MonoBehaviour
 
         await UniTask.WaitUntil(() => input.GetDown("Enter"));
 
-        await AttackFighter.DrawCard(1);
+        await AttackFighter.DrawPhase();
 
         await UniTask.NextFrame();
         //await AttackFighter.GuardPhase();

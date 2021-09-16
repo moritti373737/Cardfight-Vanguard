@@ -218,7 +218,6 @@ GameObject:
   m_Component:
   - component: {fileID: 141899823}
   - component: {fileID: 141899824}
-  - component: {fileID: 141899825}
   m_Layer: 0
   m_Name: Fighter1
   m_TagString: Fighter
@@ -255,22 +254,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   input: {fileID: 768289830}
+  photonController: {fileID: 1645979628}
   <ID>k__BackingField: 0
+  ActorNumber: 0
   <Turn>k__BackingField: 1
---- !u!114 &141899825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 141899822}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e69891be99d2b2d45a6fb4bbaf42369a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardPrefab: {fileID: 6920610177796531498, guid: a5c75618b6daac64eb85719b80bd17bf,
-    type: 3}
 --- !u!1 &241021720
 GameObject:
   m_ObjectHideFlags: 0
@@ -816,6 +803,7 @@ GameObject:
   - component: {fileID: 768289828}
   - component: {fileID: 768289829}
   - component: {fileID: 768289826}
+  - component: {fileID: 768289831}
   - component: {fileID: 768289830}
   m_Layer: 0
   m_Name: Manager
@@ -968,6 +956,20 @@ MonoBehaviour:
   m_DefaultActionMap: Fighter
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &768289831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768289823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e69891be99d2b2d45a6fb4bbaf42369a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardPrefab: {fileID: 6920610177796531498, guid: a5c75618b6daac64eb85719b80bd17bf,
+    type: 3}
 --- !u!1 &817001136
 GameObject:
   m_ObjectHideFlags: 0
@@ -2331,7 +2333,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   input: {fileID: 768289830}
+  photonController: {fileID: 1645979628}
   <ID>k__BackingField: 1
+  ActorNumber: 0
   <Turn>k__BackingField: 1
 --- !u!4 &1451585533
 Transform:
@@ -2657,6 +2661,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1645979629}
   - component: {fileID: 1645979628}
+  - component: {fileID: 1645979630}
   m_Layer: 0
   m_Name: PhotonObject
   m_TagString: Untagged
@@ -2676,6 +2681,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e97d1fcd9f26305499cd87e271c46098, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fighter1: {fileID: 141899824}
+  fighter2: {fileID: 1451585532}
 --- !u!4 &1645979629
 Transform:
   m_ObjectHideFlags: 0
@@ -2690,6 +2697,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1645979630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1645979627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 1
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1673762187
 GameObject:
   m_ObjectHideFlags: 0

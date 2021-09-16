@@ -12,10 +12,10 @@ public class SkillData : ScriptableObject
     private void OnEnable()
     {
         CardNumber = name;
-        //var fullpath = UnityEditor.AssetDatabase.GetAssetPath(this).SplitEx('/');
-        //string pack = fullpath[fullpath.Count - 2];
-        //string number = fullpath[fullpath.Count - 1].Substring(0, fullpath[fullpath.Count - 1].Length - 11);
-        //SkillList.ForEach(skill => skill.cardNumber = pack + "/" + number);
+        var fullpath = UnityEditor.AssetDatabase.GetAssetPath(this).SplitEx('/');
+        string pack = fullpath[fullpath.Count - 2];
+        string number = fullpath[fullpath.Count - 1].Substring(0, fullpath[fullpath.Count - 1].Length - 11);
+        SkillList.ForEach(skill => skill.cardNumber = pack + "/" + number);
     }
 }
 
