@@ -21,7 +21,7 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
     }*/
     public void Generate(Deck deck, int ActorNumber)
     {
-        int offset = (ActorNumber - 1) * 50;
+        int offset = ActorNumber * 50;
         (List<Texture2D> cardSpriteList, List<string> filename, List<int> cardNumber) = LoadDeckData();
         int spriteNumber = 0;
         int nextSpriteCardNumber = cardNumber[spriteNumber];

@@ -128,7 +128,8 @@ public class Fighter : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             photonController.SendData("DeckToHand", card: Deck.GetCard(0));
-            await UniTask.WaitUntil(() => NextController.Instance.IsNext());
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            Debug.Log("trueです");
             //await CardManager.Instance.DeckToHand(Deck, Hand, 0);
         }
 
@@ -170,9 +171,6 @@ public class Fighter : MonoBehaviour
     public async UniTask RidePhase()
     {
         await UniTask.NextFrame();
-        Result result = Result.NONE;
-        int i = 0;
-        Card selectedCard = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
 
@@ -182,7 +180,7 @@ public class Fighter : MonoBehaviour
         });
         //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
         functions.Add(async () => {
-            selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+            Card selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
             if (selectedCard == null) return Result.NO;
             if (selectedCard.Grade > Vanguard.Card.Grade + 1) return Result.NO; // グレードのチェック
             var result = await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
@@ -202,10 +200,12 @@ public class Fighter : MonoBehaviour
             Card removedCard = vanguard.Card; // カードが既に存在する場合はソウルに移動させる
             photonController.SendData("HandToVanguard", card.GetComponent<Card>());
             if (removedCard != null) photonController.SendData("VanguardToSoul", removedCard);
-            await UniTask.WaitUntil(() => NextController.Instance.IsNext());
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
             return Result.YES;
         });
 
+        int i = 0;
+        Result result = Result.NONE;
         while (i < functions.Count)
         {
             await UniTask.NextFrame();
@@ -237,8 +237,6 @@ public class Fighter : MonoBehaviour
     public async UniTask<bool> MainPhase()
     {
         await UniTask.NextFrame();
-        Result result = Result.NONE;
-        int i = 0;
         Card selectedCard = null;
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
@@ -289,7 +287,6 @@ public class Fighter : MonoBehaviour
                     return Result.YES;
                 }
 
-
                 selectedCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
                 if (selectedCard != null)
                 {
@@ -315,23 +312,25 @@ public class Fighter : MonoBehaviour
         // 分岐1
         functionsC.Add(async () =>
         {
-            print("C");
             int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsC.Add(async () =>
         {
-            (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-            if (circle == null) return Result.NO;
-            Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
-            if (removedCard != null) await CardManager.Instance.CardToDrop(Drop, removedCard);
+            (ICardCircle rearguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
+            if (rearguard == null) return Result.NO;
+            Card removedCard = rearguard.Card; // カードが既に存在する場合はソウルに移動させる
+            photonController.SendData("HandToRearguard" + Rearguards.Find(rear => rear.ID == rearguard.ID).ID, card.GetComponent<Card>());
+            if (removedCard != null) photonController.SendData("Rearguard" + Rearguards.Find(rear => rear.ID == rearguard.ID).ID + "ToDrop", removedCard);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
+            //if (removedCard != null) await CardManager.Instance.CardToDrop(Drop, removedCard);
             return Result.YES;
         });
 
         // 分岐2
         functionsM.Add(async () =>
         {
-            print("M");
             int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
             return resultInt.ToEnum("YES", "CANCEL");
         });
@@ -349,6 +348,8 @@ public class Fighter : MonoBehaviour
 
         functions.AddRange(functionsV);
 
+        int i = 0;
+        Result result = Result.NONE;
         while (i < functions.Count)
         {
             await UniTask.NextFrame();
@@ -769,29 +770,32 @@ public class Fighter : MonoBehaviour
     /// メインデータを受信したときの処理
     /// カードに関する処理が送られている
     /// </summary>
-    /// <param name="args">関数名、カードID</param>
+    /// <param name="args">送信元ID、関数名、カードID</param>
     public async UniTask ReceivedData(List<object> args)
     {
-        string funcname = (string)args[0];
+        int actorNumber = (int)args[0];
+        string funcname = ((string)args[1]);
         int toIndex = funcname.IndexOf("To");
         string source = funcname.Substring(0, toIndex);
         string target = funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2);
-        Debug.Log(ActorNumber);
-        Debug.Log(args[0]);
-        Debug.Log($"{source} to {target}");
+        //Debug.Log(ActorNumber);
+        //Debug.Log(args[0]);
+        //Debug.Log($"{source} to {target}");
 
-        Debug.Log(CardDic[(int)args[1]]);
+        //Debug.Log(CardDic[(int)args[1]]);
 
-        if (source == "Vanguard")
+        if (source.Contains("Rearguard"))
         {
-            //Debug.Log(source);
+            Debug.Log(source.Substring(source.Length - 2));
             funcname = "Circle" + "To" + target;
         }
-        else if (target == "Vanguard")
+        else if (target.Contains("Rearguard"))
         {
-            //Debug.Log(target);
+            Debug.Log(target.Substring(target.Length - 2));
             funcname = source + "To" + "Circle";
         }
+        funcname = funcname.Replace("Vanguard", "Circle");
+        //Debug.Log(funcname);
 
         Type type = this.GetType();
         object sourceObj = type.GetProperty(source).GetValue(this);
@@ -802,12 +806,12 @@ public class Fighter : MonoBehaviour
         {
             sourceObj,
             targetObj,
-            CardDic[(int)args[1]],
+            CardDic[(int)args[2]],
         };
         await (UniTask)method.Invoke(CardManager.Instance, args2);
 
         print("終わったよ");
-        NextController.Instance.SetNext(true);
+        NextController.Instance.SetProcessNext(actorNumber, true);
         //foreach (var arg in args)
         //{
         //    Debug.Log(arg);
@@ -823,83 +827,4 @@ public class Fighter : MonoBehaviour
     {
         TextManager.Instance.SetPhaseText(state);
     }
-
-
-
-    //public IEnumerator Attack()
-    //{
-    //    SelectManager.Instance.
-    //}
-
-    /*
-    public void onDamage(int _at)
-    {
-        hp -= _at;
-        if (hp < 0)
-            hp = 0;
-        Debug.Log(hp);
-    }
-    public void Draw()
-    {
-        Card card = deck.Pull(0);
-        hand.Add(card);
-    }
-
-    public void StandbyPhaseAction()
-    {
-        Card card = hand.Pull(0);
-        field.Add(card);
-
-    }
-
-    public void ButtlePhaseAction(Player _enemyPlayer)
-    {
-        // アタックカードを選ぶ
-        Card card = SelectAttacker();
-        if (card == null)
-            return;
-        // 相手フィールドにカードがあればカードを攻撃
-        if (_enemyPlayer.field.cardList.Count > 0)
-        {
-            // 敵のカードを取得して攻撃
-            Card enemyCard = SelectTarget(_enemyPlayer.field);
-            card.Attack(enemyCard);
-        }
-        else
-        {
-            // なければプレイヤーを攻撃
-            card.Attack(_enemyPlayer);
-        }
-    }
-
-    public void CheckFieldCardHP()
-    {
-        for(int i = 0; i < field.cardList.Count; i++)
-        {
-            Card card = field.cardList[i];
-            if (card.hp <= 0)
-            {
-                SendGraveyard(card);
-            }
-        }
-    }
-
-    void SendGraveyard(Card _card)
-    {
-        field.Pull(_card);
-        graveyard.Add(_card);
-    }
-
-    Card SelectAttacker()
-    {
-        return field.Get(0);
-
-    }
-
-    Card SelectTarget(Field enemyField)
-    {
-        return enemyField.Get(0);
-
-    }
-    */
 }

@@ -58,6 +58,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     [SerializeField]
     private int MultiSelectIndex = 0;
 
+    private List<Dictionary<string, int>> IndexList;
+
     private List<List<GameObject>> SelectObjList;
     private GameObject SelectObj { get => SelectObjList[selectZoneIndex[0]][selectZoneIndex[1]]; }
     public List<GameObject> SelectObjList1 = new List<GameObject>();
@@ -144,6 +146,22 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
             },
         };
 
+        IndexList = new List<Dictionary<string, int>>()
+        {
+            new Dictionary<string, int>()
+            {
+                { "Hand", 0},
+                { "Guardian", 0},
+                { "Damage", 0},
+            },
+            new Dictionary<string, int>()
+            {
+                { "Hand", 0},
+                { "Guardian", 0},
+                { "Damage", 0},
+            },
+        };
+
         SelectBox = Instantiate(SelectBoxPrefab).FixName();
         SelectBox.ChangeParent(SelectObjList1[2].transform, true, true, true);
         //SelectList.Add(new List<Zone>() { Zone.R11, Zone.V, Zone.R13, Zone.DECK });
@@ -162,16 +180,16 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         //SelectObjList.Add(SelectObjList2);
         //SelectObjList.Add(SelectObjList3);
 
-        hand1.cardList.ObserveCountChanged()
-            .Where(_ => MultiSelectIndex != -1)
-            .Where(_ => HasTag(Tag.Hand))
-            .Subscribe(_ => ChangeHandCount(hand1))
-            .AddTo(this);
-        hand2.cardList.ObserveCountChanged()
-            .Where(_ => MultiSelectIndex != -1)
-            .Where(_ => HasTag(Tag.Hand))
-            .Subscribe(_ => ChangeHandCount(hand2))
-            .AddTo(this);
+        //hand1.cardList.ObserveCountChanged()
+        //    .Where(_ => MultiSelectIndex != -1)
+        //    .Where(_ => HasTag(Tag.Hand))
+        //    .Subscribe(_ => ChangeHandCount(hand1))
+        //    .AddTo(this);
+        //hand2.cardList.ObserveCountChanged()
+        //    .Where(_ => MultiSelectIndex != -1)
+        //    .Where(_ => HasTag(Tag.Hand))
+        //    .Subscribe(_ => ChangeHandCount(hand2))
+        //    .AddTo(this);
         ZoomImage = GameObject.Find("Canvas").transform.Find("ZoomCard").GetComponent<Image>();
         this.ObserveEveryValueChanged(x => x.MultiSelectIndex).Skip(1).Where(_ => MultiSelectIndex != -1).Subscribe(i =>
         {

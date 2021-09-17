@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public class NextController
 {
-    private bool singleNext = false;
+    //private bool singleNext = false;
 
     [Flags]
     public enum Next
@@ -17,35 +17,57 @@ public class NextController
         Two = 1 << 1,    //2進数だと10　(10進数だと2)
     }
 
-    public Next next { get; set; } = 0;
+    /// <summary>
+    /// 何らかの処理を待ちながら行うための変数（2台がそれぞれ自由に使用）
+    /// </summary>
+    private Next ProcessNext { get; set; } = 0;
+
+    /// <summary>
+    /// フェイズを同期させるための変数（使用タイミングは厳密に規定）
+    /// </summary>
+    private Next SyncNext { get; set; } = 0;
 
     /// <summary>
     /// nextの値を返す、ただしtrueの場合はnextをfalseに書き換える
     /// </summary>
     /// <returns>nextの値</returns>
-    public bool IsNext()
-    {
-        if (!singleNext) return false;
-        singleNext = false;
-        return true;
-    }
+    //public bool IsNext()
+    //{
+    //    if (!singleNext) return false;
+    //    singleNext = false;
+    //    return true;
+    //}
 
     /// <summary>
     /// nextのセッター
     /// </summary>
-    public void SetNext(bool next) => singleNext = next;
+    //public void SetNext(bool next) => singleNext = next;
+    //private void SetNext(Next newNext, Next next, bool b)
+    //{
+    //    if (b) next |= newNext;
+    //    else next &= ~newNext;
+    //}
 
-    public void SetNext(Next newNext, bool b)
+    public void SetProcessNext(Next newNext, bool b)
     {
-        if (b) next |= newNext;
-        else next &= ~newNext;
+        if (b) ProcessNext |= newNext;
+        else ProcessNext &= ~newNext;
     }
 
-    public void SetNext(int nextInt, bool b)
+    public void SetProcessNext(int newNextInt, bool b)
     {
-        Next newNext = nextInt == 1 ? Next.One : Next.Two;
-        if (b) next |= newNext;
-        else next &= ~newNext;
+        SetProcessNext(newNextInt == 0 ? Next.One : Next.Two, b);
+    }
+
+    public void SetSyncNext(Next newNext, bool b)
+    {
+        if (b) SyncNext |= newNext;
+        else SyncNext &= ~newNext;
+    }
+
+    public void SetSyncNext(int newNextInt, bool b)
+    {
+        SetSyncNext(newNextInt == 0 ? Next.One : Next.Two, b);
     }
 
     /// <summary>
@@ -53,13 +75,40 @@ public class NextController
     /// </summary>
     /// <param name="judgeNext">調べたいnext</param>
     /// <returns>判定結果</returns>
-    public bool JudgeNext(Next judgeNext) => next == (next | judgeNext);
-
-    public bool JudgeAllNext()
+    public bool JudgeProcessNext(Next judgeNext)
     {
-        var ret = next == (next | Next.One | Next.Two);
+        if (!(ProcessNext == (ProcessNext | judgeNext))) return false;
+        SetProcessNext(judgeNext, false);
+        return true;
+    }
+
+    public bool JudgeProcessNext(int newNextInt)
+    {
+        Next newNext = newNextInt == 0 ? Next.One : Next.Two;
+        return JudgeProcessNext(newNext);
+    }
+
+    //public bool JudgeAllNext()
+    //{
+    //    var ret = processNext == (processNext | Next.One | Next.Two);
+    //    if (!ret) return false;
+    //    processNext = 0;
+    //    return true;
+    //}
+
+    public bool JudgeAllProcessNext()
+    {
+        bool ret = ProcessNext == (ProcessNext | Next.One | Next.Two);
         if (!ret) return false;
-        next = 0;
+        ProcessNext = 0;
+        return true;
+    }
+
+    public bool JudgeAllSyncNext()
+    {
+        bool ret = SyncNext == (SyncNext | Next.One | Next.Two);
+        if (!ret) return false;
+        SyncNext = 0;
         return true;
     }
 

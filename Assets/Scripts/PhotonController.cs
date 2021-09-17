@@ -62,11 +62,11 @@ public class PhotonController : MonoBehaviourPunCallbacks
         Debug.Log("2人揃いました。");
         Debug.Log($"あなたのID = {PhotonNetwork.LocalPlayer.ActorNumber}");
         Debug.Log($"相手のID = {PhotonNetwork.PlayerListOthers.First().ActorNumber}");
-        fighter1.ActorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
-        fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber;
-        if (fighter1.ActorNumber != 1 && fighter1.ActorNumber != 2) Debug.LogError($"Fighter1のActorNumber = {fighter1.ActorNumber}");
-        if (fighter2.ActorNumber != 1 && fighter2.ActorNumber != 2) Debug.LogError($"Fighter2のActorNumber = {fighter2.ActorNumber}");
-        _ = gameMaster.GameStart(PhotonNetwork.LocalPlayer.ActorNumber);
+        fighter1.ActorNumber = PhotonNetwork.LocalPlayer.ActorNumber - 1;
+        fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber - 1;
+        if (fighter1.ActorNumber != 0 && fighter1.ActorNumber != 1) Debug.LogError($"Fighter1のActorNumber = {fighter1.ActorNumber}");
+        if (fighter2.ActorNumber != 0 && fighter2.ActorNumber != 1) Debug.LogError($"Fighter2のActorNumber = {fighter2.ActorNumber}");
+        _ = gameMaster.GameStart(PhotonNetwork.LocalPlayer.ActorNumber - 1);
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
     {
         object[] args = new object[]
         {
-            PhotonNetwork.LocalPlayer.ActorNumber,
+            PhotonNetwork.LocalPlayer.ActorNumber - 1,
             funcname,
             card.ID
         };
@@ -92,17 +92,17 @@ public class PhotonController : MonoBehaviourPunCallbacks
     [PunRPC]
     public void ReceivedData(object[] args)
     {
-        if (fighter1.ActorNumber == (int)args[0]) _ = fighter1.ReceivedData(args.Skip(1).ToList());
-        else if (fighter2.ActorNumber == (int)args[0]) _ = fighter2.ReceivedData(args.Skip(1).ToList());
+        if (fighter1.ActorNumber == (int)args[0]) _ = fighter1.ReceivedData(args.ToList());
+        else if (fighter2.ActorNumber == (int)args[0]) _ = fighter2.ReceivedData(args.ToList());
     }
 
     /// <summary>
     /// 処理を次に進めるためのデータを送信する
     /// </summary>
     /// <param name="actorNumber">送信元のプレイヤーID</param>
-    public void SendNext(int actorNumber)
+    public void SendProcessNext(int actorNumber)
     {
-        photonView.RPC("ReceivedNext", RpcTarget.All, (byte)actorNumber);
+        photonView.RPC("ReceivedProcessNext", RpcTarget.All, (byte)actorNumber);
     }
 
     /// <summary>
@@ -110,9 +110,28 @@ public class PhotonController : MonoBehaviourPunCallbacks
     /// </summary>
     /// <param name="actorNumber">送信元のプレイヤーID</param>
     [PunRPC]
-    public void ReceivedNext(byte actorNumber)
+    public void ReceivedProcessNext(byte actorNumber)
     {
-        NextController.Instance.SetNext(actorNumber, true);
+        NextController.Instance.SetProcessNext(actorNumber, true);
+    }
+
+    /// <summary>
+    /// 処理を次に進めるためのデータを送信する
+    /// </summary>
+    /// <param name="actorNumber">送信元のプレイヤーID</param>
+    public void SendSyncNext(int actorNumber)
+    {
+        photonView.RPC("ReceivedSyncNext", RpcTarget.All, (byte)actorNumber);
+    }
+
+    /// <summary>
+    /// 処理を次に進めるためのデータを受信したときに呼び出される
+    /// </summary>
+    /// <param name="actorNumber">送信元のプレイヤーID</param>
+    [PunRPC]
+    public void ReceivedSyncNext(byte actorNumber)
+    {
+        NextController.Instance.SetSyncNext(actorNumber, true);
     }
 
     /// <summary>

@@ -92,12 +92,12 @@ public class GameMaster : MonoBehaviour
         // ここで、カード生成したので1フレーム待って、CardのStart()メソッドを実行させる
         await UniTask.NextFrame();
 
-        if (fighter1.ActorNumber == 1)
+        if (fighter1.ActorNumber == 0)
         {
             AttackFighter = fighter1;
             DefenceFighter = fighter2;
         }
-        else if (fighter1.ActorNumber == 2)
+        else if (fighter1.ActorNumber == 1)
         {
             AttackFighter = fighter2;
             DefenceFighter = fighter1;
@@ -117,9 +117,9 @@ public class GameMaster : MonoBehaviour
         await fighter1.DrawCard(5);
 
         await fighter1.Mulligan();
-        photonController.SendNext(fighter1.ActorNumber);
+        photonController.SendSyncNext(MyNumber);
 
-        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllNext());
+        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
         //await UniTask.NextFrame();
         //await fighter2.Mulligan();
@@ -127,7 +127,7 @@ public class GameMaster : MonoBehaviour
         //await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
         await UniTask.WhenAll(fighter1.StandUpVanguard(), fighter2.StandUpVanguard());
-
+        Debug.Log("スタンドアップヴァンガード");
         await UniTask.NextFrame();
     }
 
@@ -147,25 +147,31 @@ public class GameMaster : MonoBehaviour
         //TextManager.Instance.SetPhaseText("ドローフェイズ");
         photonController.SendState("ドローフェイズ");
 
-        if(AttackFighter.ActorNumber == MyNumber)
-            await AttackFighter.DrawPhase();
+        if(AttackFighter.ActorNumber == MyNumber) await AttackFighter.DrawPhase();
 
         await UniTask.NextFrame();
         //await AttackFighter.GuardPhase();
 
-        NextController.Instance.SetNext(MyNumber, true);
-        photonController.SendNext(MyNumber);
-        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllNext());
+        NextController.Instance.SetSyncNext(MyNumber, true);
+        photonController.SendSyncNext(MyNumber);
+        Debug.Log(MyNumber);
+        Debug.Log(true);
+        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
         await RidePhase();
     }
 
     async UniTask RidePhase()
     {
+        Debug.Log("ライドフェイズ");
         //TextManager.Instance.SetPhaseText("ライドフェイズ");
         photonController.SendState("ライドフェイズ");
+        if (AttackFighter.ActorNumber == MyNumber) await AttackFighter.RidePhase();
 
-        await AttackFighter.RidePhase();
+        NextController.Instance.SetSyncNext(MyNumber, true);
+        photonController.SendSyncNext(MyNumber);
+        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
+
         await MainPhase();
     }
 
@@ -174,10 +180,17 @@ public class GameMaster : MonoBehaviour
         //TextManager.Instance.SetPhaseText("メインフェイズ");
         photonController.SendState("メインフェイズ");
 
-        while (await AttackFighter.MainPhase())
+        if (AttackFighter.ActorNumber == MyNumber)
         {
-            await UniTask.NextFrame();
+            while (await AttackFighter.MainPhase())
+            {
+                await UniTask.NextFrame();
+            }
         }
+
+        NextController.Instance.SetSyncNext(MyNumber, true);
+        photonController.SendSyncNext(MyNumber);
+        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
         await ButtlePhase();
     }
