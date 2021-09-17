@@ -71,7 +71,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="targetCircle">ˆÚ“®æ‚ÌR</param>
     /// <param name="card">ˆÚ“®‘ÎÛ‚ÌƒJ[ƒh</param>
     /// <returns></returns>
-    public async UniTask RearToRear(Rearguard cardCircle, Rearguard targetCircle, Card card)
+    public async UniTask CircleToCircle(ICardCircle cardCircle, ICardCircle targetCircle, Card card)
     {
         Card targetCard = targetCircle.Pull();
         if (targetCard != null)

@@ -326,11 +326,11 @@ public class Fighter : MonoBehaviour
             (ICardCircle rearguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
             if (rearguard == null) return Result.NO;
             Card removedCard = rearguard.Card; // カードが既に存在する場合はソウルに移動させる
-            photonController.SendData("HandToRearguard" + Rearguards.Find(rear => rear.ID == rearguard.ID).ID, card.GetComponent<Card>());
+            photonController.SendData("HandToRearguard" + rearguard.ID, card.GetComponent<Card>());
             await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
             if (removedCard != null)
             {
-                photonController.SendData("Rearguard" + Rearguards.Find(rear => rear.ID == rearguard.ID).ID + "ToDrop", removedCard);
+                photonController.SendData("Rearguard" + rearguard.ID + "ToDrop", removedCard);
                 await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
             }
             //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
@@ -352,7 +352,9 @@ public class Fighter : MonoBehaviour
             Rearguard selectedRearguard = selectedCard.transform.GetComponentInParent<Rearguard>();
             if (!selectedRearguard.IsSameColumn(targetZone)) return Result.NO;
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-            await CardManager.Instance.RearToRear(selectedRearguard, (Rearguard)circle, card.GetComponent<Card>());
+            photonController.SendData("Rearguard" + selectedRearguard.ID + "ToRearguard" + circle.ID, card.GetComponent<Card>());
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            //await CardManager.Instance.CircleToCircle(selectedRearguard, (Rearguard)circle, card.GetComponent<Card>());
             return Result.YES;
         });
 
@@ -805,7 +807,7 @@ public class Fighter : MonoBehaviour
             var rearguard = Rearguards.Find(rear => rear.ID.ToString() == source.Substring(source.Length - 2));
             Debug.Log(rearguard);
             sourceObj = rearguard;
-            funcname = "CircleTo" + target;
+            funcname = "CircleTo" + funcname.Substring(funcname.IndexOf("To") + 2, funcname.Length - funcname.IndexOf("To") - 2);
         }
         if (target.Contains("Rearguard"))
         {
@@ -813,7 +815,7 @@ public class Fighter : MonoBehaviour
             var rearguard = Rearguards.Find(rear => rear.ID.ToString() == target.Substring(target.Length - 2));
             Debug.Log(rearguard);
             targetObj = rearguard;
-            funcname = source + "ToCircle";
+            funcname = funcname.Substring(0, funcname.IndexOf("To")) + "ToCircle";
         }
 
         Debug.Log($"{source} to {target}");
@@ -827,6 +829,7 @@ public class Fighter : MonoBehaviour
 
 
         MethodInfo method = CardManager.Instance.GetType().GetMethod(funcname);
+        if (method == null) Debug.LogError("Nullエラー");
         object[] args2 =
         {
             sourceObj,
