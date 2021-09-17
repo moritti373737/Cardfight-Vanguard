@@ -35,20 +35,18 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="cardCircle"></param>
     /// <param name="card">手札から取り出すカード</param>
     /// <returns></returns>
-    public async UniTask<Card> HandToCircle(Hand hand, ICardCircle cardCircle, Card card)
+    public async UniTask HandToCircle(Hand hand, ICardCircle cardCircle, Card card)
     {
         Card pulledCard = hand.Pull(card);
 
         await AnimationManager.Instance.HandToCircle(card, cardCircle);
 
-        Card removedCard = cardCircle.Pull();
+        cardCircle.Pull();
         cardCircle.Add(pulledCard);
         hand.DestroyEmpty();
 
         card.SetState(Card.State.FaceUp, true);
         SetHistory(card: card, source: hand, target: cardCircle);
-
-        return removedCard;
     }
 
     /// <summary>

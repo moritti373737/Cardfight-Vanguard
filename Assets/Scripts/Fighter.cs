@@ -199,8 +199,14 @@ public class Fighter : MonoBehaviour
             //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
             Card removedCard = vanguard.Card; // カードが既に存在する場合はソウルに移動させる
             photonController.SendData("HandToVanguard", card.GetComponent<Card>());
-            if (removedCard != null) photonController.SendData("VanguardToSoul", removedCard);
             await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            Debug.Log(removedCard);
+            if (removedCard != null)
+            {
+                Debug.Log("ソウルに送るよ");
+                photonController.SendData("VanguardToSoul", removedCard);
+                await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            }
             return Result.YES;
         });
 
@@ -238,7 +244,7 @@ public class Fighter : MonoBehaviour
     {
         await UniTask.NextFrame();
         Card selectedCard = null;
-
+        Debug.Log("メイン開始！");
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsV = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsV2 = new List<Func<UniTask<Result>>>();
@@ -321,8 +327,12 @@ public class Fighter : MonoBehaviour
             if (rearguard == null) return Result.NO;
             Card removedCard = rearguard.Card; // カードが既に存在する場合はソウルに移動させる
             photonController.SendData("HandToRearguard" + Rearguards.Find(rear => rear.ID == rearguard.ID).ID, card.GetComponent<Card>());
-            if (removedCard != null) photonController.SendData("Rearguard" + Rearguards.Find(rear => rear.ID == rearguard.ID).ID + "ToDrop", removedCard);
             await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            if (removedCard != null)
+            {
+                photonController.SendData("Rearguard" + Rearguards.Find(rear => rear.ID == rearguard.ID).ID + "ToDrop", removedCard);
+                await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            }
             //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
             //if (removedCard != null) await CardManager.Instance.CardToDrop(Drop, removedCard);
             return Result.YES;
@@ -778,28 +788,43 @@ public class Fighter : MonoBehaviour
         int toIndex = funcname.IndexOf("To");
         string source = funcname.Substring(0, toIndex);
         string target = funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2);
-        //Debug.Log(ActorNumber);
-        //Debug.Log(args[0]);
-        //Debug.Log($"{source} to {target}");
+        Debug.Log(ActorNumber);
+        Debug.Log(args[0]);
+        Debug.Log($"{source} to {target}");
 
-        //Debug.Log(CardDic[(int)args[1]]);
+        Debug.Log(CardDic[(int)args[2]]);
 
+        funcname = funcname.Replace("Vanguard", "Circle");
+        Debug.Log(funcname);
+
+        object sourceObj = null, targetObj = null;
+        Type type = this.GetType();
         if (source.Contains("Rearguard"))
         {
             Debug.Log(source.Substring(source.Length - 2));
-            funcname = "Circle" + "To" + target;
+            var rearguard = Rearguards.Find(rear => rear.ID.ToString() == source.Substring(source.Length - 2));
+            Debug.Log(rearguard);
+            sourceObj = rearguard;
+            funcname = "CircleTo" + target;
         }
-        else if (target.Contains("Rearguard"))
+        if (target.Contains("Rearguard"))
         {
             Debug.Log(target.Substring(target.Length - 2));
-            funcname = source + "To" + "Circle";
+            var rearguard = Rearguards.Find(rear => rear.ID.ToString() == target.Substring(target.Length - 2));
+            Debug.Log(rearguard);
+            targetObj = rearguard;
+            funcname = source + "ToCircle";
         }
-        funcname = funcname.Replace("Vanguard", "Circle");
-        //Debug.Log(funcname);
 
-        Type type = this.GetType();
-        object sourceObj = type.GetProperty(source).GetValue(this);
-        object targetObj = type.GetProperty(target).GetValue(this);
+        Debug.Log($"{source} to {target}");
+        Debug.Log(funcname);
+
+        if (sourceObj == null) sourceObj = type?.GetProperty(source)?.GetValue(this);
+        if (targetObj == null) targetObj = type?.GetProperty(target)?.GetValue(this);
+
+        if (sourceObj == null || targetObj == null) Debug.LogError("Nullエラー");
+        Debug.Log($"{sourceObj} to {targetObj}");
+
 
         MethodInfo method = CardManager.Instance.GetType().GetMethod(funcname);
         object[] args2 =
