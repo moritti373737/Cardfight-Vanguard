@@ -41,8 +41,13 @@ public class NextController
 
     public bool JudgeNext(Next judgeNext) => next == (next | judgeNext);
 
-    public bool JudgeAllNext() => next == (next | Next.One | Next.Two);
-
+    public bool JudgeAllNext()
+    {
+        var ret = next == (next | Next.One | Next.Two);
+        if (!ret) return false;
+        next = 0;
+        return true;
+    }
 
     private static NextController _singleInstance = new NextController();
 

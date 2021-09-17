@@ -36,15 +36,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         Debug.Log($"入室成功、マスター→{PhotonNetwork.IsMasterClient}");
-        if (PhotonNetwork.PlayerList.Count() == 2)
-        {
-            Debug.Log("2人揃いました。");
-            Debug.Log($"あなたのID = {PhotonNetwork.LocalPlayer.ActorNumber}");
-            Debug.Log($"相手のID = {PhotonNetwork.PlayerListOthers.First().ActorNumber}");
-            fighter1.ActorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
-            fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber;
-            _ = gameMaster.GameStart();
-        }
+        if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
@@ -52,15 +44,19 @@ public class PhotonController : MonoBehaviourPunCallbacks
         Debug.Log($"誰かが入室しました、合計人数は{PhotonNetwork.CurrentRoom.PlayerCount}人です。");
         Debug.Log($"ID = { PhotonNetwork.LocalPlayer.ActorNumber}");
         PhotonNetwork.PlayerListOthers.ToList().ForEach(player => Debug.Log(player.ActorNumber));
-        if (PhotonNetwork.PlayerList.Count() == 2)
-        {
-            Debug.Log("2人揃いました。");
-            Debug.Log($"あなたのID = {PhotonNetwork.LocalPlayer.ActorNumber}");
-            Debug.Log($"相手のID = {PhotonNetwork.PlayerListOthers.First().ActorNumber}");
-            fighter1.ActorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
-            fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber;
-            _ = gameMaster.GameStart();
-        }
+        if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
+    }
+
+    private void GameStart()
+    {
+        Debug.Log("2人揃いました。");
+        Debug.Log($"あなたのID = {PhotonNetwork.LocalPlayer.ActorNumber}");
+        Debug.Log($"相手のID = {PhotonNetwork.PlayerListOthers.First().ActorNumber}");
+        fighter1.ActorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+        fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber;
+        if (fighter1.ActorNumber != 1 && fighter1.ActorNumber != 2) Debug.LogError($"Fighter1のActorNumber = {fighter1.ActorNumber}");
+        if (fighter2.ActorNumber != 1 && fighter2.ActorNumber != 2) Debug.LogError($"Fighter2のActorNumber = {fighter2.ActorNumber}");
+        _ = gameMaster.GameStart();
     }
 
     public void SendData(string funcname, Card card)
@@ -92,5 +88,15 @@ public class PhotonController : MonoBehaviourPunCallbacks
         NextController.Instance.SetNext(actorNumber, true);
     }
 
+    public void SendState(string state)
+    {
+        photonView.RPC("ReceivedState", RpcTarget.All, state);
+    }
 
+    [PunRPC]
+    public void ReceivedState(string state)
+    {
+        fighter1.ReceivedState(state);
+        fighter2.ReceivedState(state);
+    }
 }

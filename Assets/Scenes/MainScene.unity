@@ -2112,6 +2112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b0bed5568626184cadbc8629fa3ef34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  photonController: {fileID: 1645979628}
   <Turn>k__BackingField: 1
   input: {fileID: 768289830}
   fighter1: {fileID: 141899824}

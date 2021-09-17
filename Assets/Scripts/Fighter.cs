@@ -101,8 +101,6 @@ public class Fighter : MonoBehaviour
         await SelectManager.Instance.ForceConfirm(Tag.Deck, ID, Action.MOVE, endAction);
 
         await DrawCard(ToDeckCount);
-
-        photonController.SendNext(ActorNumber);
     }
 
     public async UniTask DrawCard(int count)
@@ -739,6 +737,11 @@ public class Fighter : MonoBehaviour
         //{
         //    Debug.Log(arg);
         //}
+    }
+
+    public void ReceivedState(string state)
+    {
+        TextManager.Instance.SetPhaseText(state);
     }
 
 

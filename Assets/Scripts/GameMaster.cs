@@ -9,6 +9,9 @@ using UnityEngine.SceneManagement;
 
 public class GameMaster : MonoBehaviour
 {
+    [SerializeField]
+    private PhotonController photonController;
+
     [field: SerializeField]
     private int Turn { get; set; } = 1;
 
@@ -86,8 +89,16 @@ public class GameMaster : MonoBehaviour
         // ここで、カード生成したので1フレーム待って、CardのStart()メソッドを実行させる
         await UniTask.NextFrame();
 
-        AttackFighter = fighter1;
-        DefenceFighter = fighter2;
+        if (fighter1.ActorNumber == 1)
+        {
+            AttackFighter = fighter1;
+            DefenceFighter = fighter2;
+        }
+        else if (fighter1.ActorNumber == 2)
+        {
+            AttackFighter = fighter2;
+            DefenceFighter = fighter1;
+        }
 
 
         await fighter1.SetFirstVanguard();
@@ -101,6 +112,7 @@ public class GameMaster : MonoBehaviour
         await fighter1.DrawCard(5);
 
         await fighter1.Mulligan();
+        photonController.SendNext(fighter1.ActorNumber);
 
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllNext());
 
@@ -116,7 +128,8 @@ public class GameMaster : MonoBehaviour
 
     async UniTask StandPhase()
     {
-        TextManager.Instance.SetPhaseText("スタンドフェイズ");
+        //TextManager.Instance.SetPhaseText("スタンドフェイズ");
+        photonController.SendState("スタンドフェイズ");
 
         await AttackFighter.StandPhase();
 
@@ -126,7 +139,8 @@ public class GameMaster : MonoBehaviour
 
     async UniTask DrawPhase()
     {
-        TextManager.Instance.SetPhaseText("ドローフェイズ");
+        //TextManager.Instance.SetPhaseText("ドローフェイズ");
+        photonController.SendState("ドローフェイズ");
 
         await UniTask.WaitUntil(() => input.GetDown("Enter"));
 
@@ -140,7 +154,8 @@ public class GameMaster : MonoBehaviour
 
     async UniTask RidePhase()
     {
-        TextManager.Instance.SetPhaseText("ライドフェイズ");
+        //TextManager.Instance.SetPhaseText("ライドフェイズ");
+        photonController.SendState("ライドフェイズ");
 
         await AttackFighter.RidePhase();
         await MainPhase();
@@ -148,7 +163,8 @@ public class GameMaster : MonoBehaviour
 
     async UniTask MainPhase()
     {
-        TextManager.Instance.SetPhaseText("メインフェイズ");
+        //TextManager.Instance.SetPhaseText("メインフェイズ");
+        photonController.SendState("メインフェイズ");
 
         while (await AttackFighter.MainPhase())
         {
@@ -165,7 +181,8 @@ public class GameMaster : MonoBehaviour
 
         {
             await UniTask.NextFrame();
-            TextManager.Instance.SetPhaseText("バトルフェイズ");
+            //TextManager.Instance.SetPhaseText("バトルフェイズ");
+            photonController.SendState("バトルフェイズ");
 
             (ICardCircle selectedAttackZone, ICardCircle selectedTargetZone) = await AttackFighter.AttackStep();
             if (selectedAttackZone == null) break;
