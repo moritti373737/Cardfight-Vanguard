@@ -56,7 +56,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
         fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber;
         if (fighter1.ActorNumber != 1 && fighter1.ActorNumber != 2) Debug.LogError($"Fighter1‚ÌActorNumber = {fighter1.ActorNumber}");
         if (fighter2.ActorNumber != 1 && fighter2.ActorNumber != 2) Debug.LogError($"Fighter2‚ÌActorNumber = {fighter2.ActorNumber}");
-        _ = gameMaster.GameStart();
+        _ = gameMaster.GameStart(PhotonNetwork.LocalPlayer.ActorNumber);
     }
 
     public void SendData(string funcname, Card card)
@@ -79,11 +79,11 @@ public class PhotonController : MonoBehaviourPunCallbacks
 
     public void SendNext(int actorNumber)
     {
-        photonView.RPC("ReceivedNext", RpcTarget.All, actorNumber);
+        photonView.RPC("ReceivedNext", RpcTarget.All, (byte)actorNumber);
     }
 
     [PunRPC]
-    public void ReceivedNext(int actorNumber)
+    public void ReceivedNext(byte actorNumber)
     {
         NextController.Instance.SetNext(actorNumber, true);
     }

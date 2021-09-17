@@ -45,7 +45,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="cardCircle"></param>
     /// <param name="card">手札から取り出すカード</param>
     /// <returns></returns>
-    public async UniTask<Card> HandToField(Hand hand, ICardCircle cardCircle, Card card)
+    public async UniTask<Card> HandToCircle(Hand hand, ICardCircle cardCircle, Card card)
     {
         // ログ出力
         //Debug.Log("1second");
@@ -179,6 +179,14 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         SetHistory(card: card, source:null, target:soul);
         // 待つ
         yield return new WaitForSeconds(0.0f);
+    }
+
+    public async UniTask CircleToSoul(ICardCircle circle, Soul soul, Card card)
+    {
+        circle.Pull();
+        soul.Add(card);
+
+        SetHistory(card: card, source: circle, target: soul);
     }
 
     /// <summary>

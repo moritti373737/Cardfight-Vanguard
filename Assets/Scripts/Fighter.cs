@@ -136,6 +136,7 @@ public class Fighter : MonoBehaviour
 
     public async UniTask DrawPhase()
     {
+        await UniTask.WaitUntil(() => input.GetDown("Enter"));
         await DrawCard(1);
     }
 
@@ -168,10 +169,13 @@ public class Fighter : MonoBehaviour
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functions.Add(async () => {
-            (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE);
-            if (circle == null) return Result.NO;
-            Card removedCard = await CardManager.Instance.HandToField(Hand, circle, card.GetComponent<Card>());
-            if (removedCard != null) await CardManager.Instance.CardToSoul(Soul, removedCard);
+            (ICardCircle vanguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE);
+            if (vanguard == null) return Result.NO;
+            //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
+            Card removedCard = vanguard.Card;
+            photonController.SendData("HandToVanguard", card.GetComponent<Card>());
+            if (removedCard != null) photonController.SendData("VanguardToSoul", removedCard);
+            await UniTask.WaitUntil(() => NextController.Instance.IsNext());
             return Result.YES;
         });
 
@@ -289,7 +293,7 @@ public class Fighter : MonoBehaviour
         {
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
             if (circle == null) return Result.NO;
-            Card removedCard = await CardManager.Instance.HandToField(Hand, circle, card.GetComponent<Card>());
+            Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
             if (removedCard != null) await CardManager.Instance.CardToDrop(Drop, removedCard);
             return Result.YES;
         });
@@ -713,20 +717,34 @@ public class Fighter : MonoBehaviour
     {
         string funcname = (string)args[0];
         int toIndex = funcname.IndexOf("To");
+        string source = funcname.Substring(0, toIndex);
+        string target = funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2);
         Debug.Log(ActorNumber);
         Debug.Log(args[0]);
-        Debug.Log(funcname.Substring(0, toIndex));
-        Debug.Log(funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2));
+        Debug.Log($"{source} to {target}");
 
         Debug.Log(CardDic[(int)args[1]]);
 
+        if (source == "Vanguard")
+        {
+            //Debug.Log(source);
+            funcname = "Circle" + "To" + target;
+        }
+        else if (target == "Vanguard")
+        {
+            //Debug.Log(target);
+            funcname = source + "To" + "Circle";
+        }
 
-        Type type = CardManager.Instance.GetType();
-        MethodInfo method = type.GetMethod(funcname);
+        Type type = this.GetType();
+        object sourceObj = type.GetProperty(source).GetValue(this);
+        object targetObj = type.GetProperty(target).GetValue(this);
+
+        MethodInfo method = CardManager.Instance.GetType().GetMethod(funcname);
         object[] args2 =
         {
-            this.GetType().GetProperty(funcname.Substring(0, toIndex)).GetValue(this),
-            this.GetType().GetProperty(funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2)).GetValue(this),
+            sourceObj,
+            targetObj,
             CardDic[(int)args[1]],
         };
         await (UniTask)method.Invoke(CardManager.Instance, args2);

@@ -22,6 +22,8 @@ public class GameMaster : MonoBehaviour
     public Fighter fighter1;
     public Fighter fighter2;
 
+    [field: SerializeField]
+    private int MyNumber { get; set; }
 
     [field: SerializeField]
     private Fighter AttackFighter { get; set; }
@@ -54,8 +56,9 @@ public class GameMaster : MonoBehaviour
     //    }
     //}
 
-    public async UniTask GameStart()
+    public async UniTask GameStart(int myNumber)
     {
+        MyNumber = myNumber;
         fighter1.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter1} の負け</color>"));
         fighter2.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter2} の負け</color>"));
 
@@ -100,11 +103,13 @@ public class GameMaster : MonoBehaviour
             DefenceFighter = fighter1;
         }
 
+        Debug.Log(AttackFighter.ActorNumber);
+        Debug.Log(DefenceFighter.ActorNumber);
 
-        await fighter1.SetFirstVanguard();
-        await fighter2.SetFirstVanguard();
-        fighter1.Deck.Shuffle();
-        fighter2.Deck.Shuffle();
+        await AttackFighter.SetFirstVanguard();
+        await DefenceFighter.SetFirstVanguard();
+        AttackFighter.Deck.Shuffle();
+        DefenceFighter.Deck.Shuffle();
 
         await UniTask.WaitUntil(() => input.GetDown("Enter"));
 
@@ -131,7 +136,7 @@ public class GameMaster : MonoBehaviour
         //TextManager.Instance.SetPhaseText("スタンドフェイズ");
         photonController.SendState("スタンドフェイズ");
 
-        await AttackFighter.StandPhase();
+        //await AttackFighter.StandPhase();
 
         await DrawPhase();
     }
@@ -142,12 +147,15 @@ public class GameMaster : MonoBehaviour
         //TextManager.Instance.SetPhaseText("ドローフェイズ");
         photonController.SendState("ドローフェイズ");
 
-        await UniTask.WaitUntil(() => input.GetDown("Enter"));
-
-        await AttackFighter.DrawPhase();
+        if(AttackFighter.ActorNumber == MyNumber)
+            await AttackFighter.DrawPhase();
 
         await UniTask.NextFrame();
         //await AttackFighter.GuardPhase();
+
+        NextController.Instance.SetNext(MyNumber, true);
+        photonController.SendNext(MyNumber);
+        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllNext());
 
         await RidePhase();
     }
