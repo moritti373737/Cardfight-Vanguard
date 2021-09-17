@@ -367,29 +367,6 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
                 return SelectObj.GetComponent<IMultiCardZone>().GetCard(MultiSelectIndex);
         }
 
-
-
-
-        // カーソル位置が手札 かつ カーソル位置が指定したファイターのもの かつ 指定したファイターの手札が0枚じゃない
-        //if (HasTag(Tag.Hand) && IsFighter(fighterID) && fighter.Hand.Count > 0)
-        //{
-        //    return fighter.Hand.GetCard(MultiSelectIndex);
-        //}
-        //// カーソル位置がリアガード かつ カーソル位置が指定したファイターのもの かつ 指定したリアガードに既にカードが存在する
-        ////else if (HasTag(Tag.Rearguard) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
-        ////{
-        ////    return Result.YES;
-        ////}
-        //// カーソル位置がダメージゾーン かつ カーソル位置が指定したファイターのもの かつ 指定したファイターのダメージゾーンが0枚じゃない
-        //else if (HasTag(Tag.Damage) && IsFighter(fighterID) && fighter.Damage.Count > 0)
-        //{
-        //    return fighter.Damage.GetCard(MultiSelectIndex);
-        //}
-        //// カーソル位置がサークル かつ カーソル位置が指定したファイターのもの かつ 指定したサークルに既にカードが存在する
-        //else if (HasTag(Tag.Circle) && IsFighter(fighterID) && SelectObj.FindWithChildTag(Tag.Card) != null)
-        //{
-        //    return SelectObj.GetComponent<ICardCircle>().Card;
-        //}
         return null;
     }
 

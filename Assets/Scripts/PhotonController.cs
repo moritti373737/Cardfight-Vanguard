@@ -1,44 +1,50 @@
 using Photon.Pun;
 using Photon.Realtime;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
+/// <summary>
+/// Photonによるデータの送受信を行う
+/// </summary>
 public class PhotonController : MonoBehaviourPunCallbacks
 {
     [SerializeField]
-    GameMaster gameMaster;
+    private GameMaster gameMaster;
 
     [SerializeField]
     private Fighter fighter1;
+
     [SerializeField]
     private Fighter fighter2;
 
-    void Start()
+    private void Start()
     {
-        // PhotonServerSettingsの設定内容を使ってマスターサーバーへ接続する
+        // PhotonServerSettingsの設定内容を使ってマスターサーバへ接続する
         PhotonNetwork.ConnectUsingSettings();
     }
 
-    void Update()
-    {
-
-    }
-
+    /// <summary>
+    /// このクライアントがマスターサーバに接続されたとき
+    /// </summary>
     public override void OnConnectedToMaster()
     {
-        // roomに入室する
+        // roomを作成して入室する
         PhotonNetwork.JoinRandomOrCreateRoom(roomOptions: new RoomOptions { MaxPlayers = 2, PublishUserId = true });
     }
 
+    /// <summary>
+    /// このクライアントがroomに入室したとき
+    /// </summary>
     public override void OnJoinedRoom()
     {
         Debug.Log($"入室成功、マスター→{PhotonNetwork.IsMasterClient}");
         if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
     }
 
+    /// <summary>
+    /// 他のクライアントがroomに入室したとき
+    /// </summary>
+    /// <param name="newPlayer">roomに入室したクライアント</param>
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         Debug.Log($"誰かが入室しました、合計人数は{PhotonNetwork.CurrentRoom.PlayerCount}人です。");
@@ -47,6 +53,10 @@ public class PhotonController : MonoBehaviourPunCallbacks
         if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
     }
 
+    /// <summary>
+    /// ゲームを開始する
+    /// roomに2人入室して人数が揃った時に呼ぶ
+    /// </summary>
     private void GameStart()
     {
         Debug.Log("2人揃いました。");
@@ -59,6 +69,11 @@ public class PhotonController : MonoBehaviourPunCallbacks
         _ = gameMaster.GameStart(PhotonNetwork.LocalPlayer.ActorNumber);
     }
 
+    /// <summary>
+    /// メインデータを送信する
+    /// </summary>
+    /// <param name="funcname">実行したい関数名</param>
+    /// <param name="card">引数に使用するカード</param>
     public void SendData(string funcname, Card card)
     {
         object[] args = new object[]
@@ -70,6 +85,10 @@ public class PhotonController : MonoBehaviourPunCallbacks
         photonView.RPC("ReceivedData", RpcTarget.All, args);
     }
 
+    /// <summary>
+    /// メインデータを受信したときに呼び出される
+    /// </summary>
+    /// <param name="args">受信した引数</param>
     [PunRPC]
     public void ReceivedData(object[] args)
     {
@@ -77,22 +96,38 @@ public class PhotonController : MonoBehaviourPunCallbacks
         else if (fighter2.ActorNumber == (int)args[0]) _ = fighter2.ReceivedData(args.Skip(1).ToList());
     }
 
+    /// <summary>
+    /// 処理を次に進めるためのデータを送信する
+    /// </summary>
+    /// <param name="actorNumber">送信元のプレイヤーID</param>
     public void SendNext(int actorNumber)
     {
         photonView.RPC("ReceivedNext", RpcTarget.All, (byte)actorNumber);
     }
 
+    /// <summary>
+    /// 処理を次に進めるためのデータを受信したときに呼び出される
+    /// </summary>
+    /// <param name="actorNumber">送信元のプレイヤーID</param>
     [PunRPC]
     public void ReceivedNext(byte actorNumber)
     {
         NextController.Instance.SetNext(actorNumber, true);
     }
 
+    /// <summary>
+    /// 状態データを送信する
+    /// </summary>
+    /// <param name="state">状態</param>
     public void SendState(string state)
     {
         photonView.RPC("ReceivedState", RpcTarget.All, state);
     }
 
+    /// <summary>
+    /// 状態データを受信したときに呼び出される
+    /// </summary>
+    /// <param name="state">状態</param>
     [PunRPC]
     public void ReceivedState(string state)
     {

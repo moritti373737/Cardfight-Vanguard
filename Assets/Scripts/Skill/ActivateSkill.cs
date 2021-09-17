@@ -12,6 +12,11 @@ public class ActivateSkill : MonoBehaviour
     [SerializeField]
     Fighter Fighter2;
 
+    /// <summary>
+    /// 実際にスキルを発動させる
+    /// </summary>
+    /// <param name="card">スキルを発動したカード</param>
+    /// <param name="skill">発動させるスキル</param>
     public void Activate(Card card, List<MainSkillData> skill)
     {
         foreach (var data in skill)

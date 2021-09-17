@@ -1,5 +1,4 @@
 using Cysharp.Threading.Tasks;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
@@ -11,30 +10,20 @@ using UnityEngine;
 public class SkillManager : SingletonMonoBehaviour<SkillManager>
 {
     [SerializeField]
-    CostManager costManager;
+    private CostManager costManager;
 
     [SerializeField]
-    ActivateSkill activateSkill;
+    private ActivateSkill activateSkill;
 
     [SerializeField]
-    Fighter Fighter1;
+    private Fighter Fighter1;
+
     [SerializeField]
-    Fighter Fighter2;
+    private Fighter Fighter2;
 
     public ReactiveCollection<Skill> AutomaticSkill = new ReactiveCollection<Skill>();
     public List<(int CardID, Skill Skill)> ActivatedSkill = new List<(int, Skill)>();
     public ReactiveCollection<Skill> ContinuousSkill = new ReactiveCollection<Skill>();
-
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     /// <summary>
     /// ファイトに使用するカードのスキルを収集する

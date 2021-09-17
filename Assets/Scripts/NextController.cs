@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// ネットワーク環境において相手を待つための処理を行うシングルトン
+/// </summary>
 public class NextController
 {
     private bool singleNext = false;
@@ -16,6 +19,10 @@ public class NextController
 
     public Next next { get; set; } = 0;
 
+    /// <summary>
+    /// nextの値を返す、ただしtrueの場合はnextをfalseに書き換える
+    /// </summary>
+    /// <returns>nextの値</returns>
     public bool IsNext()
     {
         if (!singleNext) return false;
@@ -23,7 +30,10 @@ public class NextController
         return true;
     }
 
-    public bool SetNext(bool next) => singleNext = next;
+    /// <summary>
+    /// nextのセッター
+    /// </summary>
+    public void SetNext(bool next) => singleNext = next;
 
     public void SetNext(Next newNext, bool b)
     {
@@ -38,7 +48,11 @@ public class NextController
         else next &= ~newNext;
     }
 
-
+    /// <summary>
+    /// 指定したnextの判定を行う
+    /// </summary>
+    /// <param name="judgeNext">調べたいnext</param>
+    /// <returns>判定結果</returns>
     public bool JudgeNext(Next judgeNext) => next == (next | judgeNext);
 
     public bool JudgeAllNext()

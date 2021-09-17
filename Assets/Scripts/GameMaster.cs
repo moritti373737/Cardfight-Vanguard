@@ -106,8 +106,8 @@ public class GameMaster : MonoBehaviour
         Debug.Log(AttackFighter.ActorNumber);
         Debug.Log(DefenceFighter.ActorNumber);
 
-        await AttackFighter.SetFirstVanguard();
-        await DefenceFighter.SetFirstVanguard();
+        AttackFighter.SetFirstVanguard();
+        DefenceFighter.SetFirstVanguard();
         AttackFighter.Deck.Shuffle();
         DefenceFighter.Deck.Shuffle();
 
@@ -243,32 +243,4 @@ public class GameMaster : MonoBehaviour
         (AttackFighter, DefenceFighter) = (DefenceFighter, AttackFighter);
         return;
     }
-
-    //void StandbyPhase()
-    //{
-    //    Debug.Log("StandbyPhase");
-    //    // 手札のカードを場に出す
-    //    //currentPlayer.StandbyPhaseAction();
-    //    phase = Phase.BATTLE;
-    //}
-    /*
-    void BattlePhase()
-    {
-        Debug.Log("BattlePhase");
-
-        currentPlayer.ButtlePhaseAction(waitPlayer);
-        phase = Phase.END;
-    }
-
-    void CheckFieldCardHP()
-    {
-        currentPlayer.CheckFieldCardHP();
-        waitPlayer.CheckFieldCardHP();
-    }
-    void EndPhase()
-    {
-        Debug.Log("EndPhase");
-        (currentPlayer, waitPlayer) = (waitPlayer, currentPlayer);
-        //phase = Phase.DRAW;
-    }*/
 }

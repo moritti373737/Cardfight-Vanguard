@@ -71,16 +71,27 @@ public class Fighter : MonoBehaviour
                                     .First(fighter => fighter.ID != ID);
     }
 
+    /// <summary>
+    /// デッキを作成する
+    /// </summary>
     public void CreateDeck()
     {
         DeckGenerater.Instance.Generate(Deck, ActorNumber);
     }
 
-    public async UniTask SetFirstVanguard()
+    /// <summary>
+    /// ファーストヴァンガードをセットする
+    /// </summary>
+    /// <returns></returns>
+    public void SetFirstVanguard()
     {
-        await CardManager.Instance.DeckToCircle(Deck, Vanguard, 0);
+        _ = CardManager.Instance.DeckToCircle(Deck, Vanguard, 0);
     }
 
+    /// <summary>
+    /// 手札のカードを交換する（マリガン）
+    /// マリガン後のシャッフル処理は未実装
+    /// </summary>
     public async UniTask Mulligan()
     {
         while (true)
@@ -89,20 +100,25 @@ public class Fighter : MonoBehaviour
 
             int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
 
-            if (inputIndex == 0) await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
-            else if (inputIndex == 1 && SelectManager.Instance.SelectedCount == 0) return; // Submit入力時
+            if (inputIndex == 0) await SelectManager.Instance.NormalSelected(Tag.Hand, ID); // Enter入力時
+            else if (inputIndex == 1 && SelectManager.Instance.SelectedCount == 0) return;  // Submit入力時
             else break;
         }
 
         int ToDeckCount = SelectManager.Instance.SelectedCount;
 
-        Action<string, Card> endAction = (funcname, card) => photonController.SendData(funcname, card);
+        Action<string, Card> endAction = (funcname, card) => photonController.SendData(funcname, card); // データの送信処理を委譲する
 
         await SelectManager.Instance.ForceConfirm(Tag.Deck, ID, Action.MOVE, endAction);
 
         await DrawCard(ToDeckCount);
     }
 
+    /// <summary>
+    /// カードをデッキから指定枚数引く
+    /// </summary>
+    /// <param name="count">引く枚数</param>
+    /// <returns></returns>
     public async UniTask DrawCard(int count)
     {
         //Debug.Log("Drawする");
@@ -118,6 +134,9 @@ public class Fighter : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// スタンドアップヴァンガード！
+    /// </summary>
     public async UniTask StandUpVanguard()
     {
         var card = Vanguard.Card;
@@ -125,6 +144,9 @@ public class Fighter : MonoBehaviour
         await CardManager.Instance.RotateCard(Vanguard);
     }
 
+    /// <summary>
+    /// スタンドフェイズ
+    /// </summary>
     public async UniTask StandPhase()
     {
         await UniTask.NextFrame();
@@ -133,13 +155,18 @@ public class Fighter : MonoBehaviour
         Rearguards.ForEach(async rear => await CardManager.Instance.StandCard(rear));
     }
 
-
+    /// <summary>
+    /// ドローフェイズ
+    /// </summary>
     public async UniTask DrawPhase()
     {
         await UniTask.WaitUntil(() => input.GetDown("Enter"));
         await DrawCard(1);
     }
 
+    /// <summary>
+    /// ライドフェイズ
+    /// </summary>
     public async UniTask RidePhase()
     {
         await UniTask.NextFrame();
@@ -172,7 +199,7 @@ public class Fighter : MonoBehaviour
             (ICardCircle vanguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE);
             if (vanguard == null) return Result.NO;
             //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
-            Card removedCard = vanguard.Card;
+            Card removedCard = vanguard.Card; // カードが既に存在する場合はソウルに移動させる
             photonController.SendData("HandToVanguard", card.GetComponent<Card>());
             if (removedCard != null) photonController.SendData("VanguardToSoul", removedCard);
             await UniTask.WaitUntil(() => NextController.Instance.IsNext());
@@ -204,6 +231,9 @@ public class Fighter : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// メインフェイズ
+    /// </summary>
     public async UniTask<bool> MainPhase()
     {
         await UniTask.NextFrame();
@@ -353,6 +383,9 @@ public class Fighter : MonoBehaviour
 
      }
 
+    /// <summary>
+    /// アタックフェイズ内のアタックステップ
+    /// </summary>
     public async UniTask<(ICardCircle, ICardCircle)> AttackStep()
     {
         await UniTask.NextFrame();
@@ -482,10 +515,11 @@ public class Fighter : MonoBehaviour
         }
 
         return (selectedAttackZone, selectedTargetZone);
-
-        print("owari");
     }
 
+    /// <summary>
+    /// アタックフェイズ内のガードステップ
+    /// </summary>
     public async UniTask<bool> GuardStep()
     {
         await UniTask.NextFrame();
@@ -567,7 +601,9 @@ public class Fighter : MonoBehaviour
         return true;
     }
 
-
+    /// <summary>
+    /// ドライブトリガーチェック
+    /// </summary>
     public async UniTask DriveTriggerCheck(int count)
     {
         for (int i = 0; i < count; i++)
@@ -580,6 +616,9 @@ public class Fighter : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// ダメージトリガーチェック
+    /// </summary>
     public async UniTask DamageTriggerCheck(int count)
     {
         for (int i = 0; i < count; i++)
@@ -589,6 +628,9 @@ public class Fighter : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// トリガー取得
+    /// </summary>
     public async UniTask GetTrigger(Card triggerCard)
     {
         await UniTask.NextFrame();
@@ -691,12 +733,18 @@ public class Fighter : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// アタックフェイズ内のエンドステップ
+    /// </summary>
     public async UniTask EndStep()
     {
         Vanguard.Card.BoostedPower = 0;
         Rearguards.Where(rear => rear.Card != null).Select(rear => rear.Card.BoostedPower = 0);
     }
 
+    /// <summary>
+    /// エンドフェイズ
+    /// </summary>
     public async UniTask EndPhase()
     {
         await UniTask.NextFrame();
@@ -707,12 +755,21 @@ public class Fighter : MonoBehaviour
         Turn++;
     }
 
+    /// <summary>
+    /// 指定したサークルのカードを退却させる
+    /// </summary>
+    /// <param name="circle">退却させるサークル</param>
 
     public async UniTask RetireCard(ICardCircle circle)
     {
         await CardManager.Instance.CardToDrop(Drop, circle.Pull());
     }
 
+    /// <summary>
+    /// メインデータを受信したときの処理
+    /// カードに関する処理が送られている
+    /// </summary>
+    /// <param name="args">関数名、カードID</param>
     public async UniTask ReceivedData(List<object> args)
     {
         string funcname = (string)args[0];
@@ -757,6 +814,11 @@ public class Fighter : MonoBehaviour
         //}
     }
 
+    /// <summary>
+    /// Stateデータを受信したときの処理
+    /// フェイズの管理に使う予定
+    /// </summary>
+    /// <param name="state">フェイズ名</param>
     public void ReceivedState(string state)
     {
         TextManager.Instance.SetPhaseText(state);

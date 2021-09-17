@@ -1,9 +1,5 @@
 using Cysharp.Threading.Tasks;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 /// <summary>
 /// カードを管理する
@@ -19,12 +15,6 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <returns>コルーチン</returns>
     public async UniTask DeckToHand(Deck deck, Hand hand, Card card)
     {
-        //MethodInfo method = this.GetType().GetMethod("DeckToHand");
-        //var p = method.GetParameters();
-        //var deck1 = p[0];
-
-        // ログ出力
-        //Debug.Log("1second");
         deck.Pull(card);
 
         await AnimationManager.Instance.DeckToCard(card);
@@ -33,7 +23,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         hand.Add(card);
 
         await AnimationManager.Instance.CardToHand(card);
-        SetHistory(card: card, source:deck, target:hand);
+        SetHistory(card: card, source: deck, target: hand);
         // 待つ
         await UniTask.Delay(100);
     }
@@ -47,28 +37,18 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <returns></returns>
     public async UniTask<Card> HandToCircle(Hand hand, ICardCircle cardCircle, Card card)
     {
-        // ログ出力
-        //Debug.Log("1second");
         Card pulledCard = hand.Pull(card);
 
         await AnimationManager.Instance.HandToCircle(card, cardCircle);
 
-        //card.TurnOver();
         Card removedCard = cardCircle.Pull();
         cardCircle.Add(pulledCard);
         hand.DestroyEmpty();
 
         card.SetState(Card.State.FaceUp, true);
-        SetHistory(card: card, source:hand, target:cardCircle);
-        //if (removedCard != null)
-        //{
-        return removedCard;
-            //if (cardCircle.GetTransform().tag.Contains(Tag.Vanguard.ToString()))
-            //    yield return StartCoroutine(CardToSoul(removedCardCircle, removedCard));
-            //else if (cardCircle.GetTransform().tag.Contains(Tag.Rearguard.ToString()))
-            //    yield return StartCoroutine(CardToDrop(removedCardCircle, removedCard));
-        //}
+        SetHistory(card: card, source: hand, target: cardCircle);
 
+        return removedCard;
     }
 
     /// <summary>
@@ -78,16 +58,12 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <param name="cardCircle"></param>
     /// <param name="index">デッキから取り出すためのインデックス</param>
     /// <returns>コルーチン</returns>
-    public IEnumerator DeckToCircle(Deck deck, ICardCircle cardCircle, int index)
+    public async UniTask DeckToCircle(Deck deck, ICardCircle cardCircle, int index)
     {
-        // ログ出力
-        //Debug.Log("1second");
         Card card = deck.Pull(index);
-        //card.TurnOver();
         cardCircle.Add(card);
 
-        SetHistory(card: card, source:deck, target:cardCircle);
-        yield return null;
+        SetHistory(card: card, source: deck, target: cardCircle);
     }
 
     /// <summary>
@@ -99,22 +75,15 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     /// <returns></returns>
     public async UniTask RearToRear(Rearguard cardCircle, Rearguard targetCircle, Card card)
     {
-        // ログ出力
-        //Debug.Log("1second");
-        //Card card = deck.Pull(index);
-        //card.TurnOver();
         Card targetCard = targetCircle.Pull();
         if (targetCard != null)
         {
-            //_ = AnimationManager.Instance.HandToCircle(targetCard, cardCircle);
             cardCircle.Add(targetCard);
         }
 
-        //await AnimationManager.Instance.HandToCircle(card, targetCircle);
-
         targetCircle.Add(card);
 
-        SetHistory(card: card, source:cardCircle, target:targetCircle);
+        SetHistory(card: card, source: cardCircle, target: targetCircle);
     }
 
     public async UniTask DeckToDrive(Deck deck, Drive drive)
@@ -125,7 +94,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         drive.Add(card);
         card.TurnOver();
 
-        SetHistory(card: card, source:deck, target:drive);
+        SetHistory(card: card, source: deck, target: drive);
     }
 
     public async UniTask DriveToHand(Drive drive, Hand hand)
@@ -140,7 +109,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
         await AnimationManager.Instance.CardToHand(card);
 
-        SetHistory(card: card, source:drive, target:hand);
+        SetHistory(card: card, source: drive, target: hand);
     }
 
     public async UniTask DriveToDamage(Drive drive, Damage damage)
@@ -154,31 +123,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
         await AnimationManager.Instance.CardToDamage(card);
 
-
-        SetHistory(card: card, source:drive, target:damage);
-
-    }
-
-    //public IEnumerator DriveToDrop(Drive drive, Drop drop)
-    //{
-    //    Card card = drive.Pull();
-    //    drop.Add(card);
-
-    //    yield return new WaitForSeconds(0.0f);
-    //}
-
-    /// <summary>
-    /// カードをソウルに移動
-    /// </summary>
-    /// <param name="card">移動させるカード</param>
-    /// <returns>コルーチン</returns>
-    public IEnumerator CardToSoul(Soul soul, Card card)
-    {
-        soul.Add(card);
-
-        SetHistory(card: card, source:null, target:soul);
-        // 待つ
-        yield return new WaitForSeconds(0.0f);
+        SetHistory(card: card, source: drive, target: damage);
     }
 
     public async UniTask CircleToSoul(ICardCircle circle, Soul soul, Card card)
@@ -202,7 +147,20 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
         await AnimationManager.Instance.CardToHand(card);
 
-        SetHistory(card: card, source:null, target:drop);
+        SetHistory(card: card, source: null, target: drop);
+    }
+
+    public async UniTask CircleToDrop(ICardCircle circle, Drop drop, Card card)
+    {
+        circle.Pull();
+
+        await AnimationManager.Instance.RetireCard(card);
+
+        drop.Add(card);
+
+        await AnimationManager.Instance.CardToHand(card);
+
+        SetHistory(card: card, source: circle, target: drop);
     }
 
     /// <summary>
@@ -216,7 +174,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
         deck.Add(card);
         hand.DestroyEmpty();
-        SetHistory(card: card, source:hand, target:deck);
+        SetHistory(card: card, source: hand, target: deck);
     }
 
     /// <summary>
@@ -230,13 +188,11 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
         guardian.Add(card);
         hand.DestroyEmpty();
-        SetHistory(card: card, source:hand, target:guardian);
+        SetHistory(card: card, source: hand, target: guardian);
     }
 
     public async UniTask GuardianToDrop(Guardian guardian, Drop drop, Card card)
     {
-
-
         await AnimationManager.Instance.RetireCard(card);
 
         guardian.Pull(card);
@@ -245,14 +201,14 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
         await AnimationManager.Instance.CardToHand(card);
 
-        SetHistory(card: card, source:guardian, target:drop);
+        SetHistory(card: card, source: guardian, target: drop);
     }
 
     public async UniTask DamageToDrop(Damage damage, Drop drop, Card card)
     {
         damage.Pull(card);
         drop.Add(card);
-        SetHistory(card: card, source:damage, target:drop);
+        SetHistory(card: card, source: damage, target: drop);
     }
 
     public async UniTask HandToDrop(Hand hand, Drop drop, Card card)
@@ -263,8 +219,6 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         hand.DestroyEmpty();
         SetHistory(card: card, source: hand, target: drop);
     }
-
-
 
     /// <summary>
     /// カードを裏返す
@@ -284,10 +238,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         Card card = cardCircle.Card;
         if (card == null) return;
-        //Card card = cardCircle.Pull();
-        //card.transform.parent = null;
         await AnimationManager.Instance.RestCard(card, 15);
-        //cardCircle.Add(card);
         card.SetState(Card.State.Stand, false);
         SetHistory(card: card, source: card.GetComponentInParent<ICardZone>());
     }
@@ -296,12 +247,10 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         Card card = cardCircle.Card;
         if (card == null) return;
-        //card.transform.parent = null;
         await AnimationManager.Instance.StandCard(card, 15);
-        //cardCircle.Add(card);
         card.SetState(Card.State.Stand, true);
         SetHistory(card: card, source: card.GetComponentInParent<ICardZone>());
     }
 
-    public void SetHistory([CallerMemberName]string name=null, Card card=null, object source=null, object target =null) => ActionManager.Instance.ActionHistory.Add(new ActionData(name, card.FighterID, card, source, target));
+    public void SetHistory([CallerMemberName] string name = null, Card card = null, object source = null, object target = null) => ActionManager.Instance.ActionHistory.Add(new ActionData(name, card.FighterID, card, source, target));
 }
