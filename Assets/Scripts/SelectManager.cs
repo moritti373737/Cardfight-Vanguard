@@ -566,15 +566,15 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         if (tag == Tag.Deck)
         {
             SelectedCardParentList.ForEach(async parent => {
-                //await CardManager.Instance.HandToDeck(fighter.Hand, fighter.Deck, parent.GetCard());
-                endAction("HandToDeck", parent.GetCard());
+                if(endAction == null) await CardManager.Instance.HandToDeck(fighter.Hand, fighter.Deck, parent.GetCard());
+                else endAction("HandToDeck", parent.GetCard());
             });
         }
         else if (tag == Tag.Guardian)
         {
             SelectedCardParentList.ForEach(async parent => {
-                //await CardManager.Instance.HandToGuardian(fighter.Hand, fighter.Guardian, parent.GetCard());
-                endAction("HandToGuardian", parent.GetCard());
+                if (endAction == null) await CardManager.Instance.HandToGuardian(fighter.Hand, fighter.Guardian, parent.GetCard());
+                else endAction("HandToGuardian", parent.GetCard());
             });
         }
         else if (tag == Tag.Drop)

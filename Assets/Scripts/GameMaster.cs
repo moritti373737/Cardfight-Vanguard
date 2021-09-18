@@ -8,8 +8,12 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-public class GameMaster : MonoBehaviour
+public class GameMaster : SingletonMonoBehaviour<GameMaster>
 {
+    public FightMode fightMode;
+
+    public bool local = true;
+
     [SerializeField]
     private PhotonController photonController;
 
@@ -27,7 +31,7 @@ public class GameMaster : MonoBehaviour
     public IFighter fighter2;
 
     [field: SerializeField]
-    private int MyNumber { get; set; }
+    private int MyNumber { get; set; } = -1;
 
     [field: SerializeField]
     private IFighter AttackFighter { get; set; }
@@ -64,59 +68,100 @@ public class GameMaster : MonoBehaviour
     //        await StandPhase();
     //    }
     //}
-
-    public void SetFighters(int myNumber)
+    public void SetMyNumber(int myNumber)
     {
         MyNumber = myNumber;
-        if (myNumber == 0)
+    }
+
+    private void SetFighters()
+    {
+        if(local)
         {
-            fighter1 = fighter1Obj.GetComponent<Fighter>();
-            fighter2 = fighter2Obj.GetComponent<Fighter>();
-            fighter1.enabled = true;
-            fighter2.enabled = true;
+            switch (fightMode)
+            {
+                case FightMode.PVP:
+                    fighter1 = fighter1Obj.GetComponent<LocalFighter>();
+                    fighter2 = fighter2Obj.GetComponent<LocalFighter>();
+                    fighter1.enabled = true;
+                    fighter2.enabled = true;
+                    break;
+                case FightMode.PVE:
+                    break;
+                case FightMode.EVE:
+                    break;
+                default:
+                    break;
+            }
         }
         else
         {
-            fighter1 = fighter1Obj.GetComponent<Fighter>();
-            fighter2 = fighter2Obj.GetComponent<Fighter>();
-            fighter1.enabled = true;
-            fighter2.enabled = true;
+            switch (fightMode)
+            {
+                case FightMode.PVP:
+                    if (MyNumber == 0)
+                    {
+                        fighter1 = fighter1Obj.GetComponent<NetworkFighter>();
+                        fighter2 = fighter2Obj.GetComponent<NetworkFighter>();
+                        fighter1.enabled = true;
+                        fighter2.enabled = true;
+                    }
+                    else
+                    {
+                        fighter1 = fighter1Obj.GetComponent<NetworkFighter>();
+                        fighter2 = fighter2Obj.GetComponent<NetworkFighter>();
+                        fighter1.enabled = true;
+                        fighter2.enabled = true;
+                    }
+                    break;
+                case FightMode.PVE:
+                    if (MyNumber == 0)
+                    {
+                        fighter1 = fighter1Obj.GetComponent<NetworkFighter>();
+                        fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+                        fighter1.enabled = true;
+                        fighter2.enabled = true;
+                    }
+                    else
+                    {
+                        fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+                        fighter2 = fighter2Obj.GetComponent<NetworkFighter>();
+                        fighter1.enabled = true;
+                        fighter2.enabled = true;
+                    }
+                    break;
+                case FightMode.EVE:
+                    if (MyNumber == 0)
+                    {
+                        fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+                        fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+                        fighter1.enabled = true;
+                        fighter2.enabled = true;
+                    }
+                    else
+                    {
+                        fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+                        fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+                        fighter1.enabled = true;
+                        fighter2.enabled = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            photonController.GameStart();
         }
 
-        //if (myNumber == 0)
-        //{
-        //    fighter1 = fighter1Obj.GetComponent<Fighter>();
-        //    fighter2 = fighter2Obj.GetComponent<CPUFighter>();
-        //    fighter1.enabled = true;
-        //    fighter2.enabled = true;
-        //}
-        //else
-        //{
-        //    fighter1 = fighter1Obj.GetComponent<CPUFighter>();
-        //    fighter2 = fighter2Obj.GetComponent<Fighter>();
-        //    fighter1.enabled = true;
-        //    fighter2.enabled = true;
-        //}
 
-        //if (myNumber == 0)
-        //{
-        //    fighter1 = fighter1Obj.GetComponent<CPUFighter>();
-        //    fighter2 = fighter2Obj.GetComponent<CPUFighter>();
-        //    fighter1.enabled = true;
-        //    fighter2.enabled = true;
-        //}
-        //else
-        //{
-        //    fighter1 = fighter1Obj.GetComponent<CPUFighter>();
-        //    fighter2 = fighter2Obj.GetComponent<CPUFighter>();
-        //    fighter1.enabled = true;
-        //    fighter2.enabled = true;
-        //}
+
     }
 
 
     async void Start()
     {
+        SetFighters();
+        NextController.Instance.local = local;
+
         fighter1.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter1} の負け</color>"));
         fighter2.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter2} の負け</color>"));
 
@@ -177,18 +222,18 @@ public class GameMaster : MonoBehaviour
         AttackFighter.Deck.Shuffle();
         DefenceFighter.Deck.Shuffle();
 
-        //await UniTask.WhenAll(fighter1.DrawCard(5), fighter2.DrawCard(5));
-        await fighter1.DrawCard(5);
+        if (local) await UniTask.WhenAll(fighter1.DrawCard(5), fighter2.DrawCard(5));
+        else await fighter1.DrawCard(5);
 
         await fighter1.Mulligan();
-
+        if (local)
+        {
+            await UniTask.NextFrame();
+            await fighter2.Mulligan();
+            await UniTask.WaitUntil(() => input.GetDown("Enter"));
+        }
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
-
-        //await UniTask.NextFrame();
-        //await fighter2.Mulligan();
-
-        //await UniTask.WaitUntil(() => Input.GetButtonDown("Enter"));
 
         await UniTask.WhenAll(fighter1.StandUpVanguard(), fighter2.StandUpVanguard());
         Debug.Log("スタンドアップヴァンガード");
@@ -197,8 +242,8 @@ public class GameMaster : MonoBehaviour
 
     async UniTask StandPhase()
     {
-        //TextManager.Instance.SetPhaseText("スタンドフェイズ");
-        photonController.SendState("スタンドフェイズ");
+        if(local) TextManager.Instance.SetPhaseText("スタンドフェイズ");
+        else photonController.SendState("スタンドフェイズ");
 
         //await AttackFighter.StandPhase();
     }
@@ -206,13 +251,12 @@ public class GameMaster : MonoBehaviour
 
     async UniTask DrawPhase()
     {
-        //TextManager.Instance.SetPhaseText("ドローフェイズ");
-        photonController.SendState("ドローフェイズ");
+        if (local) TextManager.Instance.SetPhaseText("ドローフェイズ");
+        else photonController.SendState("ドローフェイズ");
 
-        if(AttackFighter.ActorNumber == MyNumber) await AttackFighter.DrawPhase();
+        if(local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.DrawPhase();
 
         await UniTask.NextFrame();
-        //await AttackFighter.GuardPhase();
 
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
@@ -220,22 +264,21 @@ public class GameMaster : MonoBehaviour
 
     async UniTask RidePhase()
     {
-        Debug.Log("ライドフェイズ");
-        //TextManager.Instance.SetPhaseText("ライドフェイズ");
-        photonController.SendState("ライドフェイズ");
-        if (AttackFighter.ActorNumber == MyNumber) await AttackFighter.RidePhase();
+        if (local) TextManager.Instance.SetPhaseText("ライドフェイズ");
+        else photonController.SendState("ライドフェイズ");
+
+        if (local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.RidePhase();
 
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
-
     }
 
     async UniTask MainPhase()
     {
-        //TextManager.Instance.SetPhaseText("メインフェイズ");
-        photonController.SendState("メインフェイズ");
+        if (local) TextManager.Instance.SetPhaseText("メインフェイズ");
+        else photonController.SendState("メインフェイズ");
 
-        if (AttackFighter.ActorNumber == MyNumber)
+        if (local || AttackFighter.ActorNumber == MyNumber)
         {
             while (await AttackFighter.MainPhase())
             {
@@ -254,30 +297,30 @@ public class GameMaster : MonoBehaviour
 
         {
             await UniTask.NextFrame();
-            //TextManager.Instance.SetPhaseText("バトルフェイズ");
-            photonController.SendState("バトルフェイズ");
+            if (local) TextManager.Instance.SetPhaseText("バトルフェイズ");
+            else photonController.SendState("バトルフェイズ");
 
             AttackFighter.SelectedAttackZone = null;
             AttackFighter.SelectedTargetZone = null;
 
-            if (AttackFighter.ActorNumber == MyNumber)
+            if (local || AttackFighter.ActorNumber == MyNumber)
                 await AttackFighter.AttackStep();
-            //if (selectedAttackZone == null) break;
+            if (AttackFighter.SelectedAttackZone == null) break;
             photonController.SendSyncNext(MyNumber);
             int cancel = await UniTask.WhenAny(UniTask.WaitUntil(() => cancellationToken.IsCancellationRequested), UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext()));
             if (cancel == 0) return; // キャンセルして終了する
             print("キャンセルしない");
 
-            if (DefenceFighter.ActorNumber == MyNumber)
+            if (local || DefenceFighter.ActorNumber == MyNumber)
                 await DefenceFighter.GuardStep();
 
             photonController.SendSyncNext(MyNumber);
             await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
-            if (AttackFighter.ActorNumber == MyNumber && AttackFighter.SelectedAttackZone.V)
+            if ((local || AttackFighter.ActorNumber == MyNumber) && AttackFighter.SelectedAttackZone.V)
             {
-                //TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
-                photonController.SendState("ドライブトリガーチェック");
+                if (local) TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+                else photonController.SendState("ドライブトリガーチェック");
                 int checkCount = AttackFighter.SelectedAttackZone.Card.Ability == Card.AbilityType.TwinDrive ? 2 : 1;
                 await AttackFighter.DriveTriggerCheck(checkCount);
             }
@@ -293,15 +336,15 @@ public class GameMaster : MonoBehaviour
             {
                 if (AttackFighter.SelectedTargetZone.V)
                 {
-                    //TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
-                    photonController.SendState("ダメージトリガーチェック");
+                    if (local) TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+                    else photonController.SendState("ダメージトリガーチェック");
 
-                    if (DefenceFighter.ActorNumber == MyNumber)
+                    if (local || DefenceFighter.ActorNumber == MyNumber)
                         await DefenceFighter.DamageTriggerCheck(AttackFighter.SelectedAttackZone.Card.Critical);
                 }
                 else
                 {
-                    if (DefenceFighter.ActorNumber == MyNumber)
+                    if (local || DefenceFighter.ActorNumber == MyNumber)
                         await DefenceFighter.RetireCard(AttackFighter.SelectedTargetZone);
                 }
             }
@@ -323,7 +366,8 @@ public class GameMaster : MonoBehaviour
     }
     async UniTask EndPhase()
     {
-        TextManager.Instance.SetPhaseText("エンドフェイズ");
+        if (local) TextManager.Instance.SetPhaseText("エンドフェイズ");
+        else photonController.SendState("エンドフェイズ");
 
         Turn++;
         await AttackFighter.EndPhase();

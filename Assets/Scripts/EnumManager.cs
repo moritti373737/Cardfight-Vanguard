@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum FightMode
+{
+    PVP,
+    PVE,
+    EVE,
+}
+
 public enum Tag
 {
     None,

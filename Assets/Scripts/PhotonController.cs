@@ -23,7 +23,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
         PhotonNetwork.IsMessageQueueRunning = true;
         // PhotonServerSettingsの設定内容を使ってマスターサーバへ接続する
         //PhotonNetwork.ConnectUsingSettings();
-        GameStart();
+        //GameStart();
     }
 
 
@@ -31,9 +31,9 @@ public class PhotonController : MonoBehaviourPunCallbacks
     /// ゲームを開始する
     /// roomに2人入室して人数が揃った時に呼ぶ
     /// </summary>
-    private void GameStart()
+    public void GameStart()
     {
-        gameMaster.SetFighters(PhotonNetwork.LocalPlayer.ActorNumber - 1);
+        gameMaster.SetMyNumber(PhotonNetwork.LocalPlayer.ActorNumber - 1);
         fighter1 = GameObject.Find("Fighter1").GetComponents<IFighter>().First(fighter => fighter.enabled);
         fighter2 = GameObject.Find("Fighter2").GetComponents<IFighter>().First(fighter => fighter.enabled);
         Debug.Log("2人揃いました。");
@@ -129,6 +129,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
     /// <param name="actorNumber">送信元のプレイヤーID</param>
     public void SendSyncNext(int actorNumber)
     {
+        if (gameMaster.local) return;
         photonView.RPC("ReceivedSyncNext", RpcTarget.All, (byte)actorNumber);
     }
 

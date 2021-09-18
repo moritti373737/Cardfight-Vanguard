@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public class NextController
 {
-    //private bool singleNext = false;
+    public bool local = true;
 
     [Flags]
     public enum Next
@@ -106,6 +106,7 @@ public class NextController
 
     public bool JudgeAllSyncNext()
     {
+        if (local) return true;
         bool ret = SyncNext == (SyncNext | Next.One | Next.Two);
         if (!ret) return false;
         SyncNext = 0;

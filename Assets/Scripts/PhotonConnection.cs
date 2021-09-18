@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 public class PhotonConnection : MonoBehaviourPunCallbacks
 {
-    void Start()
+    public void StartConnection()
     {
         // PhotonServerSettingsの設定内容を使ってマスターサーバへ接続する
         PhotonNetwork.ConnectUsingSettings();

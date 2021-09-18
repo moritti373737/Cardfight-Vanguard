@@ -8,13 +8,10 @@ using System.Threading.Tasks;
 using UnityEngine.InputSystem;
 using System.Reflection;
 
-public class Fighter : MonoBehaviour, IFighter
+public class LocalFighter : MonoBehaviour, IFighter
 {
     [SerializeField]
     private PlayerInput input;
-
-    [SerializeField]
-    private PhotonController photonController;
 
     [field: SerializeField]
     public FighterID ID { get; private set; }
@@ -80,7 +77,7 @@ public class Fighter : MonoBehaviour, IFighter
     /// </summary>
     public void CreateDeck()
     {
-        DeckGenerater.Instance.Generate(Deck, ActorNumber);
+        DeckGenerater.Instance.Generate(Deck, ID == FighterID.ONE ? 0 : 1);
     }
 
     /// <summary>
@@ -111,9 +108,7 @@ public class Fighter : MonoBehaviour, IFighter
 
         int ToDeckCount = SelectManager.Instance.SelectedCount;
 
-        Action<string, Card> endAction = (funcname, card) => photonController.SendData(funcname, card); // データの送信処理を委譲する
-
-        await SelectManager.Instance.ForceConfirm(Tag.Deck, ID, Action.MOVE, endAction);
+        await SelectManager.Instance.ForceConfirm(Tag.Deck, ID, Action.MOVE);
 
         await DrawCard(ToDeckCount);
     }
@@ -132,10 +127,7 @@ public class Fighter : MonoBehaviour, IFighter
         //CardManager.DeckToHand(deck, hand);
         for (int i = 0; i < count; i++)
         {
-            photonController.SendData("DeckToHand", card: Deck.GetCard(0));
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            Debug.Log("trueです");
-            //await CardManager.Instance.DeckToHand(Deck, Hand, 0);
+            await CardManager.Instance.DeckToHand(Deck, Hand, Deck.GetCard(0));
         }
 
     }
@@ -183,7 +175,6 @@ public class Fighter : MonoBehaviour, IFighter
             int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
             return resultInt.ToEnum("YES", "END");
         });
-        //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
         functions.Add(async () => {
             Card selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
             if (selectedCard == null) return Result.NO;
@@ -201,16 +192,13 @@ public class Fighter : MonoBehaviour, IFighter
         functions.Add(async () => {
             (ICardCircle vanguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE);
             if (vanguard == null) return Result.NO;
-            //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
             Card removedCard = vanguard.Card; // カードが既に存在する場合はソウルに移動させる
-            photonController.SendData("HandToVanguard", card.GetComponent<Card>());
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            await CardManager.Instance.HandToCircle(Hand, vanguard, card.GetComponent<Card>());
             Debug.Log(removedCard);
             if (removedCard != null)
             {
                 Debug.Log("ソウルに送るよ");
-                photonController.SendData("VanguardToSoul", removedCard);
-                await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+                await CardManager.Instance.CircleToSoul(vanguard, Soul, removedCard);
             }
             return Result.YES;
         });
@@ -330,16 +318,9 @@ public class Fighter : MonoBehaviour, IFighter
         {
             (ICardCircle rearguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
             if (rearguard == null) return Result.NO;
-            Card removedCard = rearguard.Card; // カードが既に存在する場合はソウルに移動させる
-            photonController.SendData("HandToRearguard" + rearguard.ID, card.GetComponent<Card>());
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            if (removedCard != null)
-            {
-                photonController.SendData(rearguard.Name + "ToDrop", removedCard);
-                await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            }
-            //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
-            //if (removedCard != null) await CardManager.Instance.CardToDrop(Drop, removedCard);
+            Card removedCard = rearguard.Card; // カードが既に存在する場合は移動させる
+            await CardManager.Instance.HandToCircle(Hand, rearguard, card.GetComponent<Card>());
+            if (removedCard != null) await CardManager.Instance.CircleToDrop(rearguard, Drop, removedCard);
             return Result.YES;
         });
 
@@ -357,9 +338,7 @@ public class Fighter : MonoBehaviour, IFighter
             Rearguard selectedRearguard = selectedCard.transform.GetComponentInParent<Rearguard>();
             if (!selectedRearguard.IsSameColumn(targetZone)) return Result.NO;
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-            photonController.SendData(selectedRearguard.Name + "To" + circle.Name, card.GetComponent<Card>());
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            //await CardManager.Instance.CircleToCircle(selectedRearguard, (Rearguard)circle, card.GetComponent<Card>());
+            await CardManager.Instance.CircleToCircle(selectedRearguard, (Rearguard)circle, card.GetComponent<Card>());
             return Result.YES;
         });
 
@@ -412,9 +391,7 @@ public class Fighter : MonoBehaviour, IFighter
         //if (Turn == 1) return true;
 
         Result result = Result.NONE;
-        ICardCircle selectedAttackZone = null;
         ICardCircle selectedBoostZone = null;
-        ICardCircle selectedTargetZone = null;
 
         int i = 0;
 
@@ -435,10 +412,10 @@ public class Fighter : MonoBehaviour, IFighter
         {
             Card selectedAttackCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID); // こちらのサークルを選択したかどうか
             if (selectedAttackCard == null) return Result.NO;
-            selectedAttackZone = selectedAttackCard.GetComponentInParent<ICardCircle>();
+            SelectedAttackZone = selectedAttackCard.GetComponentInParent<ICardCircle>();
 
             //if (!selectedAttackZone.Card.JudgeStep(Card.State.Stand)) return Result.NO; // 攻撃可能なカードか判定
-            if (!selectedAttackZone.Front) return Result.NO;
+            if (!SelectedAttackZone.Front) return Result.NO;
             state = functionsV2;
             functions.AddRange(functionsV2);
             var result = await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // 攻撃するカードを選択する
@@ -461,23 +438,19 @@ public class Fighter : MonoBehaviour, IFighter
             {
                 selectedBoostZone = selectedBoostCard.GetComponentInParent<Rearguard>();
                 if (!selectedBoostZone.Card.JudgeState(Card.State.Stand)) return Result.NO; // ブースト可能なカードか判定
-                if (!selectedBoostZone.IsSameColumn(selectedAttackZone)) return Result.NO;
+                if (!selectedBoostZone.IsSameColumn(SelectedAttackZone)) return Result.NO;
                 if (selectedBoostZone.Card.Ability != Card.AbilityType.Boost) return Result.NO;
                 await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
-                //selectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
-                photonController.SendGeneralData("Boost", new object[2] { selectedBoostZone.Name, selectedAttackZone.Name });
-                await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-                ActionManager.Instance.ActionHistory.Add(new ActionData("Boost", ID, selectedBoostZone.Card, selectedBoostZone, selectedAttackZone));
+                SelectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
+                ActionManager.Instance.ActionHistory.Add(new ActionData("Boost", ID, selectedBoostZone.Card, selectedBoostZone, SelectedAttackZone));
                 state = functionsB;
                 functions.AddRange(functionsB);
                 return Result.YES;
             }
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
             if (circle == null) return Result.NO;
-            selectedTargetZone = circle;
-            photonController.SendGeneralData("Attack", new object[2] { selectedAttackZone.Name, selectedTargetZone.Name });
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, selectedAttackZone.Card, selectedAttackZone, selectedTargetZone));
+            SelectedTargetZone = circle;
+            ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, SelectedAttackZone.Card, SelectedAttackZone, SelectedTargetZone));
             state = functionsV3;
             functions.AddRange(functionsV3);
             return Result.YES;
@@ -492,10 +465,8 @@ public class Fighter : MonoBehaviour, IFighter
         functionsB.Add(async () => {
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
             if (circle == null) return Result.NO;
-            selectedTargetZone = circle;
-            photonController.SendGeneralData("Attack", new object[2] { selectedAttackZone.Name, selectedTargetZone.Name });
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, selectedAttackZone.Card, selectedAttackZone, selectedTargetZone));
+            SelectedTargetZone = circle;
+            ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, SelectedAttackZone.Card, SelectedAttackZone, SelectedTargetZone));
             state = functionsV3;
             functions.AddRange(functionsV3);
             return Result.YES;
@@ -506,16 +477,8 @@ public class Fighter : MonoBehaviour, IFighter
             print("V3");
             await UniTask.WaitUntil(() => input.GetDown("Enter"));
             print("V3Enter");
-            photonController.SendGeneralData("Rest", new object[1] { selectedAttackZone.Name });
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            //await CardManager.Instance.RestCard(selectedAttackZone);
-            if (selectedBoostZone != null)
-            {
-                photonController.SendGeneralData("Rest", new object[1] { selectedBoostZone.Name });
-                await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-                //await CardManager.Instance.RestCard(selectedBoostZone);
-            }
-            //if (selectedAttackZone.V) await DriveTriggerCheck();
+            await CardManager.Instance.RestCard(SelectedAttackZone);
+            if (selectedBoostZone != null) await CardManager.Instance.RestCard(selectedBoostZone);
             return Result.YES;
         });
 
@@ -541,12 +504,11 @@ public class Fighter : MonoBehaviour, IFighter
                     SelectManager.Instance.SingleCancel();
                     break;
                 case Result.END:
-                    photonController.SendGeneralData("Cancel", null);
                     return (null, null);
             }
         }
 
-        return (selectedAttackZone, selectedTargetZone);
+        return (SelectedAttackZone, SelectedTargetZone);
     }
 
     /// <summary>
@@ -592,9 +554,7 @@ public class Fighter : MonoBehaviour, IFighter
 
         functionsSubmit.Add(async () =>
         {
-            print(SelectManager.Instance.SelectedCount);
-            Action<string, Card> endAction = (funcname, card) => photonController.SendData(funcname, card); // データの送信処理を委譲する
-            await SelectManager.Instance.ForceConfirm(Tag.Guardian, ID, Action.MOVE, endAction);
+            await SelectManager.Instance.ForceConfirm(Tag.Guardian, ID, Action.MOVE);
             return Result.YES;
         });
 
@@ -630,7 +590,6 @@ public class Fighter : MonoBehaviour, IFighter
             }
         }
 
-        print("owari");
         return true;
     }
 
@@ -641,14 +600,10 @@ public class Fighter : MonoBehaviour, IFighter
     {
         for (int i = 0; i < count; i++)
         {
-            //await CardManager.Instance.DeckToDrive(Deck, Drive, Deck.Pull(0));
-            photonController.SendData("DeckToDrive", Deck.Pull(0));
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            //if (Drive.GetCard().Trigger != Card.TriggerType.None)
-            //    await GetTrigger(Drive.GetCard());
-            //await CardManager.Instance.DriveToHand(Drive, Hand, Drive.Card);
-            photonController.SendData("DriveToHand", Drive.Card);
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            await CardManager.Instance.DeckToDrive(Deck, Drive, Deck.Pull(0));
+            if (Drive.GetCard().Trigger != Card.TriggerType.None)
+                await GetTrigger(Drive.GetCard());
+            await CardManager.Instance.DriveToHand(Drive, Hand, Drive.Card);
         }
 
     }
@@ -660,12 +615,8 @@ public class Fighter : MonoBehaviour, IFighter
     {
         for (int i = 0; i < count; i++)
         {
-            photonController.SendData("DeckToDrive", Deck.Pull(0));
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            photonController.SendData("DriveToDamage", Drive.Card);
-            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-            //await CardManager.Instance.DeckToDrive(Deck, Drive, Deck.Pull(0));
-            //await CardManager.Instance.DriveToDamage(Drive, Damage, Drive.Card);
+            await CardManager.Instance.DeckToDrive(Deck, Drive, Deck.Pull(0));
+            await CardManager.Instance.DriveToDamage(Drive, Damage, Drive.Card);
         }
     }
 
