@@ -857,7 +857,6 @@ MonoBehaviour:
     type: 3}
   SelectedBoxPrefab: {fileID: 5417325479911120163, guid: 170c1fa0ad4b61648b1a4756009105c4,
     type: 3}
-  MultiSelectIndex: 0
   SelectObjList1:
   - {fileID: 746849161}
   - {fileID: 241021720}

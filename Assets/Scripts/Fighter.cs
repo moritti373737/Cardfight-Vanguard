@@ -278,7 +278,7 @@ public class Fighter : MonoBehaviour
         });
         functionsV2.Add(async () =>
         {
-            string act = SelectManager.Instance.ActionConfirm();
+            string act = SelectManager.Instance.ActionConfirm(ActorNumber);
             //return Result.YES;
 
             if (act == "Call")
@@ -379,7 +379,7 @@ public class Fighter : MonoBehaviour
                     i -= state.Count; // ’¼‘O‚Ì•ªŠò“_‚É–ß‚é
                     state = functionsV;
                     SelectManager.Instance.SingleCancel();
-                    SelectManager.Instance.ActionConfirm();
+                    SelectManager.Instance.ActionConfirm(ActorNumber);
                     break;
                 case Result.RESTART:
                     i = 0;

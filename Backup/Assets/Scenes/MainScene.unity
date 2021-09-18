@@ -857,7 +857,6 @@ MonoBehaviour:
     type: 3}
   SelectedBoxPrefab: {fileID: 5417325479911120163, guid: 170c1fa0ad4b61648b1a4756009105c4,
     type: 3}
-  MultiSelectIndex: 0
   SelectObjList1:
   - {fileID: 746849161}
   - {fileID: 241021720}
@@ -2112,10 +2111,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b0bed5568626184cadbc8629fa3ef34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  photonController: {fileID: 1645979628}
   <Turn>k__BackingField: 1
   input: {fileID: 768289830}
   fighter1: {fileID: 141899824}
   fighter2: {fileID: 1451585532}
+  <MyNumber>k__BackingField: 0
   <AttackFighter>k__BackingField: {fileID: 0}
   <DefenceFighter>k__BackingField: {fileID: 0}
 --- !u!4 &1373051666
