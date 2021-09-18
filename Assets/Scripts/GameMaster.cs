@@ -45,13 +45,11 @@ public class GameMaster : MonoBehaviour
         Debug.Log("RESET!");
     }
 
-    private void Awake()
-    {
-        fighter1 = fighter1Obj.GetComponent<Fighter>();
-        fighter2 = fighter2Obj.GetComponent<Fighter>();
-        fighter1Obj.GetComponent<Fighter>().enabled = true;
-        fighter2Obj.GetComponent<Fighter>().enabled = true;
-    }
+    //private void Awake()
+    //{
+    //    fighter1Obj.GetComponent<Fighter>().enabled = true;
+    //    fighter2Obj.GetComponent<CPUFighter>().enabled = true;
+    //}
 
     //async void Start()
     //{
@@ -66,13 +64,49 @@ public class GameMaster : MonoBehaviour
     //    }
     //}
 
-    public async UniTask GameStart(int myNumber)
+    public void SetFighters(int myNumber)
     {
         MyNumber = myNumber;
+        //if (myNumber == 0)
+        //{
+        //    fighter1 = fighter1Obj.GetComponent<Fighter>();
+        //    fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+        //    fighter1.enabled = true;
+        //    fighter2.enabled = true;
+        //}
+        //else
+        //{
+        //    fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+        //    fighter2 = fighter2Obj.GetComponent<Fighter>();
+        //    fighter1.enabled = true;
+        //    fighter2.enabled = true;
+        //}
+
+        if (myNumber == 0)
+        {
+            fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+            fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+            fighter1.enabled = true;
+            fighter2.enabled = true;
+        }
+        else
+        {
+            fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+            fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+            fighter1.enabled = true;
+            fighter2.enabled = true;
+        }
+    }
+
+
+    async void Start()
+    {
         fighter1.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter1} の負け</color>"));
         fighter2.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter2} の負け</color>"));
 
+        print("init開始");
         await InitPhase();
+        print("init終了");
 
         while (true)
         {
@@ -91,8 +125,9 @@ public class GameMaster : MonoBehaviour
 
     async UniTask InitPhase()
     {
+        print("INIT開始");
         TextManager.Instance.SetPhaseText("準備");
-
+        print("あういぇ");
         fighter1.CreateDeck();
         fighter2.CreateDeck();
         var CardDic = fighter1.Deck.cardList.Concat(fighter2.Deck.cardList).ToDictionary(card => card.ID);
@@ -121,14 +156,12 @@ public class GameMaster : MonoBehaviour
         AttackFighter.Deck.Shuffle();
         DefenceFighter.Deck.Shuffle();
 
-        await UniTask.WaitUntil(() => input.GetDown("Enter"));
-
         //await UniTask.WhenAll(fighter1.DrawCard(5), fighter2.DrawCard(5));
         await fighter1.DrawCard(5);
 
         await fighter1.Mulligan();
-        photonController.SendSyncNext(MyNumber);
 
+        photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
         //await UniTask.NextFrame();

@@ -15,12 +15,6 @@ public class SkillManager : SingletonMonoBehaviour<SkillManager>
     [SerializeField]
     private ActivateSkill activateSkill;
 
-    [SerializeField]
-    private Fighter Fighter1;
-
-    [SerializeField]
-    private Fighter Fighter2;
-
     public ReactiveCollection<Skill> AutomaticSkill = new ReactiveCollection<Skill>();
     public List<(int CardID, Skill Skill)> ActivatedSkill = new List<(int, Skill)>();
     public ReactiveCollection<Skill> ContinuousSkill = new ReactiveCollection<Skill>();

@@ -9,11 +9,11 @@ using UnityEngine;
 /// </summary>
 public class CostManager : MonoBehaviour
 {
-    [SerializeField]
-    private Fighter Fighter1;
+    //[SerializeField]
+    //private Fighter Fighter1;
 
-    [SerializeField]
-    private Fighter Fighter2;
+    //[SerializeField]
+    //private Fighter Fighter2;
 
     /// <summary>
     /// ƒRƒXƒg‚ðŽx•¥‚¤

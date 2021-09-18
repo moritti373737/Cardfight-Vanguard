@@ -2,6 +2,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Photonによるデータの送受信を行う
@@ -14,44 +15,53 @@ public class PhotonController : MonoBehaviourPunCallbacks
     private IFighter fighter1;
     private IFighter fighter2;
 
-    private void Start()
-    {
-        fighter1 = GameObject.Find("Fighter1").GetComponent<IFighter>();
-        fighter2 = GameObject.Find("Fighter2").GetComponent<IFighter>();
 
+    private void Awake()
+    {
+        //SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+
+        PhotonNetwork.IsMessageQueueRunning = true;
         // PhotonServerSettingsの設定内容を使ってマスターサーバへ接続する
-        PhotonNetwork.ConnectUsingSettings();
+        //PhotonNetwork.ConnectUsingSettings();
+        GameStart();
     }
+
+    //private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
+    //{
+    //    fighter1 = GameObject.Find("Fighter1").GetComponents<IFighter>().First(fighter => fighter.enabled);
+    //    fighter2 = GameObject.Find("Fighter2").GetComponents<IFighter>().First(fighter => fighter.enabled);
+    //    GameStart();
+    //}
 
     /// <summary>
     /// このクライアントがマスターサーバに接続されたとき
     /// </summary>
-    public override void OnConnectedToMaster()
-    {
-        // roomを作成して入室する
-        PhotonNetwork.JoinRandomOrCreateRoom(roomOptions: new RoomOptions { MaxPlayers = 2, PublishUserId = true });
-    }
+    //public override void OnConnectedToMaster()
+    //{
+    //    // roomを作成して入室する
+    //    PhotonNetwork.JoinRandomOrCreateRoom(roomOptions: new RoomOptions { MaxPlayers = 2, PublishUserId = true });
+    //}
 
-    /// <summary>
-    /// このクライアントがroomに入室したとき
-    /// </summary>
-    public override void OnJoinedRoom()
-    {
-        Debug.Log($"入室成功、マスター→{PhotonNetwork.IsMasterClient}");
-        if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
-    }
+    ///// <summary>
+    ///// このクライアントがroomに入室したとき
+    ///// </summary>
+    //public override void OnJoinedRoom()
+    //{
+    //    Debug.Log($"入室成功、マスター→{PhotonNetwork.IsMasterClient}");
+    //    if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
+    //}
 
-    /// <summary>
-    /// 他のクライアントがroomに入室したとき
-    /// </summary>
-    /// <param name="newPlayer">roomに入室したクライアント</param>
-    public override void OnPlayerEnteredRoom(Player newPlayer)
-    {
-        Debug.Log($"誰かが入室しました、合計人数は{PhotonNetwork.CurrentRoom.PlayerCount}人です。");
-        Debug.Log($"ID = { PhotonNetwork.LocalPlayer.ActorNumber}");
-        PhotonNetwork.PlayerListOthers.ToList().ForEach(player => Debug.Log(player.ActorNumber));
-        if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
-    }
+    ///// <summary>
+    ///// 他のクライアントがroomに入室したとき
+    ///// </summary>
+    ///// <param name="newPlayer">roomに入室したクライアント</param>
+    //public override void OnPlayerEnteredRoom(Player newPlayer)
+    //{
+    //    Debug.Log($"誰かが入室しました、合計人数は{PhotonNetwork.CurrentRoom.PlayerCount}人です。");
+    //    Debug.Log($"ID = { PhotonNetwork.LocalPlayer.ActorNumber}");
+    //    PhotonNetwork.PlayerListOthers.ToList().ForEach(player => Debug.Log(player.ActorNumber));
+    //    if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
+    //}
 
     /// <summary>
     /// ゲームを開始する
@@ -59,6 +69,9 @@ public class PhotonController : MonoBehaviourPunCallbacks
     /// </summary>
     private void GameStart()
     {
+        gameMaster.SetFighters(PhotonNetwork.LocalPlayer.ActorNumber - 1);
+        fighter1 = GameObject.Find("Fighter1").GetComponents<IFighter>().First(fighter => fighter.enabled);
+        fighter2 = GameObject.Find("Fighter2").GetComponents<IFighter>().First(fighter => fighter.enabled);
         Debug.Log("2人揃いました。");
         Debug.Log($"あなたのID = {PhotonNetwork.LocalPlayer.ActorNumber}");
         Debug.Log($"相手のID = {PhotonNetwork.PlayerListOthers.First().ActorNumber}");
@@ -66,7 +79,6 @@ public class PhotonController : MonoBehaviourPunCallbacks
         fighter2.ActorNumber = PhotonNetwork.PlayerListOthers.First().ActorNumber - 1;
         if (fighter1.ActorNumber != 0 && fighter1.ActorNumber != 1) Debug.LogError($"Fighter1のActorNumber = {fighter1.ActorNumber}");
         if (fighter2.ActorNumber != 0 && fighter2.ActorNumber != 1) Debug.LogError($"Fighter2のActorNumber = {fighter2.ActorNumber}");
-        _ = gameMaster.GameStart(PhotonNetwork.LocalPlayer.ActorNumber - 1);
     }
 
     /// <summary>

@@ -121,8 +121,8 @@ public static class AllExtensions
         return count;
     }
 
-    public static FighterID GetFighterID(this Transform transform) => transform.root.GetComponent<Fighter>().ID;
-    public static FighterID GetFighterID(this GameObject gameObject) => gameObject.transform.root.GetComponent<Fighter>().ID;
+    //public static FighterID GetFighterID(this Transform transform) => transform.root.GetComponent<Fighter>().ID;
+    //public static FighterID GetFighterID(this GameObject gameObject) => gameObject.transform.root.GetComponent<Fighter>().ID;
 
 
     /// <summary>

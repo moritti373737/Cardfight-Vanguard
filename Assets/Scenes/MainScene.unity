@@ -257,6 +257,7 @@ MonoBehaviour:
   input: {fileID: 768289830}
   photonController: {fileID: 1645979628}
   <ID>k__BackingField: 0
+  <ActorNumber>k__BackingField: 0
   <Turn>k__BackingField: 1
 --- !u!114 &141899825
 MonoBehaviour:
@@ -270,9 +271,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a5aadf0f3cb8ef46b677693b16b86c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  photonController: {fileID: 0}
+  photonController: {fileID: 1645979628}
   <ID>k__BackingField: 0
-  ActorNumber: 0
+  <ActorNumber>k__BackingField: 0
   <Turn>k__BackingField: 1
 --- !u!1 &241021720
 GameObject:
@@ -1938,8 +1939,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   costManager: {fileID: 1330672765}
   activateSkill: {fileID: 1330672764}
-  Fighter1: {fileID: 141899824}
-  Fighter2: {fileID: 1451585532}
 --- !u!4 &1330672763
 Transform:
   m_ObjectHideFlags: 0
@@ -2347,6 +2346,7 @@ MonoBehaviour:
   input: {fileID: 768289830}
   photonController: {fileID: 1645979628}
   <ID>k__BackingField: 1
+  <ActorNumber>k__BackingField: 0
   <Turn>k__BackingField: 1
 --- !u!4 &1451585533
 Transform:
@@ -2376,9 +2376,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a5aadf0f3cb8ef46b677693b16b86c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  photonController: {fileID: 0}
-  <ID>k__BackingField: 0
-  ActorNumber: 0
+  photonController: {fileID: 1645979628}
+  <ID>k__BackingField: 1
+  <ActorNumber>k__BackingField: 0
   <Turn>k__BackingField: 1
 --- !u!1 &1476008688
 GameObject:

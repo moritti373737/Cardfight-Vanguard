@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 using System.Linq;
 using UnityEngine.InputSystem;
 using System.Reflection;
-public class CPUFighter : MonoBehaviour
+public class CPUFighter : MonoBehaviour, IFighter
 {
     [SerializeField]
     private PhotonController photonController;
@@ -14,8 +14,8 @@ public class CPUFighter : MonoBehaviour
     [field: SerializeField]
     public FighterID ID { get; private set; }
 
-    [SerializeField]
-    public int ActorNumber;
+    [field: SerializeField]
+    public int ActorNumber { get; set; }
 
     [field: SerializeField]
     private int Turn { get; set; } = 1;
@@ -35,7 +35,7 @@ public class CPUFighter : MonoBehaviour
     public Order Order { get; private set; }
     public Soul Soul { get; private set; }
 
-    public Dictionary<int, Card> CardDic;
+    public Dictionary<int, Card> CardDic { get; set; }
     private void OnEnable()
     {
         //子オブジェクトを全て取得する
@@ -89,24 +89,19 @@ public class CPUFighter : MonoBehaviour
     /// </summary>
     public async UniTask Mulligan()
     {
-        //while (true)
-        //{
-        //    await UniTask.NextFrame();
+        List<Card> cardList = Hand.cardList.Where(card => card.Grade == 0)
+                                           .Union(Hand.cardList.Where(card => card.Grade == 1).Skip(1))
+                                           .Union(Hand.cardList.Where(card => card.Grade == 2).Skip(1))
+                                           .Union(Hand.cardList.Where(card => card.Grade == 3).Skip(1))
+                                           .ToList();
 
-        //    int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
+        cardList.ForEach(async card =>
+        {
+            photonController.SendData("HandToDeck", card);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+        });
 
-        //    if (inputIndex == 0) await SelectManager.Instance.NormalSelected(Tag.Hand, ID); // Enter入力時
-        //    else if (inputIndex == 1 && SelectManager.Instance.SelectedCount == 0) return;  // Submit入力時
-        //    else break;
-        //}
-
-        //int ToDeckCount = SelectManager.Instance.SelectedCount;
-
-        //Action<string, Card> endAction = (funcname, card) => photonController.SendData(funcname, card); // データの送信処理を委譲する
-
-        //await SelectManager.Instance.ForceConfirm(Tag.Deck, ID, Action.MOVE, endAction);
-
-        //await DrawCard(ToDeckCount);
+        await DrawCard(cardList.Count());
     }
 
     /// <summary>
@@ -878,5 +873,50 @@ public class CPUFighter : MonoBehaviour
     public void ReceivedState(string state)
     {
         TextManager.Instance.SetPhaseText(state);
+    }
+
+    public UniTask RidePhase()
+    {
+        throw new NotImplementedException();
+    }
+
+    public UniTask<bool> MainPhase()
+    {
+        throw new NotImplementedException();
+    }
+
+    public UniTask<(ICardCircle selectedAttackZone, ICardCircle selectedTargetZone)> AttackStep()
+    {
+        throw new NotImplementedException();
+    }
+
+    public UniTask<bool> GuardStep()
+    {
+        throw new NotImplementedException();
+    }
+
+    public UniTask DriveTriggerCheck(int checkCount)
+    {
+        throw new NotImplementedException();
+    }
+
+    public UniTask DamageTriggerCheck(int critical)
+    {
+        throw new NotImplementedException();
+    }
+
+    public UniTask EndStep()
+    {
+        throw new NotImplementedException();
+    }
+
+    public UniTask EndPhase()
+    {
+        throw new NotImplementedException();
+    }
+
+    public UniTask RetireCard(ICardCircle selectedTargetZone)
+    {
+        throw new NotImplementedException();
     }
 }

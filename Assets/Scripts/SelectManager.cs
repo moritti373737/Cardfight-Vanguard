@@ -72,8 +72,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 // Start is called before the first frame update
     void Start()
     {
-        fighter1 = GameObject.Find("Fighter1").GetComponent<IFighter>();
-        fighter2 = GameObject.Find("Fighter2").GetComponent<IFighter>();
+        fighter1 = GameObject.Find("Fighter1").GetComponents<IFighter>().First(fighter => fighter.enabled);
+        fighter2 = GameObject.Find("Fighter2").GetComponents<IFighter>().First(fighter => fighter.enabled);
         Hand hand1 = fighter1.Hand;
         Hand hand2 = fighter2.Hand;
         GameObject field1 = fighter1.Field;
@@ -724,7 +724,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// 現在のカーソル位置にあるオブジェクトを所有するファイターを返す
     /// </summary>
     /// <returns>条件を満たすファイター</returns>
-    private IFighter GetFighter() => SelectObj.transform.root.GetComponent<IFighter>();
+    private IFighter GetFighter() => SelectObj.transform.root.GetComponents<IFighter>().First(fighter => fighter.enabled);
 
     /// <summary>
     /// 指定したファイターIDを持つファイターを返す

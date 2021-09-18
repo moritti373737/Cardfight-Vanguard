@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -7,13 +8,13 @@ using UnityEngine;
 /// </summary>
 public class ActivateSkill : MonoBehaviour
 {
-    IFighter Fighter1;
-    IFighter Fighter2;
+    IFighter fighter1;
+    IFighter fighter2;
 
     private void Start()
     {
-        Fighter1 = GameObject.Find("Fighter1").GetComponent<IFighter>();
-        Fighter2 = GameObject.Find("Fighter2").GetComponent<IFighter>();
+        fighter1 = GameObject.Find("Fighter1").GetComponents<IFighter>().First(fighter => fighter.enabled);
+        fighter2 = GameObject.Find("Fighter2").GetComponents<IFighter>().First(fighter => fighter.enabled);
     }
 
     /// <summary>

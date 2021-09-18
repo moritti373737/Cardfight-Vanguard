@@ -19,7 +19,7 @@ public class Fighter : MonoBehaviour, IFighter
     [field: SerializeField]
     public FighterID ID { get; private set; }
 
-    [SerializeField]
+    [field: SerializeField]
     public int ActorNumber { get; set; }
 
     [field: SerializeField]
@@ -123,6 +123,7 @@ public class Fighter : MonoBehaviour, IFighter
     {
         //Debug.Log("Draw‚·‚é");
 
+        //await UniTask.WaitUntil(() => input.GetDown("Enter"));
 
         //CardManager.DeckToHand(deck, hand);
         for (int i = 0; i < count; i++)
