@@ -123,7 +123,7 @@ public class Fighter : MonoBehaviour, IFighter
     {
         //Debug.Log("Drawする");
 
-        //await UniTask.WaitUntil(() => input.GetDown("Enter"));
+        await UniTask.WaitUntil(() => input.GetDown("Enter"));
 
         //CardManager.DeckToHand(deck, hand);
         for (int i = 0; i < count; i++)
@@ -502,8 +502,15 @@ public class Fighter : MonoBehaviour, IFighter
             print("V3");
             await UniTask.WaitUntil(() => input.GetDown("Enter"));
             print("V3Enter");
-            await CardManager.Instance.RestCard(selectedAttackZone);
-            if (selectedBoostZone != null) await CardManager.Instance.RestCard(selectedBoostZone);
+            photonController.SendGeneralData("Rest", new object[1] { selectedAttackZone.Name });
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            //await CardManager.Instance.RestCard(selectedAttackZone);
+            if (selectedBoostZone != null)
+            {
+                photonController.SendGeneralData("Rest", new object[1] { selectedBoostZone.Name });
+                await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+                //await CardManager.Instance.RestCard(selectedBoostZone);
+            }
             //if (selectedAttackZone.V) await DriveTriggerCheck();
             return Result.YES;
         });
@@ -797,11 +804,11 @@ public class Fighter : MonoBehaviour, IFighter
         int toIndex = funcname.IndexOf("To");
         string source = funcname.Substring(0, toIndex);
         string target = funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2);
-        Debug.Log(ActorNumber);
-        Debug.Log(args[0]);
-        Debug.Log($"{source} to {target}");
+        //Debug.Log(ActorNumber);
+        //Debug.Log(args[0]);
+        //Debug.Log($"{source} to {target}");
 
-        Debug.Log(CardDic[(int)args[2]]);
+        //Debug.Log(CardDic[(int)args[2]]);
 
         funcname = funcname.Replace("Vanguard", "Circle");
         Debug.Log(funcname);
@@ -811,7 +818,7 @@ public class Fighter : MonoBehaviour, IFighter
         if (source.Contains("Rearguard"))
         {
             Debug.Log(source.Substring(source.Length - 2));
-            var rearguard = Rearguards.Find(rear => rear.ID.ToString() == source.Substring(source.Length - 2));
+            var rearguard = Rearguards.Find(rear => rear.Name == source);
             Debug.Log(rearguard);
             sourceObj = rearguard;
             funcname = "CircleTo" + funcname.Substring(funcname.IndexOf("To") + 2, funcname.Length - funcname.IndexOf("To") - 2);
@@ -819,20 +826,20 @@ public class Fighter : MonoBehaviour, IFighter
         if (target.Contains("Rearguard"))
         {
             Debug.Log(target.Substring(target.Length - 2));
-            var rearguard = Rearguards.Find(rear => rear.ID.ToString() == target.Substring(target.Length - 2));
+            var rearguard = Rearguards.Find(rear => rear.Name == target);
             Debug.Log(rearguard);
             targetObj = rearguard;
             funcname = funcname.Substring(0, funcname.IndexOf("To")) + "ToCircle";
         }
 
-        Debug.Log($"{source} to {target}");
-        Debug.Log(funcname);
+        //Debug.Log($"{source} to {target}");
+        //Debug.Log(funcname);
 
         if (sourceObj == null) sourceObj = type?.GetProperty(source)?.GetValue(this);
         if (targetObj == null) targetObj = type?.GetProperty(target)?.GetValue(this);
 
         if (sourceObj == null || targetObj == null) Debug.LogError("Nullエラー");
-        Debug.Log($"{sourceObj} to {targetObj}");
+        //Debug.Log($"{sourceObj} to {targetObj}");
 
 
         MethodInfo method = CardManager.Instance.GetType().GetMethod(funcname);
@@ -845,7 +852,7 @@ public class Fighter : MonoBehaviour, IFighter
         };
         await (UniTask)method.Invoke(CardManager.Instance, args2);
 
-        print("終わったよ");
+        print($"{actorNumber}終わったよ");
         NextController.Instance.SetProcessNext(actorNumber, true);
         //foreach (var arg in args)
         //{
@@ -871,6 +878,11 @@ public class Fighter : MonoBehaviour, IFighter
         {
             print($"{options[0]} が {options[1]} をブーストした！");
         }
+        else if (type == "Rest")
+        {
+            print($"{options[0]} が レストした！");
+            await CardManager.Instance.RestCard(StringToCircle((string)options[0]));
+        }
 
         print("終わったよ");
         NextController.Instance.SetProcessNext(actorNumber, true);
@@ -885,4 +897,6 @@ public class Fighter : MonoBehaviour, IFighter
     {
         TextManager.Instance.SetPhaseText(state);
     }
+
+    private ICardCircle StringToCircle(string name) => name == "Vanguard" ? (ICardCircle)Vanguard : (ICardCircle)Rearguards.Find(rear => rear.Name == name);
 }

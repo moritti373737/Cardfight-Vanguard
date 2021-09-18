@@ -67,6 +67,21 @@ public class GameMaster : MonoBehaviour
     public void SetFighters(int myNumber)
     {
         MyNumber = myNumber;
+        if (myNumber == 0)
+        {
+            fighter1 = fighter1Obj.GetComponent<Fighter>();
+            fighter2 = fighter2Obj.GetComponent<Fighter>();
+            fighter1.enabled = true;
+            fighter2.enabled = true;
+        }
+        else
+        {
+            fighter1 = fighter1Obj.GetComponent<Fighter>();
+            fighter2 = fighter2Obj.GetComponent<Fighter>();
+            fighter1.enabled = true;
+            fighter2.enabled = true;
+        }
+
         //if (myNumber == 0)
         //{
         //    fighter1 = fighter1Obj.GetComponent<Fighter>();
@@ -82,20 +97,20 @@ public class GameMaster : MonoBehaviour
         //    fighter2.enabled = true;
         //}
 
-        if (myNumber == 0)
-        {
-            fighter1 = fighter1Obj.GetComponent<CPUFighter>();
-            fighter2 = fighter2Obj.GetComponent<CPUFighter>();
-            fighter1.enabled = true;
-            fighter2.enabled = true;
-        }
-        else
-        {
-            fighter1 = fighter1Obj.GetComponent<CPUFighter>();
-            fighter2 = fighter2Obj.GetComponent<CPUFighter>();
-            fighter1.enabled = true;
-            fighter2.enabled = true;
-        }
+        //if (myNumber == 0)
+        //{
+        //    fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+        //    fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+        //    fighter1.enabled = true;
+        //    fighter2.enabled = true;
+        //}
+        //else
+        //{
+        //    fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+        //    fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+        //    fighter1.enabled = true;
+        //    fighter2.enabled = true;
+        //}
     }
 
 
@@ -125,9 +140,8 @@ public class GameMaster : MonoBehaviour
 
     async UniTask InitPhase()
     {
-        print("INIT開始");
         TextManager.Instance.SetPhaseText("準備");
-        print("あういぇ");
+
         fighter1.CreateDeck();
         fighter2.CreateDeck();
         var CardDic = fighter1.Deck.cardList.Concat(fighter2.Deck.cardList).ToDictionary(card => card.ID);
@@ -197,8 +211,7 @@ public class GameMaster : MonoBehaviour
 
         NextController.Instance.SetSyncNext(MyNumber, true);
         photonController.SendSyncNext(MyNumber);
-        Debug.Log(MyNumber);
-        Debug.Log(true);
+
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
         await RidePhase();
@@ -248,7 +261,10 @@ public class GameMaster : MonoBehaviour
             //TextManager.Instance.SetPhaseText("バトルフェイズ");
             photonController.SendState("バトルフェイズ");
 
-            (ICardCircle selectedAttackZone, ICardCircle selectedTargetZone) = await AttackFighter.AttackStep();
+            ICardCircle selectedAttackZone = null, selectedTargetZone = null;
+
+            if (AttackFighter.ActorNumber == MyNumber)
+                    (selectedAttackZone, selectedTargetZone) = await AttackFighter.AttackStep();
             if (selectedAttackZone == null) break;
 
             await DefenceFighter.GuardStep();

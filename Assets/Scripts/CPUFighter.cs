@@ -89,19 +89,23 @@ public class CPUFighter : MonoBehaviour, IFighter
     /// </summary>
     public async UniTask Mulligan()
     {
+        print("マリガン開始");
+        // グレード1-3まで1枚づつ残す
         List<Card> cardList = Hand.cardList.Where(card => card.Grade == 0)
                                            .Union(Hand.cardList.Where(card => card.Grade == 1).Skip(1))
                                            .Union(Hand.cardList.Where(card => card.Grade == 2).Skip(1))
                                            .Union(Hand.cardList.Where(card => card.Grade == 3).Skip(1))
                                            .ToList();
+        int count = cardList.Count;
 
-        cardList.ForEach(async card =>
+        for (int i = 0; i < count; i++)
         {
-            photonController.SendData("HandToDeck", card);
+            Card card = cardList.Pop();
+            photonController.SendData("HandToDeck", card); // ここでcardListの要素数が変化するため通常のForEachは使用不可
             await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-        });
+        }
 
-        await DrawCard(cardList.Count());
+        await DrawCard(count);
     }
 
     /// <summary>
@@ -158,233 +162,38 @@ public class CPUFighter : MonoBehaviour, IFighter
     /// <summary>
     /// ライドフェイズ
     /// </summary>
-    //public async UniTask RidePhase()
-    //{
-    //    await UniTask.NextFrame();
+    public async UniTask RidePhase()
+    {
+        // ヴァンガードのグレード+1のカードの中でパワーが最大のカード
+        Card card = Hand.cardList.Where(card => card.Grade == Vanguard.Card.Grade + 1)
+                                 .OrderByDescending(card => card.Power)
+                                 .FirstOrDefault();
+        if (card == null) return; // Gアシストステップの実装
 
-    //    List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
+        Card removedCard = Vanguard.Card; // カードが既に存在する場合はソウルに移動させる
+        photonController.SendData("HandToVanguard", card.GetComponent<Card>());
+        await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+        if (removedCard != null)
+        {
+            Debug.Log("ソウルに送るよ");
+            photonController.SendData("VanguardToSoul", removedCard);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+        }
 
-    //    functions.Add(async () => {
-    //        int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
-    //        return resultInt.ToEnum("YES", "END");
-    //    });
-    //    //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
-    //    functions.Add(async () => {
-    //        Card selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
-    //        if (selectedCard == null) return Result.NO;
-    //        if (selectedCard.Grade > Vanguard.Card.Grade + 1) return Result.NO; // グレードのチェック
-    //        var result = await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
-    //        if (result != null)
-    //            return Result.YES;
-    //        else
-    //            return Result.NO;
-    //    });
-    //    functions.Add(async () => {
-    //        int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
-    //        return resultInt.ToEnum("YES", "CANCEL");
-    //    });
-    //    functions.Add(async () => {
-    //        (ICardCircle vanguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE);
-    //        if (vanguard == null) return Result.NO;
-    //        //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
-    //        Card removedCard = vanguard.Card; // カードが既に存在する場合はソウルに移動させる
-    //        photonController.SendData("HandToVanguard", card.GetComponent<Card>());
-    //        await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-    //        Debug.Log(removedCard);
-    //        if (removedCard != null)
-    //        {
-    //            Debug.Log("ソウルに送るよ");
-    //            photonController.SendData("VanguardToSoul", removedCard);
-    //            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-    //        }
-    //        return Result.YES;
-    //    });
-
-    //    int i = 0;
-    //    Result result = Result.NONE;
-    //    while (i < functions.Count)
-    //    {
-    //        await UniTask.NextFrame();
-    //        result = await functions[i]();
-    //        switch (result)
-    //        {
-    //            case Result.YES:
-    //                i++;    // 1つ次に進む
-    //                break;
-    //            case Result.NO:
-    //                i -= 1; // 1つ前に戻る
-    //                break;
-    //            case Result.CANCEL:
-    //                SelectManager.Instance.SingleCancel();
-    //                i = 0;  // 最初に戻る
-    //                break;
-    //            case Result.END:
-    //                return; // 終了する
-    //        }
-    //    }
-
-    //    print("owari");
-
-    //}
+    }
 
     ///// <summary>
     ///// メインフェイズ
     ///// </summary>
-    //public async UniTask<bool> MainPhase()
-    //{
-    //    await UniTask.NextFrame();
-    //    Card selectedCard = null;
-    //    Debug.Log("メイン開始！");
-    //    List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
-    //    List<Func<UniTask<Result>>> functionsV = new List<Func<UniTask<Result>>>();
-    //    List<Func<UniTask<Result>>> functionsV2 = new List<Func<UniTask<Result>>>();
-    //    List<Func<UniTask<Result>>> functionsC = new List<Func<UniTask<Result>>>();
-    //    List<Func<UniTask<Result>>> functionsM = new List<Func<UniTask<Result>>>();
+    public async UniTask<bool> MainPhase()
+    {
+        Debug.Log("メイン開始！");
 
-    //    var state = functionsV;
+        if (Turn == 1) return false;
 
-    //    functionsV.Add(async () =>
-    //    {
-    //        int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
-    //        return resultInt.ToEnum("YES", "END");
-    //    });
-    //    functionsV.Add(async () =>
-    //    {
-    //        selectedCard = await SelectManager.Instance.GetSelect(Tag.None, ID);
-    //        //ICardZone selectedZone = await SelectManager.Instance.GetZone(Tag.None, ID);
-    //        if (selectedCard == null) return Result.NO;
-    //        print(selectedCard);
-    //        Transform action = TextManager.Instance.SetActionList(selectedCard);
-    //        SelectManager.Instance.SetActionObj(action);
-    //        state = functionsV2;
-    //        functions.AddRange(functionsV2);
-    //        return Result.YES;
-    //    });
+        return false;
 
-    //    functionsV2.Add(async () =>
-    //    {
-    //        int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
-    //        return resultInt.ToEnum("YES", "CANCEL");
-    //    });
-    //    functionsV2.Add(async () =>
-    //    {
-    //        string act = SelectManager.Instance.ActionConfirm(ActorNumber);
-    //        //return Result.YES;
-
-    //        if (act == "Call")
-    //        {
-    //            selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
-    //            if (selectedCard != null)
-    //            {
-    //                //if (selectedCard.Grade > Vanguard.Card.Grade) return Result.RESTART; // グレードのチェック
-    //                await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
-    //                state = functionsC;
-    //                functions.AddRange(functionsC);
-    //                return Result.YES;
-    //            }
-
-    //            selectedCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
-    //            if (selectedCard != null)
-    //            {
-    //                await SelectManager.Instance.NormalSelected(Tag.Rearguard, ID);
-    //                state = functionsM;
-    //                functions.AddRange(functionsM);
-    //                return Result.YES;
-    //            }
-    //        }
-    //        else if (act == "Skill")
-    //        {
-    //            print("スキル発動");
-    //            await SkillManager.Instance.StartActivate(selectedCard, 0);
-    //        }
-
-    //        return Result.RESTART;
-
-    //    });
-
-    //    // ここまで共通処理
-
-    //    // ここから分岐
-    //    // 分岐1
-    //    functionsC.Add(async () =>
-    //    {
-    //        int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
-    //        return resultInt.ToEnum("YES", "CANCEL");
-    //    });
-    //    functionsC.Add(async () =>
-    //    {
-    //        (ICardCircle rearguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-    //        if (rearguard == null) return Result.NO;
-    //        Card removedCard = rearguard.Card; // カードが既に存在する場合はソウルに移動させる
-    //        photonController.SendData("HandToRearguard" + rearguard.ID, card.GetComponent<Card>());
-    //        await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-    //        if (removedCard != null)
-    //        {
-    //            photonController.SendData(rearguard.Name + "ToDrop", removedCard);
-    //            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-    //        }
-    //        //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
-    //        //if (removedCard != null) await CardManager.Instance.CardToDrop(Drop, removedCard);
-    //        return Result.YES;
-    //    });
-
-    //    // 分岐2
-    //    functionsM.Add(async () =>
-    //    {
-    //        int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
-    //        return resultInt.ToEnum("YES", "CANCEL");
-    //    });
-    //    functionsM.Add(async () =>
-    //    {
-    //        //Card targetCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
-    //        Rearguard targetZone = (Rearguard)await SelectManager.Instance.GetZone(Tag.Rearguard, ID);
-    //        if (targetZone == null) return Result.NO;
-    //        Rearguard selectedRearguard = selectedCard.transform.GetComponentInParent<Rearguard>();
-    //        if (!selectedRearguard.IsSameColumn(targetZone)) return Result.NO;
-    //        (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-    //        photonController.SendData(selectedRearguard.Name + "To" + circle.Name, card.GetComponent<Card>());
-    //        await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
-    //        //await CardManager.Instance.CircleToCircle(selectedRearguard, (Rearguard)circle, card.GetComponent<Card>());
-    //        return Result.YES;
-    //    });
-
-    //    functions.AddRange(functionsV);
-
-    //    int i = 0;
-    //    Result result = Result.NONE;
-    //    while (i < functions.Count)
-    //    {
-    //        await UniTask.NextFrame();
-    //        result = await functions[i]();
-    //        switch (result)
-    //        {
-    //            case Result.YES:
-    //                i++;      // 1つ次に進む
-    //                break;
-    //            case Result.NO:
-    //                i -= 1;   // 1つ前に戻る
-    //                break;
-    //            case Result.CANCEL:
-    //                functions.RemoveRange(functions.Count - state.Count, state.Count);
-    //                i -= state.Count; // 直前の分岐点に戻る
-    //                state = functionsV;
-    //                SelectManager.Instance.SingleCancel();
-    //                SelectManager.Instance.ActionConfirm(ActorNumber);
-    //                break;
-    //            case Result.RESTART:
-    //                i = 0;
-    //                functions.Clear();
-    //                functions.AddRange(functionsV);
-    //                break;
-    //            case Result.END:
-    //                return false;
-    //        }
-    //    }
-
-    //    print("owari");
-    //    return true;
-
-    //}
+    }
 
     ///// <summary>
     ///// アタックフェイズ内のアタックステップ
@@ -786,14 +595,14 @@ public class CPUFighter : MonoBehaviour, IFighter
         int toIndex = funcname.IndexOf("To");
         string source = funcname.Substring(0, toIndex);
         string target = funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2);
-        Debug.Log(ActorNumber);
-        Debug.Log(args[0]);
+        //Debug.Log(ActorNumber);
+        //Debug.Log(args[0]);
         Debug.Log($"{source} to {target}");
 
-        Debug.Log(CardDic[(int)args[2]]);
+        //Debug.Log(CardDic[(int)args[2]]);
 
         funcname = funcname.Replace("Vanguard", "Circle");
-        Debug.Log(funcname);
+        //Debug.Log(funcname);
 
         object sourceObj = null, targetObj = null;
         Type type = this.GetType();
@@ -814,14 +623,14 @@ public class CPUFighter : MonoBehaviour, IFighter
             funcname = funcname.Substring(0, funcname.IndexOf("To")) + "ToCircle";
         }
 
-        Debug.Log($"{source} to {target}");
-        Debug.Log(funcname);
+        //Debug.Log($"{source} to {target}");
+        //Debug.Log(funcname);
 
         if (sourceObj == null) sourceObj = type?.GetProperty(source)?.GetValue(this);
         if (targetObj == null) targetObj = type?.GetProperty(target)?.GetValue(this);
 
         if (sourceObj == null || targetObj == null) Debug.LogError("Nullエラー");
-        Debug.Log($"{sourceObj} to {targetObj}");
+        //Debug.Log($"{sourceObj} to {targetObj}");
 
 
         MethodInfo method = CardManager.Instance.GetType().GetMethod(funcname);
@@ -834,7 +643,7 @@ public class CPUFighter : MonoBehaviour, IFighter
         };
         await (UniTask)method.Invoke(CardManager.Instance, args2);
 
-        print("終わったよ");
+        print($"{actorNumber}終わったよ");
         NextController.Instance.SetProcessNext(actorNumber, true);
         //foreach (var arg in args)
         //{
@@ -873,16 +682,6 @@ public class CPUFighter : MonoBehaviour, IFighter
     public void ReceivedState(string state)
     {
         TextManager.Instance.SetPhaseText(state);
-    }
-
-    public UniTask RidePhase()
-    {
-        throw new NotImplementedException();
-    }
-
-    public UniTask<bool> MainPhase()
-    {
-        throw new NotImplementedException();
     }
 
     public UniTask<(ICardCircle selectedAttackZone, ICardCircle selectedTargetZone)> AttackStep()
