@@ -41,6 +41,10 @@ public class Fighter : MonoBehaviour, IFighter
     public Soul Soul { get; private set; }
 
     public Dictionary<int, Card> CardDic { get; set; }
+
+    public ICardCircle SelectedAttackZone { get; set; } = null;
+    public ICardCircle SelectedTargetZone { get; set; } = null;
+
     private void OnEnable()
     {
         //子オブジェクトを全て取得する
@@ -654,11 +658,15 @@ public class Fighter : MonoBehaviour, IFighter
     /// </summary>
     public async UniTask DamageTriggerCheck(int count)
     {
-        //for (int i = 0; i < count; i++)
-        //{
-        //    await CardManager.Instance.DeckToDrive(Deck, Drive);
-        //    await CardManager.Instance.DriveToDamage(Drive, Damage);
-        //}
+        for (int i = 0; i < count; i++)
+        {
+            photonController.SendData("DeckToDrive", Deck.Pull(0));
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            photonController.SendData("DriveToDamage", Drive.Card);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            //await CardManager.Instance.DeckToDrive(Deck, Drive, Deck.Pull(0));
+            //await CardManager.Instance.DriveToDamage(Drive, Damage, Drive.Card);
+        }
     }
 
     /// <summary>
@@ -879,6 +887,8 @@ public class Fighter : MonoBehaviour, IFighter
         if (type == "Attack")
         {
             print($"{options[0]} から {options[1]} に攻撃した！");
+            SelectedAttackZone = StringToCircle((string)options[0]);
+            SelectedTargetZone = StringToCircle((string)options[1]);
         }
         else if (type == "Boost")
         {

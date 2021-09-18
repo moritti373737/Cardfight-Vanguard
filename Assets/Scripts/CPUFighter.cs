@@ -36,6 +36,9 @@ public class CPUFighter : MonoBehaviour, IFighter
     public Soul Soul { get; private set; }
 
     public Dictionary<int, Card> CardDic { get; set; }
+    public ICardCircle SelectedAttackZone { get; set; } = null;
+    public ICardCircle SelectedTargetZone { get; set; } = null;
+
     private void OnEnable()
     {
         //子オブジェクトを全て取得する

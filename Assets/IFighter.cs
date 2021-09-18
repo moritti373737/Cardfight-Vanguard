@@ -27,6 +27,8 @@ public interface IFighter
 
     public Dictionary<int, Card> CardDic { get; set; }
 
+    public ICardCircle SelectedAttackZone { get; set; }
+    public ICardCircle SelectedTargetZone { get; set; }
     void CreateDeck();
     void SetFirstVanguard();
     UniTask Mulligan();

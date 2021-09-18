@@ -107,10 +107,8 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         SetHistory(card: card, source: drive, target: hand);
     }
 
-    public async UniTask DriveToDamage(Drive drive, Damage damage)
+    public async UniTask DriveToDamage(Drive drive, Damage damage, Card card)
     {
-        Card card = drive.Pull();
-
         await UniTask.Delay(1000);
         await AnimationManager.Instance.DriveToCard(card);
 

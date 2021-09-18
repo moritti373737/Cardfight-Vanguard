@@ -214,9 +214,7 @@ public class GameMaster : MonoBehaviour
         await UniTask.NextFrame();
         //await AttackFighter.GuardPhase();
 
-        NextController.Instance.SetSyncNext(MyNumber, true);
         photonController.SendSyncNext(MyNumber);
-
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
     }
 
@@ -227,7 +225,6 @@ public class GameMaster : MonoBehaviour
         photonController.SendState("ライドフェイズ");
         if (AttackFighter.ActorNumber == MyNumber) await AttackFighter.RidePhase();
 
-        NextController.Instance.SetSyncNext(MyNumber, true);
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
@@ -246,7 +243,6 @@ public class GameMaster : MonoBehaviour
             }
         }
 
-        NextController.Instance.SetSyncNext(MyNumber, true);
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
     }
@@ -261,12 +257,12 @@ public class GameMaster : MonoBehaviour
             //TextManager.Instance.SetPhaseText("バトルフェイズ");
             photonController.SendState("バトルフェイズ");
 
-            ICardCircle selectedAttackZone = null, selectedTargetZone = null;
+            AttackFighter.SelectedAttackZone = null;
+            AttackFighter.SelectedTargetZone = null;
 
             if (AttackFighter.ActorNumber == MyNumber)
-                    (selectedAttackZone, selectedTargetZone) = await AttackFighter.AttackStep();
+                await AttackFighter.AttackStep();
             //if (selectedAttackZone == null) break;
-            NextController.Instance.SetSyncNext(MyNumber, true);
             photonController.SendSyncNext(MyNumber);
             int cancel = await UniTask.WhenAny(UniTask.WaitUntil(() => cancellationToken.IsCancellationRequested), UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext()));
             if (cancel == 0) return; // キャンセルして終了する
@@ -275,31 +271,43 @@ public class GameMaster : MonoBehaviour
             if (DefenceFighter.ActorNumber == MyNumber)
                 await DefenceFighter.GuardStep();
 
-            if (AttackFighter.ActorNumber == MyNumber && selectedAttackZone.V)
+            photonController.SendSyncNext(MyNumber);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
+
+            if (AttackFighter.ActorNumber == MyNumber && AttackFighter.SelectedAttackZone.V)
             {
                 //TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
                 photonController.SendState("ドライブトリガーチェック");
-                int checkCount = selectedAttackZone.Card.Ability == Card.AbilityType.TwinDrive ? 2 : 1;
+                int checkCount = AttackFighter.SelectedAttackZone.Card.Ability == Card.AbilityType.TwinDrive ? 2 : 1;
                 await AttackFighter.DriveTriggerCheck(checkCount);
             }
+
+            photonController.SendSyncNext(MyNumber);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
             //print(selectedAttackZone.Card.Power);
             //print(selectedTargetZone.Card.Power);
             //print(DefenceFighter.Guardian.Shield);
 
-            if (selectedAttackZone.Card.Power >= selectedTargetZone.Card.Power + DefenceFighter.Guardian.Shield)
+            if (AttackFighter.SelectedAttackZone.Card.Power >= AttackFighter.SelectedTargetZone.Card.Power + DefenceFighter.Guardian.Shield)
             {
-                if (selectedTargetZone.V)
+                if (AttackFighter.SelectedTargetZone.V)
                 {
                     //TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
                     photonController.SendState("ダメージトリガーチェック");
-                    await DefenceFighter.DamageTriggerCheck(selectedAttackZone.Card.Critical);
+
+                    if (DefenceFighter.ActorNumber == MyNumber)
+                        await DefenceFighter.DamageTriggerCheck(AttackFighter.SelectedAttackZone.Card.Critical);
                 }
                 else
                 {
-                    await DefenceFighter.RetireCard(selectedTargetZone);
+                    if (DefenceFighter.ActorNumber == MyNumber)
+                        await DefenceFighter.RetireCard(AttackFighter.SelectedTargetZone);
                 }
             }
+
+            photonController.SendSyncNext(MyNumber);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
             List<Card> guardian = new List<Card>(DefenceFighter.Guardian.cardList);
             //guardian.ForEach(async card => await CardManager.Instance.GuardianToDrop(DefenceFighter.Guardian, DefenceFighter.Drop, card));
@@ -309,6 +317,8 @@ public class GameMaster : MonoBehaviour
             }
             await AttackFighter.EndStep();
 
+            photonController.SendSyncNext(MyNumber);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
         }
     }
     async UniTask EndPhase()
