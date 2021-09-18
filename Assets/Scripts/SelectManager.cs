@@ -572,7 +572,10 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         }
         else if (tag == Tag.Guardian)
         {
-            SelectedCardParentList.ForEach(async parent => await CardManager.Instance.HandToGuardian(fighter.Hand, fighter.Guardian, parent.GetCard()));
+            SelectedCardParentList.ForEach(async parent => {
+                //await CardManager.Instance.HandToGuardian(fighter.Hand, fighter.Guardian, parent.GetCard());
+                endAction("HandToGuardian", parent.GetCard());
+            });
         }
         else if (tag == Tag.Drop)
         {

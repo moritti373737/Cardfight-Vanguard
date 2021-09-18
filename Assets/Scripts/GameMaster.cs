@@ -251,7 +251,7 @@ public class GameMaster : MonoBehaviour
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
     }
 
-    async UniTask ButtlePhase(CancellationToken cancellationToken = default)
+    async UniTask ButtlePhase(CancellationToken cancellationToken)
     {
 
         while (true)
@@ -271,24 +271,28 @@ public class GameMaster : MonoBehaviour
             int cancel = await UniTask.WhenAny(UniTask.WaitUntil(() => cancellationToken.IsCancellationRequested), UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext()));
             if (cancel == 0) return; // キャンセルして終了する
             print("キャンセルしない");
-            await DefenceFighter.GuardStep();
 
-            if (selectedAttackZone.V)
+            if (DefenceFighter.ActorNumber == MyNumber)
+                await DefenceFighter.GuardStep();
+
+            if (AttackFighter.ActorNumber == MyNumber && selectedAttackZone.V)
             {
-                TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+                //TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
+                photonController.SendState("ドライブトリガーチェック");
                 int checkCount = selectedAttackZone.Card.Ability == Card.AbilityType.TwinDrive ? 2 : 1;
                 await AttackFighter.DriveTriggerCheck(checkCount);
             }
 
-            print(selectedAttackZone.Card.Power);
-            print(selectedTargetZone.Card.Power);
-            print(DefenceFighter.Guardian.Shield);
+            //print(selectedAttackZone.Card.Power);
+            //print(selectedTargetZone.Card.Power);
+            //print(DefenceFighter.Guardian.Shield);
 
             if (selectedAttackZone.Card.Power >= selectedTargetZone.Card.Power + DefenceFighter.Guardian.Shield)
             {
                 if (selectedTargetZone.V)
                 {
-                    TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+                    //TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
+                    photonController.SendState("ダメージトリガーチェック");
                     await DefenceFighter.DamageTriggerCheck(selectedAttackZone.Card.Critical);
                 }
                 else

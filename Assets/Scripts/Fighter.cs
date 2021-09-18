@@ -589,7 +589,8 @@ public class Fighter : MonoBehaviour, IFighter
         functionsSubmit.Add(async () =>
         {
             print(SelectManager.Instance.SelectedCount);
-            await SelectManager.Instance.ForceConfirm(Tag.Guardian, ID, Action.MOVE);
+            Action<string, Card> endAction = (funcname, card) => photonController.SendData(funcname, card); // データの送信処理を委譲する
+            await SelectManager.Instance.ForceConfirm(Tag.Guardian, ID, Action.MOVE, endAction);
             return Result.YES;
         });
 
@@ -636,10 +637,14 @@ public class Fighter : MonoBehaviour, IFighter
     {
         for (int i = 0; i < count; i++)
         {
-            await CardManager.Instance.DeckToDrive(Deck, Drive);
-            if (Drive.GetCard().Trigger != Card.TriggerType.None)
-                await GetTrigger(Drive.GetCard());
-            await CardManager.Instance.DriveToHand(Drive, Hand);
+            //await CardManager.Instance.DeckToDrive(Deck, Drive, Deck.Pull(0));
+            photonController.SendData("DeckToDrive", Deck.Pull(0));
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
+            //if (Drive.GetCard().Trigger != Card.TriggerType.None)
+            //    await GetTrigger(Drive.GetCard());
+            //await CardManager.Instance.DriveToHand(Drive, Hand, Drive.Card);
+            photonController.SendData("DriveToHand", Drive.Card);
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
         }
 
     }
@@ -649,11 +654,11 @@ public class Fighter : MonoBehaviour, IFighter
     /// </summary>
     public async UniTask DamageTriggerCheck(int count)
     {
-        for (int i = 0; i < count; i++)
-        {
-            await CardManager.Instance.DeckToDrive(Deck, Drive);
-            await CardManager.Instance.DriveToDamage(Drive, Damage);
-        }
+        //for (int i = 0; i < count; i++)
+        //{
+        //    await CardManager.Instance.DeckToDrive(Deck, Drive);
+        //    await CardManager.Instance.DriveToDamage(Drive, Damage);
+        //}
     }
 
     /// <summary>

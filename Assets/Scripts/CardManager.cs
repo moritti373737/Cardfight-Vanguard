@@ -84,9 +84,8 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         SetHistory(card: card, source: cardCircle, target: targetCircle);
     }
 
-    public async UniTask DeckToDrive(Deck deck, Drive drive)
+    public async UniTask DeckToDrive(Deck deck, Drive drive, Card card)
     {
-        Card card = deck.Pull(0);
         card.transform.parent = null;
         await AnimationManager.Instance.DeckToDrive(card, drive);
         drive.Add(card);
@@ -95,10 +94,8 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
         SetHistory(card: card, source: deck, target: drive);
     }
 
-    public async UniTask DriveToHand(Drive drive, Hand hand)
+    public async UniTask DriveToHand(Drive drive, Hand hand, Card card)
     {
-        Card card = drive.Pull();
-
         await UniTask.Delay(1000);
 
         await AnimationManager.Instance.DriveToCard(card);
