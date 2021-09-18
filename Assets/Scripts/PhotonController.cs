@@ -26,42 +26,6 @@ public class PhotonController : MonoBehaviourPunCallbacks
         GameStart();
     }
 
-    //private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
-    //{
-    //    fighter1 = GameObject.Find("Fighter1").GetComponents<IFighter>().First(fighter => fighter.enabled);
-    //    fighter2 = GameObject.Find("Fighter2").GetComponents<IFighter>().First(fighter => fighter.enabled);
-    //    GameStart();
-    //}
-
-    /// <summary>
-    /// このクライアントがマスターサーバに接続されたとき
-    /// </summary>
-    //public override void OnConnectedToMaster()
-    //{
-    //    // roomを作成して入室する
-    //    PhotonNetwork.JoinRandomOrCreateRoom(roomOptions: new RoomOptions { MaxPlayers = 2, PublishUserId = true });
-    //}
-
-    ///// <summary>
-    ///// このクライアントがroomに入室したとき
-    ///// </summary>
-    //public override void OnJoinedRoom()
-    //{
-    //    Debug.Log($"入室成功、マスター→{PhotonNetwork.IsMasterClient}");
-    //    if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
-    //}
-
-    ///// <summary>
-    ///// 他のクライアントがroomに入室したとき
-    ///// </summary>
-    ///// <param name="newPlayer">roomに入室したクライアント</param>
-    //public override void OnPlayerEnteredRoom(Player newPlayer)
-    //{
-    //    Debug.Log($"誰かが入室しました、合計人数は{PhotonNetwork.CurrentRoom.PlayerCount}人です。");
-    //    Debug.Log($"ID = { PhotonNetwork.LocalPlayer.ActorNumber}");
-    //    PhotonNetwork.PlayerListOthers.ToList().ForEach(player => Debug.Log(player.ActorNumber));
-    //    if (PhotonNetwork.PlayerList.Count() == 2) GameStart();
-    //}
 
     /// <summary>
     /// ゲームを開始する
@@ -131,6 +95,12 @@ public class PhotonController : MonoBehaviourPunCallbacks
     [PunRPC]
     public void ReceivedGeneralData(object[] args)
     {
+        if ((string)args[1] == "Cancel")
+        {
+            gameMaster.tokenSource.Cancel();
+            return;
+        }
+
         if (fighter1.ActorNumber == (int)args[0]) _ = fighter1.ReceivedGeneralData(args.ToList());
         else if (fighter2.ActorNumber == (int)args[0]) _ = fighter2.ReceivedGeneralData(args.ToList());
     }

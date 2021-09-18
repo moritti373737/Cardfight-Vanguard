@@ -537,6 +537,7 @@ public class Fighter : MonoBehaviour, IFighter
                     SelectManager.Instance.SingleCancel();
                     break;
                 case Result.END:
+                    photonController.SendGeneralData("Cancel", null);
                     return (null, null);
             }
         }

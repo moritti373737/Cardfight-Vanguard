@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UniRx;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -33,7 +34,7 @@ public class GameMaster : MonoBehaviour
     [field: SerializeField]
     private IFighter DefenceFighter { get; set; }
 
-    //[SerializeField] Animator animator;
+    public readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
 
     public void ResetScene()
     {
@@ -126,6 +127,11 @@ public class GameMaster : MonoBehaviour
         while (true)
         {
             await StandPhase();
+            await DrawPhase();
+            await RidePhase();
+            await MainPhase();
+            await ButtlePhase(tokenSource.Token);
+            await EndPhase();
         }
     }
 
@@ -133,6 +139,7 @@ public class GameMaster : MonoBehaviour
     {
         if (input.GetDown("Zoom"))
         {
+            tokenSource.Cancel();
             SelectManager.Instance.ZoomCard();
         }
         else if (input.GetDown("Reset")) ResetScene();
@@ -194,8 +201,6 @@ public class GameMaster : MonoBehaviour
         photonController.SendState("スタンドフェイズ");
 
         //await AttackFighter.StandPhase();
-
-        await DrawPhase();
     }
 
 
@@ -213,8 +218,6 @@ public class GameMaster : MonoBehaviour
         photonController.SendSyncNext(MyNumber);
 
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
-
-        await RidePhase();
     }
 
     async UniTask RidePhase()
@@ -228,7 +231,6 @@ public class GameMaster : MonoBehaviour
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
-        await MainPhase();
     }
 
     async UniTask MainPhase()
@@ -247,11 +249,9 @@ public class GameMaster : MonoBehaviour
         NextController.Instance.SetSyncNext(MyNumber, true);
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
-
-        await ButtlePhase();
     }
 
-    async UniTask ButtlePhase()
+    async UniTask ButtlePhase(CancellationToken cancellationToken = default)
     {
 
         while (true)
@@ -265,8 +265,12 @@ public class GameMaster : MonoBehaviour
 
             if (AttackFighter.ActorNumber == MyNumber)
                     (selectedAttackZone, selectedTargetZone) = await AttackFighter.AttackStep();
-            if (selectedAttackZone == null) break;
-
+            //if (selectedAttackZone == null) break;
+            NextController.Instance.SetSyncNext(MyNumber, true);
+            photonController.SendSyncNext(MyNumber);
+            int cancel = await UniTask.WhenAny(UniTask.WaitUntil(() => cancellationToken.IsCancellationRequested), UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext()));
+            if (cancel == 0) return; // キャンセルして終了する
+            print("キャンセルしない");
             await DefenceFighter.GuardStep();
 
             if (selectedAttackZone.V)
@@ -302,7 +306,6 @@ public class GameMaster : MonoBehaviour
             await AttackFighter.EndStep();
 
         }
-        await EndPhase();
     }
     async UniTask EndPhase()
     {
@@ -313,6 +316,5 @@ public class GameMaster : MonoBehaviour
         await DefenceFighter.EndPhase();
 
         (AttackFighter, DefenceFighter) = (DefenceFighter, AttackFighter);
-        return;
     }
 }
