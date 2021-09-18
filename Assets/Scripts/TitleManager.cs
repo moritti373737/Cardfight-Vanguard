@@ -64,6 +64,18 @@ public class TitleManager : MonoBehaviour
             local = true;
             SceneManager.LoadScene("MainScene");
         }
+        else if (button_ob.name == "Button2")
+        {
+            fightMode = FightMode.PVE;
+            local = true;
+            SceneManager.LoadScene("MainScene");
+        }
+        else if (button_ob.name == "Button3")
+        {
+            fightMode = FightMode.EVE;
+            local = true;
+            SceneManager.LoadScene("MainScene");
+        }
         else if (button_ob.name == "Button4")
         {
             fightMode = FightMode.PVP;

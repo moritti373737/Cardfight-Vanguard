@@ -86,8 +86,16 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
                     fighter2.enabled = true;
                     break;
                 case FightMode.PVE:
+                    fighter1 = fighter1Obj.GetComponent<LocalFighter>();
+                    fighter2 = fighter2Obj.GetComponent<CPULocalFighter>();
+                    fighter1.enabled = true;
+                    fighter2.enabled = true;
                     break;
                 case FightMode.EVE:
+                    fighter1 = fighter1Obj.GetComponent<CPULocalFighter>();
+                    fighter2 = fighter2Obj.GetComponent<CPULocalFighter>();
+                    fighter1.enabled = true;
+                    fighter2.enabled = true;
                     break;
                 default:
                     break;
@@ -117,13 +125,13 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
                     if (MyNumber == 0)
                     {
                         fighter1 = fighter1Obj.GetComponent<NetworkFighter>();
-                        fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+                        fighter2 = fighter2Obj.GetComponent<CPUNetworkFighter>();
                         fighter1.enabled = true;
                         fighter2.enabled = true;
                     }
                     else
                     {
-                        fighter1 = fighter1Obj.GetComponent<CPUFighter>();
+                        fighter1 = fighter1Obj.GetComponent<CPUNetworkFighter>();
                         fighter2 = fighter2Obj.GetComponent<NetworkFighter>();
                         fighter1.enabled = true;
                         fighter2.enabled = true;
@@ -132,15 +140,15 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
                 case FightMode.EVE:
                     if (MyNumber == 0)
                     {
-                        fighter1 = fighter1Obj.GetComponent<CPUFighter>();
-                        fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+                        fighter1 = fighter1Obj.GetComponent<CPUNetworkFighter>();
+                        fighter2 = fighter2Obj.GetComponent<CPUNetworkFighter>();
                         fighter1.enabled = true;
                         fighter2.enabled = true;
                     }
                     else
                     {
-                        fighter1 = fighter1Obj.GetComponent<CPUFighter>();
-                        fighter2 = fighter2Obj.GetComponent<CPUFighter>();
+                        fighter1 = fighter1Obj.GetComponent<CPUNetworkFighter>();
+                        fighter2 = fighter2Obj.GetComponent<CPUNetworkFighter>();
                         fighter1.enabled = true;
                         fighter2.enabled = true;
                     }
@@ -230,7 +238,6 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
         {
             await UniTask.NextFrame();
             await fighter2.Mulligan();
-            await UniTask.WaitUntil(() => input.GetDown("Enter"));
         }
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());

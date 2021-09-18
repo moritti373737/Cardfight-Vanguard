@@ -6,7 +6,7 @@ using Cysharp.Threading.Tasks;
 using System.Linq;
 using UnityEngine.InputSystem;
 using System.Reflection;
-public class CPUFighter : MonoBehaviour, IFighter
+public class CPUNetworkFighter : MonoBehaviour, IFighter
 {
     [SerializeField]
     private PhotonController photonController;

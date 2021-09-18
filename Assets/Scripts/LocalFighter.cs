@@ -762,108 +762,21 @@ public class LocalFighter : MonoBehaviour, IFighter
     /// カードに関する処理が送られている
     /// </summary>
     /// <param name="args">送信元ID、関数名、カードID</param>
-    public async UniTask ReceivedData(List<object> args)
-    {
-        int actorNumber = (int)args[0];
-        string funcname = ((string)args[1]);
-        int toIndex = funcname.IndexOf("To");
-        string source = funcname.Substring(0, toIndex);
-        string target = funcname.Substring(toIndex + 2, funcname.Length - toIndex - 2);
-        //Debug.Log(ActorNumber);
-        //Debug.Log(args[0]);
-        //Debug.Log($"{source} to {target}");
-
-        //Debug.Log(CardDic[(int)args[2]]);
-
-        funcname = funcname.Replace("Vanguard", "Circle");
-        Debug.Log(funcname);
-
-        object sourceObj = null, targetObj = null;
-        Type type = this.GetType();
-        if (source.Contains("Rearguard"))
-        {
-            Debug.Log(source.Substring(source.Length - 2));
-            var rearguard = Rearguards.Find(rear => rear.Name == source);
-            Debug.Log(rearguard);
-            sourceObj = rearguard;
-            funcname = "CircleTo" + funcname.Substring(funcname.IndexOf("To") + 2, funcname.Length - funcname.IndexOf("To") - 2);
-        }
-        if (target.Contains("Rearguard"))
-        {
-            Debug.Log(target.Substring(target.Length - 2));
-            var rearguard = Rearguards.Find(rear => rear.Name == target);
-            Debug.Log(rearguard);
-            targetObj = rearguard;
-            funcname = funcname.Substring(0, funcname.IndexOf("To")) + "ToCircle";
-        }
-
-        //Debug.Log($"{source} to {target}");
-        //Debug.Log(funcname);
-
-        if (sourceObj == null) sourceObj = type?.GetProperty(source)?.GetValue(this);
-        if (targetObj == null) targetObj = type?.GetProperty(target)?.GetValue(this);
-
-        if (sourceObj == null || targetObj == null) Debug.LogError("Nullエラー");
-        //Debug.Log($"{sourceObj} to {targetObj}");
-
-
-        MethodInfo method = CardManager.Instance.GetType().GetMethod(funcname);
-        if (method == null) Debug.LogError("Nullエラー");
-        object[] args2 =
-        {
-            sourceObj,
-            targetObj,
-            CardDic[(int)args[2]],
-        };
-        await (UniTask)method.Invoke(CardManager.Instance, args2);
-
-        print($"{actorNumber}終わったよ");
-        NextController.Instance.SetProcessNext(actorNumber, true);
-        //foreach (var arg in args)
-        //{
-        //    Debug.Log(arg);
-        //}
-    }
+    public async UniTask ReceivedData(List<object> args) { }
 
     /// <summary>
     /// さまざまな処理（Attackなど）を受信した時の処理
     /// </summary>
     /// <param name="args">送信元ID、処理名、オプション(Array)</param>
     /// <returns></returns>
-    public async UniTask ReceivedGeneralData(List<object> args)
-    {
-        int actorNumber = (int)args[0];
-        string type = ((string)args[1]);
-        object[] options = (object[])args[2];
-        if (type == "Attack")
-        {
-            print($"{options[0]} から {options[1]} に攻撃した！");
-            SelectedAttackZone = StringToCircle((string)options[0]);
-            SelectedTargetZone = StringToCircle((string)options[1]);
-        }
-        else if (type == "Boost")
-        {
-            print($"{options[0]} が {options[1]} をブーストした！");
-        }
-        else if (type == "Rest")
-        {
-            print($"{options[0]} が レストした！");
-            await CardManager.Instance.RestCard(StringToCircle((string)options[0]));
-        }
-
-        print("終わったよ");
-        NextController.Instance.SetProcessNext(actorNumber, true);
-    }
+    public async UniTask ReceivedGeneralData(List<object> args) { }
 
     /// <summary>
     /// Stateデータを受信したときの処理
     /// フェイズの管理に使う予定
     /// </summary>
     /// <param name="state">フェイズ名</param>
-    public void ReceivedState(string state)
-    {
-        TextManager.Instance.SetPhaseText(state);
-    }
+    public void ReceivedState(string state) { }
 
     private ICardCircle StringToCircle(string name) => name == "Vanguard" ? (ICardCircle)Vanguard : (ICardCircle)Rearguards.Find(rear => rear.Name == name);
 }
