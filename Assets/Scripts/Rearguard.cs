@@ -6,6 +6,7 @@ using UniRx;
 public class Rearguard : MonoBehaviour, ICardCircle
 {
     public int ID { get; private set; }
+    public string Name { get => transform.name; }
     public bool V { get; } = false;
     public bool R { get; } = true;
     public bool Front { get; private set; } = false;

@@ -11,14 +11,14 @@ public class PhotonController : MonoBehaviourPunCallbacks
     [SerializeField]
     private GameMaster gameMaster;
 
-    [SerializeField]
-    private Fighter fighter1;
-
-    [SerializeField]
-    private Fighter fighter2;
+    private IFighter fighter1;
+    private IFighter fighter2;
 
     private void Start()
     {
+        fighter1 = GameObject.Find("Fighter1").GetComponent<IFighter>();
+        fighter2 = GameObject.Find("Fighter2").GetComponent<IFighter>();
+
         // PhotonServerSettingsの設定内容を使ってマスターサーバへ接続する
         PhotonNetwork.ConnectUsingSettings();
     }
@@ -70,7 +70,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// メインデータを送信する
+    /// メインデータ（CardManagerで実行する関数の内容）を送信する
     /// </summary>
     /// <param name="funcname">実行したい関数名</param>
     /// <param name="card">引数に使用するカード</param>
@@ -86,7 +86,7 @@ public class PhotonController : MonoBehaviourPunCallbacks
     }
 
     /// <summary>
-    /// メインデータを受信したときに呼び出される
+    /// メインデータ（CardManagerで実行する関数の内容）を受信したときに呼び出される
     /// </summary>
     /// <param name="args">受信した引数</param>
     [PunRPC]
@@ -96,6 +96,32 @@ public class PhotonController : MonoBehaviourPunCallbacks
         else if (fighter2.ActorNumber == (int)args[0]) _ = fighter2.ReceivedData(args.ToList());
     }
 
+    /// <summary>
+    /// さまざまな処理（Attackなど）を送信する
+    /// </summary>
+    /// <param name="type">処理の種類</param>
+    /// <param name="options">引数など</param>
+    public void SendGeneralData(string type, object[] options)
+    {
+        object[] args = new object[]
+        {
+            PhotonNetwork.LocalPlayer.ActorNumber - 1,
+            type,
+            options
+        };
+        photonView.RPC("ReceivedGeneralData", RpcTarget.All, args);
+    }
+
+    /// <summary>
+    /// さまざまな処理（Attackなど）を受信したときに呼び出される
+    /// </summary>
+    /// <param name="args">受信した引数</param>
+    [PunRPC]
+    public void ReceivedGeneralData(object[] args)
+    {
+        if (fighter1.ActorNumber == (int)args[0]) _ = fighter1.ReceivedGeneralData(args.ToList());
+        else if (fighter2.ActorNumber == (int)args[0]) _ = fighter2.ReceivedGeneralData(args.ToList());
+    }
     /// <summary>
     /// 処理を次に進めるためのデータを送信する
     /// </summary>

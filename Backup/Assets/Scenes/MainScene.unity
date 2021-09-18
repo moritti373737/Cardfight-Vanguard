@@ -218,6 +218,7 @@ GameObject:
   m_Component:
   - component: {fileID: 141899823}
   - component: {fileID: 141899824}
+  - component: {fileID: 141899825}
   m_Layer: 0
   m_Name: Fighter1
   m_TagString: Fighter
@@ -248,13 +249,28 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 141899822}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0c710798998a9184db12319c47a4c83d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   input: {fileID: 768289830}
   photonController: {fileID: 1645979628}
+  <ID>k__BackingField: 0
+  <Turn>k__BackingField: 1
+--- !u!114 &141899825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141899822}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5aadf0f3cb8ef46b677693b16b86c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  photonController: {fileID: 0}
   <ID>k__BackingField: 0
   ActorNumber: 0
   <Turn>k__BackingField: 1
@@ -851,8 +867,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   input: {fileID: 768289830}
-  fighter1: {fileID: 141899824}
-  fighter2: {fileID: 1451585532}
   SelectBoxPrefab: {fileID: 8287165649421381882, guid: 273e194a4cc31fb44b5cba4f4645448f,
     type: 3}
   SelectedBoxPrefab: {fileID: 5417325479911120163, guid: 170c1fa0ad4b61648b1a4756009105c4,
@@ -1952,8 +1966,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45f4907393ccf1f42ac6c7c8a6998f9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Fighter1: {fileID: 141899824}
-  Fighter2: {fileID: 1451585532}
 --- !u!114 &1330672765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2114,11 +2126,9 @@ MonoBehaviour:
   photonController: {fileID: 1645979628}
   <Turn>k__BackingField: 1
   input: {fileID: 768289830}
-  fighter1: {fileID: 141899824}
-  fighter2: {fileID: 1451585532}
+  fighter1Obj: {fileID: 141899822}
+  fighter2Obj: {fileID: 1451585531}
   <MyNumber>k__BackingField: 0
-  <AttackFighter>k__BackingField: {fileID: 0}
-  <DefenceFighter>k__BackingField: {fileID: 0}
 --- !u!4 &1373051666
 Transform:
   m_ObjectHideFlags: 0
@@ -2314,6 +2324,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1451585533}
   - component: {fileID: 1451585532}
+  - component: {fileID: 1451585534}
   m_Layer: 0
   m_Name: Fighter2
   m_TagString: Fighter
@@ -2328,7 +2339,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1451585531}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0c710798998a9184db12319c47a4c83d, type: 3}
   m_Name: 
@@ -2336,7 +2347,6 @@ MonoBehaviour:
   input: {fileID: 768289830}
   photonController: {fileID: 1645979628}
   <ID>k__BackingField: 1
-  ActorNumber: 0
   <Turn>k__BackingField: 1
 --- !u!4 &1451585533
 Transform:
@@ -2354,6 +2364,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &1451585534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1451585531}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5aadf0f3cb8ef46b677693b16b86c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  photonController: {fileID: 0}
+  <ID>k__BackingField: 0
+  ActorNumber: 0
+  <Turn>k__BackingField: 1
 --- !u!1 &1476008688
 GameObject:
   m_ObjectHideFlags: 0
@@ -2683,8 +2709,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameMaster: {fileID: 1373051665}
-  fighter1: {fileID: 141899824}
-  fighter2: {fileID: 1451585532}
 --- !u!4 &1645979629
 Transform:
   m_ObjectHideFlags: 0

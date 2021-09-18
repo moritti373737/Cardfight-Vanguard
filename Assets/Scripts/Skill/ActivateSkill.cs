@@ -7,10 +7,14 @@ using UnityEngine;
 /// </summary>
 public class ActivateSkill : MonoBehaviour
 {
-    [SerializeField]
-    Fighter Fighter1;
-    [SerializeField]
-    Fighter Fighter2;
+    IFighter Fighter1;
+    IFighter Fighter2;
+
+    private void Start()
+    {
+        Fighter1 = GameObject.Find("Fighter1").GetComponent<IFighter>();
+        Fighter2 = GameObject.Find("Fighter2").GetComponent<IFighter>();
+    }
 
     /// <summary>
     /// é¿ç€Ç…ÉXÉLÉãÇî≠ìÆÇ≥ÇπÇÈ

@@ -19,10 +19,9 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     public GameObject SelectBox { get; private set; }   // カーソル
     private List<GameObject> SelectedBoxList = new List<GameObject>(); // 選択中のカードを占めるカーソル
-    [SerializeField]
-    public Fighter fighter1;
-    [SerializeField]
-    public Fighter fighter2;
+
+    private IFighter fighter1;
+    private IFighter fighter2;
 
     [SerializeField]
     public GameObject SelectBoxPrefab;
@@ -73,6 +72,8 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 // Start is called before the first frame update
     void Start()
     {
+        fighter1 = GameObject.Find("Fighter1").GetComponent<IFighter>();
+        fighter2 = GameObject.Find("Fighter2").GetComponent<IFighter>();
         Hand hand1 = fighter1.Hand;
         Hand hand2 = fighter2.Hand;
         GameObject field1 = fighter1.Field;
@@ -270,7 +271,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         // カーソルが手札上にある時
         if (HasTag(Tag.Hand))
         {
-            Fighter fighter = GetFighter();
+            IFighter fighter = GetFighter();
             Hand hand = fighter.Hand;
             int handIndex = IndexList[fighter.ActorNumber][hand.GetType().Name];
 
@@ -300,7 +301,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         }
         else if (HasTag(Tag.Damage))
         {
-            Fighter fighter = GetFighter();
+            IFighter fighter = GetFighter();
             Damage damage = fighter.Damage;
             int damageIndex = IndexList[fighter.ActorNumber][damage.GetType().Name];
 
@@ -322,7 +323,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
         // エリア移動したとき
         if (changeSelectBox)
         {
-            Fighter fighter = GetFighter();
+            IFighter fighter = GetFighter();
             print(fighter);
             Hand hand = fighter.Hand;
             Damage damage = fighter.Damage;
@@ -388,7 +389,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     {
         if (!IsFighter(fighterID)) return null;
 
-        Fighter fighter = GetFighter(fighterID);
+        IFighter fighter = GetFighter(fighterID);
 
         if (tag == Tag.None)
         {
@@ -421,7 +422,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
 
     public async UniTask<ICardZone> GetZone(Tag tag, FighterID fighterID)
     {
-        //Fighter fighter = GetFighter(fighterID);
+        //IFighter fighter = GetFighter(fighterID);
 
         //if (!HasTag(tag)) return null;
 
@@ -441,7 +442,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// <returns>実際に選択したゾーンのtransform</returns>
     public async UniTask<Transform> NormalSelected(Tag tag, FighterID fighterID)
     {
-        Fighter fighter = GetFighter(fighterID);
+        IFighter fighter = GetFighter(fighterID);
 
         if (!HasTag(tag)) return null;
 
@@ -497,7 +498,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     {
         if (!HasTag(tag)) return (null, null);
 
-        Fighter fighter = GetFighter(fighterID);
+        IFighter fighter = GetFighter(fighterID);
 
         Transform selected = SelectedCardParentList[0];
 
@@ -558,7 +559,7 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     public async UniTask ForceConfirm(Tag tag, FighterID fighterID, Action action, Action<string, Card> endAction = null)
     {
         //var SelectedZip = SelectedBoxList.Zip(SelectedCardParentList, (box, parent) => (Box: box, Parent: parent));
-        Fighter fighter = GetFighter(fighterID);
+        IFighter fighter = GetFighter(fighterID);
         //MultiSelectIndex = -1;
         SelectBox.transform.parent = null;
 
@@ -723,14 +724,14 @@ public class SelectManager : SingletonMonoBehaviour<SelectManager>
     /// 現在のカーソル位置にあるオブジェクトを所有するファイターを返す
     /// </summary>
     /// <returns>条件を満たすファイター</returns>
-    private Fighter GetFighter() => SelectObj.transform.root.GetComponent<Fighter>();
+    private IFighter GetFighter() => SelectObj.transform.root.GetComponent<IFighter>();
 
     /// <summary>
     /// 指定したファイターIDを持つファイターを返す
     /// </summary>
     /// <param name="fighterID">判定に使うファイターID</param>
     /// <returns>条件を満たすファイター</returns>
-    private Fighter GetFighter(FighterID fighterID) => fighter1.ID == fighterID ? fighter1 : fighter2;
+    private IFighter GetFighter(FighterID fighterID) => fighter1.ID == fighterID ? fighter1 : fighter2;
 
     private bool IsSingle(GameObject gameObject) => gameObject.GetComponent<ICardZone>().GetType().GetInterfaces().Contains(typeof(ISingleCardZone));
 

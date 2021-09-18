@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine.InputSystem;
 using System.Reflection;
 
-public class Fighter : MonoBehaviour
+public class Fighter : MonoBehaviour, IFighter
 {
     [SerializeField]
     private PlayerInput input;
@@ -20,12 +20,12 @@ public class Fighter : MonoBehaviour
     public FighterID ID { get; private set; }
 
     [SerializeField]
-    public int ActorNumber;
+    public int ActorNumber { get; set; }
 
     [field: SerializeField]
     private int Turn { get; set; } = 1;
 
-    private Fighter OpponentFighter { get; set; }
+    private IFighter OpponentFighter { get; set; }
 
     public GameObject Field { get; private set; }
 
@@ -40,8 +40,8 @@ public class Fighter : MonoBehaviour
     public Order Order { get; private set; }
     public Soul Soul { get; private set; }
 
-    public Dictionary<int, Card> CardDic;
-    private void Start()
+    public Dictionary<int, Card> CardDic { get; set; }
+    private void OnEnable()
     {
         //子オブジェクトを全て取得する
         //foreach (Transform childTransform in field.transform)
@@ -67,7 +67,7 @@ public class Fighter : MonoBehaviour
         }
 
         OpponentFighter = GameObject.FindGameObjectsWithTag("Fighter")
-                                    .Select(obj => obj.GetComponent<Fighter>())
+                                    .Select(obj => obj.GetComponent<IFighter>())
                                     .First(fighter => fighter.ID != ID);
     }
 
@@ -330,7 +330,7 @@ public class Fighter : MonoBehaviour
             await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
             if (removedCard != null)
             {
-                photonController.SendData("Rearguard" + rearguard.ID + "ToDrop", removedCard);
+                photonController.SendData(rearguard.Name + "ToDrop", removedCard);
                 await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
             }
             //Card removedCard = await CardManager.Instance.HandToCircle(Hand, circle, card.GetComponent<Card>());
@@ -352,7 +352,7 @@ public class Fighter : MonoBehaviour
             Rearguard selectedRearguard = selectedCard.transform.GetComponentInParent<Rearguard>();
             if (!selectedRearguard.IsSameColumn(targetZone)) return Result.NO;
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-            photonController.SendData("Rearguard" + selectedRearguard.ID + "ToRearguard" + circle.ID, card.GetComponent<Card>());
+            photonController.SendData(selectedRearguard.Name + "To" + circle.Name, card.GetComponent<Card>());
             await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
             //await CardManager.Instance.CircleToCircle(selectedRearguard, (Rearguard)circle, card.GetComponent<Card>());
             return Result.YES;
@@ -459,15 +459,19 @@ public class Fighter : MonoBehaviour
                 if (!selectedBoostZone.IsSameColumn(selectedAttackZone)) return Result.NO;
                 if (selectedBoostZone.Card.Ability != Card.AbilityType.Boost) return Result.NO;
                 await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
-                selectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
+                //selectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
+                photonController.SendGeneralData("Boost", new object[2] { selectedBoostZone.Name, selectedAttackZone.Name });
+                await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
                 ActionManager.Instance.ActionHistory.Add(new ActionData("Boost", ID, selectedBoostZone.Card, selectedBoostZone, selectedAttackZone));
                 state = functionsB;
                 functions.AddRange(functionsB);
                 return Result.YES;
             }
-            var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
-            if (result.Item1 == null) return Result.NO;
-            selectedTargetZone = result.Item1;
+            (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
+            if (circle == null) return Result.NO;
+            selectedTargetZone = circle;
+            photonController.SendGeneralData("Attack", new object[2] { selectedAttackZone.Name, selectedTargetZone.Name });
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
             ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, selectedAttackZone.Card, selectedAttackZone, selectedTargetZone));
             state = functionsV3;
             functions.AddRange(functionsV3);
@@ -481,9 +485,11 @@ public class Fighter : MonoBehaviour
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsB.Add(async () => {
-            var result = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
-            if (result.Item1 == null) return Result.NO;
-            selectedTargetZone = result.Item1;
+            (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
+            if (circle == null) return Result.NO;
+            selectedTargetZone = circle;
+            photonController.SendGeneralData("Attack", new object[2] { selectedAttackZone.Name, selectedTargetZone.Name });
+            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
             ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, selectedAttackZone.Card, selectedAttackZone, selectedTargetZone));
             state = functionsV3;
             functions.AddRange(functionsV3);
@@ -779,7 +785,7 @@ public class Fighter : MonoBehaviour
     }
 
     /// <summary>
-    /// メインデータを受信したときの処理
+    /// メインデータ（CardManagerで実行する関数の内容）を受信したときの処理
     /// カードに関する処理が送られている
     /// </summary>
     /// <param name="args">送信元ID、関数名、カードID</param>
@@ -844,6 +850,29 @@ public class Fighter : MonoBehaviour
         //{
         //    Debug.Log(arg);
         //}
+    }
+
+    /// <summary>
+    /// さまざまな処理（Attackなど）を受信した時の処理
+    /// </summary>
+    /// <param name="args">送信元ID、処理名、オプション(Array)</param>
+    /// <returns></returns>
+    public async UniTask ReceivedGeneralData(List<object> args)
+    {
+        int actorNumber = (int)args[0];
+        string type = ((string)args[1]);
+        object[] options = (object[])args[2];
+        if (type == "Attack")
+        {
+            print($"{options[0]} から {options[1]} に攻撃した！");
+        }
+        else if (type == "Boost")
+        {
+            print($"{options[0]} が {options[1]} をブーストした！");
+        }
+
+        print("終わったよ");
+        NextController.Instance.SetProcessNext(actorNumber, true);
     }
 
     /// <summary>

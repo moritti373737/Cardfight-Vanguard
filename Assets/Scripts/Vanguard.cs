@@ -6,6 +6,7 @@ using UniRx;
 public class Vanguard : MonoBehaviour, ICardCircle
 {
     public int ID { get; } = 12;
+    public string Name { get => transform.name; }
     public bool V { get; } = true;
     public bool R { get; } = false;
     public bool Front { get; } = true;

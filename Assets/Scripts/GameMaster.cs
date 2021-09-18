@@ -19,16 +19,19 @@ public class GameMaster : MonoBehaviour
     private PlayerInput input;
 
     //public Player[] playerList;
-    public Fighter fighter1;
-    public Fighter fighter2;
+    public GameObject fighter1Obj;
+    public GameObject fighter2Obj;
+
+    public IFighter fighter1;
+    public IFighter fighter2;
 
     [field: SerializeField]
     private int MyNumber { get; set; }
 
     [field: SerializeField]
-    private Fighter AttackFighter { get; set; }
+    private IFighter AttackFighter { get; set; }
     [field: SerializeField]
-    private Fighter DefenceFighter { get; set; }
+    private IFighter DefenceFighter { get; set; }
 
     //[SerializeField] Animator animator;
 
@@ -42,6 +45,13 @@ public class GameMaster : MonoBehaviour
         Debug.Log("RESET!");
     }
 
+    private void Awake()
+    {
+        fighter1 = fighter1Obj.GetComponent<Fighter>();
+        fighter2 = fighter2Obj.GetComponent<Fighter>();
+        fighter1Obj.GetComponent<Fighter>().enabled = true;
+        fighter2Obj.GetComponent<Fighter>().enabled = true;
+    }
 
     //async void Start()
     //{

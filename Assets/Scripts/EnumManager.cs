@@ -48,7 +48,7 @@ public enum Result
     NONE,
 }
 
-public class EnumManager : MonoBehaviour
+public class EnumManager
 {
     // Start is called before the first frame update
     void Start()
