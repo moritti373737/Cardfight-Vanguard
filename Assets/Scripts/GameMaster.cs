@@ -172,8 +172,8 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
         SetFighters();
         NextController.Instance.local = local;
 
-        fighter1.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter1} ‚Ì•‰‚¯</color>"));
-        fighter2.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(_ => Debug.Log($"<color=red>{fighter2} ‚Ì•‰‚¯</color>"));
+        fighter1.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(async _ => await End(fighter1));
+        fighter2.Damage.cardList.ObserveCountChanged().Where(damage => damage >= 6).Subscribe(async _ => await End(fighter2));
 
         print("initŠJŽn");
         await InitPhase();
@@ -384,5 +384,12 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
         await DefenceFighter.EndPhase();
 
         (AttackFighter, DefenceFighter) = (DefenceFighter, AttackFighter);
+    }
+
+    async UniTask End(IFighter fighter)
+    {
+        await UniTask.Delay(500);
+        Debug.Log($"<color=red>{fighter} ‚Ì•‰‚¯</color>");
+        Time.timeScale = 0;
     }
 }

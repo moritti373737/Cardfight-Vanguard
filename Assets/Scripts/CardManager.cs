@@ -239,7 +239,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         Card card = cardCircle.Card;
         if (card == null) return;
-        await AnimationManager.Instance.RestCard(card, 15);
+        await AnimationManager.Instance.RestCard(card);
         card.SetState(Card.State.Stand, false);
         SetHistory(card: card, source: card.GetComponentInParent<ICardZone>());
     }
@@ -248,7 +248,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         Card card = cardCircle.Card;
         if (card == null) return;
-        await AnimationManager.Instance.StandCard(card, 15);
+        await AnimationManager.Instance.StandCard(card);
         card.SetState(Card.State.Stand, true);
         SetHistory(card: card, source: card.GetComponentInParent<ICardZone>());
     }

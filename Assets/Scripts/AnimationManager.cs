@@ -23,13 +23,11 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// <param name="card">アニメ対象のカード</param>
     public async UniTask DeckToCard(Card card)
     {
-        var sequence = DOTween.Sequence();
-
-        _ = sequence.Join(card.transform.DOLocalMoveY(-0.5F, 0.1F).SetEase(Ease.OutQuad));
-        _ = sequence.Join(card.transform.GetComponentsInChildren<MeshRenderer>()[0].material.DOFade(0, 0.1F));
-        _ = sequence.Join(card.transform.GetComponentsInChildren<MeshRenderer>()[1].material.DOFade(0, 0.1F));
-
-        await sequence.Play();
+        await DOTween.Sequence()
+                     .Join(card.transform.DOLocalMoveY(-0.5F, 0.1F).SetEase(Ease.OutQuad))
+                     .Join(card.transform.GetComponentsInChildren<MeshRenderer>()[0].material.DOFade(0, 0.1F))
+                     .Join(card.transform.GetComponentsInChildren<MeshRenderer>()[1].material.DOFade(0, 0.1F))
+                     .Play();
     }
 
     /// <summary>
@@ -38,13 +36,12 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// <param name="card">アニメ対象のカード</param>
     public async UniTask CardToHand(Card card)
     {
-        var sequence = DOTween.Sequence();
         card.transform.LocalMoveY(-0.5F);
-        _ = sequence.Join(card.transform.DOLocalMoveY(0, 0.1F));
-        _ = sequence.Join(card.transform.GetComponentsInChildren<MeshRenderer>()[0].material.DOFade(1, 0.1F));
-        _ = sequence.Join(card.transform.GetComponentsInChildren<MeshRenderer>()[1].material.DOFade(1, 0.1F));
-
-        await sequence.Play();
+        await DOTween.Sequence()
+                     .Join(card.transform.DOLocalMoveY(0, 0.1F))
+                     .Join(card.transform.GetComponentsInChildren<MeshRenderer>()[0].material.DOFade(1, 0.1F))
+                     .Join(card.transform.GetComponentsInChildren<MeshRenderer>()[1].material.DOFade(1, 0.1F))
+                     .Play();
     }
 
     /// <summary>
@@ -57,10 +54,10 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         card.transform.parent = null;
 
         // カードを手札からサークルに移動する
-        var sequence = DOTween.Sequence();
-        _ = sequence.Join(card.transform.DOMove(new Vector3(cardCircle.transform.position.x, cardCircle.transform.position.y + 0.001F, cardCircle.transform.position.z), 0.2F));
-        _ = sequence.Join(card.transform.DORotate(new Vector3(cardCircle.transform.rotation.x - 90, cardCircle.transform.rotation.eulerAngles.y + 180, card.transform.rotation.z), 0.2F));
-        await sequence.Play();
+        await DOTween.Sequence()
+                     .Join(card.transform.DOMove(new Vector3(cardCircle.transform.position.x, cardCircle.transform.position.y + 0.001F, cardCircle.transform.position.z), 0.2F))
+                     .Join(card.transform.DORotate(new Vector3(cardCircle.transform.rotation.x - 90, cardCircle.transform.rotation.eulerAngles.y + 180, card.transform.rotation.z), 0.2F))
+                     .Play();
 
         // パーティクルを用意し初期位置やemissionの設定
         GameObject effect;
@@ -79,12 +76,11 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         material.SetColor("_EmissionColor", new Color(0.0f * factor, 0.6f * factor, 0.6f * factor));
 
         // パーティクルを回転させる
-        sequence = DOTween.Sequence();
-        _ = sequence.Join(effect.transform.DOScale(new Vector3(0.1F, 0.1F, 0), 0.1F).SetRelative());
-        _ = sequence.Join(effect.transform.DORotate(new Vector3(0, 180, 0), 0.15F, RotateMode.WorldAxisAdd).SetRelative());
-        _ = sequence.Join(effect.transform.GetComponent<MeshRenderer>().material.DOFade(0, 0.15F).SetEase(Ease.InCubic));
-
-        await sequence.Play();
+        await DOTween.Sequence()
+                     .Join(effect.transform.DOScale(new Vector3(0.1F, 0.1F, 0), 0.1F).SetRelative())
+                     .Join(effect.transform.DORotate(new Vector3(0, 180, 0), 0.15F, RotateMode.WorldAxisAdd).SetRelative())
+                     .Join(effect.transform.GetComponent<MeshRenderer>().material.DOFade(0, 0.15F).SetEase(Ease.InCubic))
+                     .Play();
 
         Destroy(effect);
     }
@@ -99,10 +95,10 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         card.transform.parent = null;
 
         // カードを手札からサークルに移動する
-        var sequence = DOTween.Sequence();
-        _ = sequence.Join(card.transform.DOMove(new Vector3(guardian.transform.position.x, guardian.transform.position.y + 0.001F, guardian.transform.position.z), 0.2F));
-        _ = sequence.Join(card.transform.DORotate(new Vector3(guardian.transform.rotation.x - 90, guardian.transform.rotation.eulerAngles.y + 180, card.transform.rotation.z), 0.2F));
-        await sequence.Play();
+        await DOTween.Sequence()
+                     .Join(card.transform.DOMove(new Vector3(guardian.transform.position.x, guardian.transform.position.y + 0.001F, guardian.transform.position.z), 0.2F))
+                     .Join(card.transform.DORotate(new Vector3(guardian.transform.rotation.x - 90, guardian.transform.rotation.eulerAngles.y + 180, card.transform.rotation.z), 0.2F))
+                     .Play();
 
     }
 
@@ -141,80 +137,111 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// <param name="card">アニメ対象のカード</param>
     public async UniTask RotateFieldCard(Card card)
     {
-        var sequence = DOTween.Sequence();
-        _ = sequence.Join(card.transform.DORotate(new Vector3(0, 0, -180), 0.25F, RotateMode.WorldAxisAdd).SetRelative());
-        _ = sequence.Join(card.transform.DOMoveY(0.05F, 0.1F).SetRelative());
-        _ = sequence.Insert(0.2F, card.transform.DOMoveY(-0.05F, 0.15F).SetRelative());
-
-        await sequence.Play();
+        await DOTween.Sequence()
+                     .Join(card.transform.DORotate(new Vector3(0, 0, -180), 0.25F, RotateMode.WorldAxisAdd).SetRelative())
+                     .Join(card.transform.DOMoveY(0.05F, 0.1F).SetRelative())
+                     .Insert(0.2F, card.transform.DOMoveY(-0.05F, 0.15F).SetRelative())
+                     .Play();
     }
 
     /// <summary>
     /// カードをレストするアニメーション
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
-    /// <param name="frame">アニメーションの動作フレーム数</param>
-    public async UniTask RestCard(Card card, int frame)
+    public async UniTask RestCard(Card card)
     {
-        Quaternion q1 = card.transform.localRotation;
-        Quaternion q2 = Quaternion.Euler(180f, 0, 270f);
         Vector3 defaultScale = card.transform.lossyScale;
         Vector3 lossyScale, localScale;
 
-        for (int i = 0; i < frame; i++)
-        {
-            await UniTask.NextFrame();
-            card.transform.localRotation = Quaternion.Slerp(q1, q2, (float)i / frame); // 線形補間
-            lossyScale = card.transform.lossyScale;
-            localScale = card.transform.localScale;
-            card.transform.localScale = new Vector3(
-                localScale.x / lossyScale.x * defaultScale.x,
-                localScale.y / lossyScale.y * defaultScale.y,
-                localScale.z / lossyScale.z * defaultScale.z
-            );
-        }
-        card.transform.localRotation = q2;
-        lossyScale = card.transform.lossyScale;
-        localScale = card.transform.localScale;
-        card.transform.localScale = new Vector3(
-            localScale.x / lossyScale.x * defaultScale.x,
-            localScale.y / lossyScale.y * defaultScale.y,
-            localScale.z / lossyScale.z * defaultScale.z
-        );
+        await card.transform.DOLocalRotate(new Vector3(0, 180, 90), 0.25F)
+                            .OnUpdate(() =>
+                            {
+                                lossyScale = card.transform.lossyScale;
+                                localScale = card.transform.localScale;
+                                card.transform.localScale = new Vector3(
+                                    localScale.x / lossyScale.x * defaultScale.x,
+                                    localScale.y / lossyScale.y * defaultScale.y,
+                                    localScale.z / lossyScale.z * defaultScale.z
+                                );
+                                Debug.Log(localScale);
+                            });
+
+        //Quaternion q1 = card.transform.localRotation;
+        //Quaternion q2 = Quaternion.Euler(180f, 0, 270f);
+        //Vector3 defaultScale = card.transform.lossyScale;
+        //Vector3 lossyScale, localScale;
+
+        //for (int i = 0; i < frame; i++)
+        //{
+        //    await UniTask.NextFrame();
+        //    card.transform.localRotation = Quaternion.Slerp(q1, q2, (float)i / frame); // 線形補間
+        //    lossyScale = card.transform.lossyScale;
+        //    localScale = card.transform.localScale;
+        //    card.transform.localScale = new Vector3(
+        //        localScale.x / lossyScale.x * defaultScale.x,
+        //        localScale.y / lossyScale.y * defaultScale.y,
+        //        localScale.z / lossyScale.z * defaultScale.z
+        //    );
+        //}
+        //card.transform.localRotation = q2;
+        //lossyScale = card.transform.lossyScale;
+        //localScale = card.transform.localScale;
+        //card.transform.localScale = new Vector3(
+        //    localScale.x / lossyScale.x * defaultScale.x,
+        //    localScale.y / lossyScale.y * defaultScale.y,
+        //    localScale.z / lossyScale.z * defaultScale.z
+        //);
     }
 
     /// <summary>
     /// カードをスタンドするアニメーション
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
-    /// <param name="frame">アニメーションの動作フレーム数</param>
-    public async UniTask StandCard(Card card, int frame)
+    public async UniTask StandCard(Card card)
     {
-        Quaternion q1 = card.transform.localRotation;
-        Quaternion q2 = Quaternion.Euler(180f, 0, 180f);
         Vector3 defaultScale = card.transform.lossyScale;
         Vector3 lossyScale, localScale;
 
-        for (int i = 0; i < frame; i++)
-        {
-            await UniTask.NextFrame();
-            card.transform.localRotation = Quaternion.Slerp(q1, q2, (float)i / frame); // 線形補間
-            lossyScale = card.transform.lossyScale;
-            localScale = card.transform.localScale;
-            card.transform.localScale = new Vector3(
-                localScale.x / lossyScale.x * defaultScale.x,
-                localScale.y / lossyScale.y * defaultScale.y,
-                localScale.z / lossyScale.z * defaultScale.z
-            );
-        }
-        card.transform.localRotation = q2;
-        lossyScale = card.transform.lossyScale;
-        localScale = card.transform.localScale;
-        card.transform.localScale = new Vector3(
-            localScale.x / lossyScale.x * defaultScale.x,
-            localScale.y / lossyScale.y * defaultScale.y,
-            localScale.z / lossyScale.z * defaultScale.z
-        );
+        await card.transform.DOLocalRotate(new Vector3(0, 180, 0), 0.25F)
+                            .OnUpdate(() =>
+                            {
+                                lossyScale = card.transform.lossyScale;
+                                localScale = card.transform.localScale;
+                                card.transform.localScale = new Vector3(
+                                    localScale.x / lossyScale.x * defaultScale.x,
+                                    localScale.y / lossyScale.y * defaultScale.y,
+                                    localScale.z / lossyScale.z * defaultScale.z
+                                );
+                                Debug.Log(localScale);
+                            });
+
+
+        //int frame = 15;
+        //Quaternion q1 = card.transform.localRotation;
+        //Quaternion q2 = Quaternion.Euler(180f, 0, 180f);
+        //Vector3 defaultScale = card.transform.lossyScale;
+        //Vector3 lossyScale, localScale;
+
+        //for (int i = 0; i < frame; i++)
+        //{
+        //    await UniTask.NextFrame();
+        //    card.transform.localRotation = Quaternion.Slerp(q1, q2, (float)i / frame); // 線形補間
+        //    lossyScale = card.transform.lossyScale;
+        //    localScale = card.transform.localScale;
+        //    card.transform.localScale = new Vector3(
+        //        localScale.x / lossyScale.x * defaultScale.x,
+        //        localScale.y / lossyScale.y * defaultScale.y,
+        //        localScale.z / lossyScale.z * defaultScale.z
+        //    );
+        //}
+        //card.transform.localRotation = q2;
+        //lossyScale = card.transform.lossyScale;
+        //localScale = card.transform.localScale;
+        //card.transform.localScale = new Vector3(
+        //    localScale.x / lossyScale.x * defaultScale.x,
+        //    localScale.y / lossyScale.y * defaultScale.y,
+        //    localScale.z / lossyScale.z * defaultScale.z
+        //);
     }
 
     /// <summary>
@@ -233,20 +260,19 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
             pos2,
         };
 
-        var sequence = DOTween.Sequence();
-        _ = sequence.Join(card.transform.DOPath(path, 0.25F, PathType.CatmullRom).SetEase(Ease.OutCubic));
-        _ = sequence.Join(card.transform.DORotate(new Vector3(180, 90, 0), 0.25F, RotateMode.FastBeyond360).SetRelative().SetEase(Ease.OutCubic));
-
-        await sequence.Play();
+        await DOTween.Sequence()
+                     .Join(card.transform.DOPath(path, 0.25F, PathType.CatmullRom).SetEase(Ease.OutCubic))
+                     .Join(card.transform.DORotate(new Vector3(180, 90, 0), 0.25F, RotateMode.FastBeyond360).SetRelative().SetEase(Ease.OutCubic))
+                     .Play();
     }
 
     public async UniTask MoveCircle(GameObject circle, Transform targetTransform)
     {
         circle.transform.parent = null;
-        var sequence = DOTween.Sequence();
-        _ = sequence.Join(circle.transform.DOMove(targetTransform.position, 0.15F));
-        _ = sequence.Join(circle.transform.DORotate(targetTransform.rotation.eulerAngles, 0.15F));
-        await sequence.Play();
+        await DOTween.Sequence()
+                     .Join(circle.transform.DOMove(targetTransform.position, 0.15F))
+                     .Join(circle.transform.DORotate(targetTransform.rotation.eulerAngles, 0.15F))
+                     .Play();
     }
 
     /// <summary>

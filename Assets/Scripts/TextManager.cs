@@ -24,6 +24,11 @@ public class TextManager : SingletonMonoBehaviour<TextManager>
 
         // ‰æ‘œ‚ğƒ[ƒh‚·‚éB
         CriticalSprite = Resources.LoadAll<Sprite>("Images/digit1");
+
+        Canvas.GetComponentInChildren<Slider>().onValueChanged.AddListener(value =>
+        {
+            Time.timeScale = value;
+        });
     }
 
     // Update is called once per frame
