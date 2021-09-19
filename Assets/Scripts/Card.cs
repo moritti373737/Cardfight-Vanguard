@@ -61,11 +61,11 @@ public class Card : MonoBehaviour
     public string Rarity { get; private set; }
 
     [field: SerializeField]
-    public int OffsetPower { get; set; } = 0;
+    public int OffsetPower { get; private set; } = 0;
     [field: SerializeField]
     public int BoostedPower { get; set; } = 0;
     [field: SerializeField]
-    public int OffsetCritical { get; set; } = 0;
+    public int OffsetCritical { get; private set; } = 0;
 
     public Transform Transform { get => transform; }
 

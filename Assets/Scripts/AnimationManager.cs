@@ -109,6 +109,16 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     }
 
     /// <summary>
+    /// ドロップゾーンにカードを置くアニメーション
+    /// </summary>
+    /// <param name="card">アニメ対象のカード</param>
+    /// <returns></returns>
+    public async UniTask CardToDrop(Card card)
+    {
+        await CardToHand(card);
+    }
+
+    /// <summary>
     /// フィールド上のカードをめくるアニメーション
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
@@ -207,8 +217,8 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         };
 
         var sequence = DOTween.Sequence();
-        _ = sequence.Join(card.transform.DOPath(path, 0.3F, PathType.CatmullRom).SetEase(Ease.OutCubic));
-        _ = sequence.Join(card.transform.DORotate(new Vector3(270, 0, 90), 0.3F).SetEase(Ease.OutCubic));
+        _ = sequence.Join(card.transform.DOPath(path, 0.25F, PathType.CatmullRom).SetEase(Ease.OutCubic));
+        _ = sequence.Join(card.transform.DORotate(new Vector3(180, 90, 0), 0.25F, RotateMode.FastBeyond360).SetRelative().SetEase(Ease.OutCubic));
 
         await sequence.Play();
     }

@@ -199,8 +199,14 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
     public async UniTask DamageToDrop(Damage damage, Drop drop, Card card)
     {
+        await AnimationManager.Instance.RetireCard(card);
+
         damage.Pull(card);
+
         drop.Add(card);
+
+        await AnimationManager.Instance.CardToDrop(card);
+
         SetHistory(card: card, source: damage, target: drop);
     }
 
