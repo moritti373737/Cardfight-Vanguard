@@ -50,12 +50,9 @@ public class Guardian : MonoBehaviour, IMultiCardZone
             localScale.z / lossyScale.z * defaultScale.z
         );
 
-        var localr = card.transform.localRotation;
         card.transform.SetParent(emptyCard.transform);
         //_card.transform.parent = transform;
         card.transform.position = transform.position;
-        card.transform.localRotation = localr;
-        card.transform.localPosition = Vector3.zero;
         card.transform.localScale = new Vector3(1F, 1F, 1F);
 
         cardList.Add(card);

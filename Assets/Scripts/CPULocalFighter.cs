@@ -90,7 +90,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     public async UniTask Mulligan()
     {
         print("マリガン開始");
-        return;
+        //return;
         // グレード1-3まで1枚づつ残す
         List<Card> cardList = Hand.cardList.Where(card => card.Grade == 0)
                                            .Union(Hand.cardList.Where(card => card.Grade == 1).Skip(1))
@@ -225,7 +225,9 @@ public class CPULocalFighter : MonoBehaviour, IFighter
 
             List<Card> cardList = Hand.cardList.Where(card => card.Grade == 2)
                                                .OrderByDescending(card => card.Power)
+                                               .Union(Hand.cardList.Where(card => card.Grade == 3).OrderBy(card => card.Power).Skip(1))
                                                .ToList();
+
             card = cardList.Dequeue();
             if (card != null)
             {
@@ -345,6 +347,41 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// </summary>
     public async UniTask<bool> GuardStep()
     {
+        await UniTask.NextFrame();
+        int n = Damage.cardList.Count;
+        int damageCost = n * (n + 1) / 2;
+        int guardCost = OpponentFighter.SelectedAttackZone.Card.Power - OpponentFighter.SelectedTargetZone.Card.Power;
+        if (guardCost < 0) return false;
+        //IEnumerable<Card> card5000 = Hand.cardList.Where(card => card.Shield == 5000);
+        //IEnumerable<Card> card10000 = Hand.cardList.Where(card => card.Shield == 10000);
+
+        int requestSheild = (guardCost / 5000 + 1) * 5000;
+
+        if (Hand.cardList.Sum(card => card.Shield) < requestSheild) return false;
+
+        IOrderedEnumerable<Card> handCard = Hand.cardList.Where(card => card.Shield != 0).OrderByDescending(card => card.Shield).ThenBy(card => card.Grade);
+        List<Card> sheildCard = new List<Card>();
+        foreach (var card in handCard)
+        {
+            if (requestSheild == 5000)
+            {
+                sheildCard.Add(handCard.Last());
+                requestSheild -= handCard.Last().Shield;
+            }
+            else
+            {
+                sheildCard.Add(card);
+                requestSheild -= card.Shield;
+            }
+
+            if (requestSheild <= 0) break;
+        }
+
+        foreach (var card in sheildCard)
+        {
+            await CardManager.Instance.HandToGuardian(Hand, Guardian, card);
+        }
+
         return false;
     }
 

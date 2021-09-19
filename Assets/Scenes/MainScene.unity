@@ -308,7 +308,6 @@ MonoBehaviour:
   <ID>k__BackingField: 0
   <ActorNumber>k__BackingField: 0
   <Turn>k__BackingField: 1
-  <OpponentFighterObj>k__BackingField: {fileID: 1451585531}
 --- !u!1 &241021720
 GameObject:
   m_ObjectHideFlags: 0
@@ -1545,7 +1544,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &942602057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1560,8 +1559,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalAxis: Horizontal
   m_VerticalAxis: Vertical
-  m_SubmitButton: Submit1
-  m_CancelButton: Cancel1
+  m_SubmitButton: Submit
+  m_CancelButton: Cancel
   m_InputActionsPerSecond: 10
   m_RepeatDelay: 0.5
   m_ForceModuleActive: 0
@@ -2447,7 +2446,6 @@ MonoBehaviour:
   <ID>k__BackingField: 1
   <ActorNumber>k__BackingField: 0
   <Turn>k__BackingField: 1
-  <OpponentFighterObj>k__BackingField: {fileID: 141899822}
 --- !u!1 &1476008688
 GameObject:
   m_ObjectHideFlags: 0

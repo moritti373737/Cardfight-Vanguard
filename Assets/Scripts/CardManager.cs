@@ -179,6 +179,8 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
     {
         hand.Pull(card);
 
+        await AnimationManager.Instance.HandToGuardian(card, guardian);
+
         guardian.Add(card);
         hand.DestroyEmpty();
         SetHistory(card: card, source: hand, target: guardian);

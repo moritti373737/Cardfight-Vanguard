@@ -90,6 +90,23 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     }
 
     /// <summary>
+    /// カードを手札からガーディアンサークルに出すアニメーションとパーティクル
+    /// </summary>
+    /// <param name="card">サークルに出すカード</param>
+    /// <param name="cardCircle">移動先のサークル</param>
+    public async UniTask HandToGuardian(Card card, Guardian guardian)
+    {
+        card.transform.parent = null;
+
+        // カードを手札からサークルに移動する
+        var sequence = DOTween.Sequence();
+        _ = sequence.Join(card.transform.DOMove(new Vector3(guardian.transform.position.x, guardian.transform.position.y + 0.001F, guardian.transform.position.z), 0.2F));
+        _ = sequence.Join(card.transform.DORotate(new Vector3(guardian.transform.rotation.x - 90, guardian.transform.rotation.eulerAngles.y + 180, card.transform.rotation.z), 0.2F));
+        await sequence.Play();
+
+    }
+
+    /// <summary>
     /// ドライブゾーンからカードをとるアニメーション
     /// </summary>
     /// <param name="card">アニメ対象のカード</param>
