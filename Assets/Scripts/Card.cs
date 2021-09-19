@@ -115,11 +115,11 @@ public class Card : MonoBehaviour
             .Where(_ => JudgeState(State.FaceUp))
             .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
             .AddTo(this);
-        this.ObserveEveryValueChanged(x => x.OffsetPower)
+        this.ObserveEveryValueChanged(x => x.Power)
             .Skip(1)
             .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
             .AddTo(this);
-        this.ObserveEveryValueChanged(x => x.OffsetCritical)
+        this.ObserveEveryValueChanged(x => x.Critical)
             .Skip(1)
             .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
             .AddTo(this);

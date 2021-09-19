@@ -228,4 +228,12 @@ public static class ListExtensions
     {
         self.Add(item);
     }
+
+    public static T Dequeue<T>(this IList<T> self)
+    {
+        if (!self.Any()) return default;
+        T result = self[0];
+        self.RemoveAt(0);
+        return result;
+    }
 }

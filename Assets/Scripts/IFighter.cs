@@ -11,7 +11,7 @@ public interface IFighter
     public FighterID ID { get; }
 
     public int ActorNumber { get; set; }
-
+    public IFighter OpponentFighter { get; set; }
     public GameObject Field { get; }
 
     public Hand Hand { get; }

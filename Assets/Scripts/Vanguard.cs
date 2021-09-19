@@ -11,6 +11,7 @@ public class Vanguard : MonoBehaviour, ICardCircle
     public bool R { get; } = false;
     public bool Front { get; } = true;
     public bool Back { get; } = false;
+    public int Count { get => Card == null ? 0 : 1; }
     public Card Card { get => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>(); }
 
     private void Start()

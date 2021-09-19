@@ -43,7 +43,7 @@ public class Deck : MonoBehaviour, IMultiCardZone
     public void Shuffle()
     {
         //cardList = cardList.OrderBy(a => Guid.NewGuid()).ToList();
-        System.Random rnd = new System.Random(817 + cardList[0].ID);
+        System.Random rnd = new System.Random(12345 + cardList[0].ID);
         cardList = cardList.OrderBy(item => rnd.Next()).ToList();
 
         for (int i = 1; i <= cardList.Count; i++)

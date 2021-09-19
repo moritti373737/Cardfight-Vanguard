@@ -24,7 +24,7 @@ public class NetworkFighter : MonoBehaviour, IFighter
     [field: SerializeField]
     private int Turn { get; set; } = 1;
 
-    private IFighter OpponentFighter { get; set; }
+    public IFighter OpponentFighter { get; set; }
 
     public GameObject Field { get; private set; }
 

@@ -308,6 +308,7 @@ MonoBehaviour:
   <ID>k__BackingField: 0
   <ActorNumber>k__BackingField: 0
   <Turn>k__BackingField: 1
+  <OpponentFighterObj>k__BackingField: {fileID: 1451585531}
 --- !u!1 &241021720
 GameObject:
   m_ObjectHideFlags: 0
@@ -2446,6 +2447,7 @@ MonoBehaviour:
   <ID>k__BackingField: 1
   <ActorNumber>k__BackingField: 0
   <Turn>k__BackingField: 1
+  <OpponentFighterObj>k__BackingField: {fileID: 141899822}
 --- !u!1 &1476008688
 GameObject:
   m_ObjectHideFlags: 0

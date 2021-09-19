@@ -94,6 +94,8 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
                 case FightMode.EVE:
                     fighter1 = fighter1Obj.GetComponent<CPULocalFighter>();
                     fighter2 = fighter2Obj.GetComponent<CPULocalFighter>();
+                    fighter1.OpponentFighter = fighter2;
+                    fighter2.OpponentFighter = fighter1;
                     fighter1.enabled = true;
                     fighter2.enabled = true;
                     break;
@@ -252,7 +254,7 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
         if(local) TextManager.Instance.SetPhaseText("スタンドフェイズ");
         else photonController.SendState("スタンドフェイズ");
 
-        //await AttackFighter.StandPhase();
+        if (local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.StandPhase();
     }
 
 
@@ -312,7 +314,7 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
 
             if (local || AttackFighter.ActorNumber == MyNumber)
                 await AttackFighter.AttackStep();
-            if (AttackFighter.SelectedAttackZone == null) break;
+            if (AttackFighter.SelectedAttackZone == null || AttackFighter.SelectedTargetZone == null) break;
             photonController.SendSyncNext(MyNumber);
             int cancel = await UniTask.WhenAny(UniTask.WaitUntil(() => cancellationToken.IsCancellationRequested), UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext()));
             if (cancel == 0) return; // キャンセルして終了する
@@ -365,7 +367,8 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
             {
                 await CardManager.Instance.GuardianToDrop(DefenceFighter.Guardian, DefenceFighter.Drop, card);
             }
-            await AttackFighter.EndStep();
+            if (local || DefenceFighter.ActorNumber == MyNumber)
+                await AttackFighter.EndStep();
 
             photonController.SendSyncNext(MyNumber);
             await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());

@@ -11,6 +11,7 @@ public class Rearguard : MonoBehaviour, ICardCircle
     public bool R { get; } = true;
     public bool Front { get; private set; } = false;
     public bool Back { get; private set; } = false;
+    public int Count { get => Card == null ? 0 : 1; }
     public Card Card { get => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>(); }
 
     private void Start()

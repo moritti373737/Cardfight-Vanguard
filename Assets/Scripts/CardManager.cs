@@ -96,7 +96,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
     public async UniTask DriveToHand(Drive drive, Hand hand, Card card)
     {
-        await UniTask.Delay(1000);
+        await UniTask.Delay(100);
 
         await AnimationManager.Instance.DriveToCard(card);
 
@@ -109,7 +109,7 @@ public class CardManager : SingletonMonoBehaviour<CardManager>
 
     public async UniTask DriveToDamage(Drive drive, Damage damage, Card card)
     {
-        await UniTask.Delay(1000);
+        await UniTask.Delay(100);
         await AnimationManager.Instance.DriveToCard(card);
 
         damage.Add(card);

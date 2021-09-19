@@ -16,7 +16,8 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     [field: SerializeField]
     private int Turn { get; set; } = 1;
 
-    private IFighter OpponentFighter { get; set; }
+    [field: SerializeField]
+    public IFighter OpponentFighter { get; set; }
 
     public GameObject Field { get; private set; }
 
@@ -24,6 +25,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     public Deck Deck { get; private set; }
     public Vanguard Vanguard { get; private set; }
     public List<Rearguard> Rearguards { get; private set; } = new List<Rearguard>();
+    private List<ICardCircle> Circle { get; set; }
     public Drop Drop { get; private set; }
     public Damage Damage { get; private set; }
     public Drive Drive { get; private set; }
@@ -60,10 +62,8 @@ public class CPULocalFighter : MonoBehaviour, IFighter
         {
             Rearguards.Add(rear.GetComponent<Rearguard>());
         }
-
-        OpponentFighter = GameObject.FindGameObjectsWithTag("Fighter")
-                                    .Select(obj => obj.GetComponent<IFighter>())
-                                    .First(fighter => fighter.ID != ID);
+        Circle = new List<ICardCircle>(Rearguards);
+        Circle.Add(Vanguard);
     }
 
     /// <summary>
@@ -174,6 +174,104 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// </summary>
     public async UniTask<bool> MainPhase()
     {
+        if (Turn == 1) return false;
+
+        if (Vanguard.Card.Grade == 1)
+        {
+            List<Card> cardList = Hand.cardList.Where(card => card.Grade == 1)
+                                               .OrderByDescending(card => card.Power)
+                                               .ToList();
+
+            Card card = cardList.Dequeue();
+            if (card != null)
+            {
+                Rearguard target = IDToRearguard(22);
+                if (target.Card == null) await CardManager.Instance.HandToCircle(Hand, target, card);
+                else cardList.Insert(0, card);
+            }
+
+            card = cardList.Dequeue();
+            if (card != null)
+            {
+                //if (card.Power < OpponentFighter.Vanguard.Card.Power) return false;
+                Rearguard target = IDToRearguard(11);
+                if (target.Card == null) await CardManager.Instance.HandToCircle(Hand, target, card);
+                else cardList.Insert(0, card);
+            }
+
+            card = cardList.Dequeue();
+            if (card != null)
+            {
+                //if (card.Power < OpponentFighter.Vanguard.Card.Power) return false;
+                Rearguard target = IDToRearguard(13);
+                if (target.Card == null) await CardManager.Instance.HandToCircle(Hand, target, card);
+                else cardList.Insert(0, card);
+            }
+        }
+        else if (Vanguard.Card.Grade >= 2)
+        {
+            Card card = IDToRearguard(11).Card;
+            if (card != null && card.Ability == Card.AbilityType.Boost)
+            {
+                await CardManager.Instance.CircleToCircle(IDToRearguard(11), IDToRearguard(21), card);
+            }
+
+            card = IDToRearguard(13).Card;
+            if (card != null && card.Ability == Card.AbilityType.Boost)
+            {
+                await CardManager.Instance.CircleToCircle(IDToRearguard(13), IDToRearguard(23), card);
+            }
+
+            List<Card> cardList = Hand.cardList.Where(card => card.Grade == 2)
+                                               .OrderByDescending(card => card.Power)
+                                               .ToList();
+            card = cardList.Dequeue();
+            if (card != null)
+            {
+                Rearguard target = IDToRearguard(11);
+                if (target.Card == null) await CardManager.Instance.HandToCircle(Hand, target, card);
+                else cardList.Insert(0, card);
+            }
+
+            card = cardList.Dequeue();
+            if (card != null)
+            {
+                Rearguard target = IDToRearguard(13);
+                if (target.Card == null) await CardManager.Instance.HandToCircle(Hand, target, card);
+                else cardList.Insert(0, card);
+            }
+
+            cardList = Hand.cardList.Where(card => card.Grade == 1)
+                                   .OrderByDescending(card => card.Power)
+                                   .ToList();
+
+            card = cardList.Dequeue();
+            if (card != null)
+            {
+                Rearguard target = IDToRearguard(22);
+                if (GetSameColumn(target).Card != null && target.Card == null) await CardManager.Instance.HandToCircle(Hand, target, card);
+                else cardList.Insert(0, card);
+            }
+
+            card = cardList.Dequeue();
+            if (card != null)
+            {
+                //if (card.Power < OpponentFighter.Vanguard.Card.Power) return false;
+                Rearguard target = IDToRearguard(21);
+                if (GetSameColumn(target).Card != null && target.Card == null) await CardManager.Instance.HandToCircle(Hand, target, card);
+                else cardList.Insert(0, card);
+            }
+
+            card = cardList.Dequeue();
+            if (card != null)
+            {
+                //if (card.Power < OpponentFighter.Vanguard.Card.Power) return false;
+                Rearguard target = IDToRearguard(23);
+                if (GetSameColumn(target).Card != null && target.Card == null) await CardManager.Instance.HandToCircle(Hand, target, card);
+                else cardList.Insert(0, card);
+            }
+        }
+
         return false;
     }
 
@@ -183,7 +281,61 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     public async UniTask<(ICardCircle, ICardCircle)> AttackStep()
     {
         await UniTask.NextFrame();
-        return (null, null);
+        ICardCircle selectedBoostZone = null;
+        SelectedAttackZone = null;
+        SelectedTargetZone = null;
+
+        if (Turn == 1) return (null, null);
+
+        IEnumerable<ICardCircle> front = Rearguards.Where(rear => rear.Front)
+                                                   .Where(rear => rear.HasCard())
+                                                   .Where(rear => rear.Card.JudgeState(Card.State.Stand));
+                                                   //.Where(rear => GetSameColumnPower(rear) >= OpponentFighter.Vanguard.Card.Power);
+
+        if (front.Count() >= 2)
+        {
+            SelectedAttackZone = front.OrderBy(circle => GetSameColumnPower(circle)).FirstOrDefault();
+            var boost = GetSameColumn(SelectedAttackZone);
+            selectedBoostZone = boost.HasCard() ? boost : null;
+        }
+        else if (front.Count() == 1)
+        {
+            if (Vanguard.Card.JudgeState(Card.State.Stand))
+            {
+                SelectedAttackZone = Vanguard;
+                var boost = GetSameColumn(SelectedAttackZone);
+                selectedBoostZone = boost.HasCard() ? boost : null;
+            }
+            else
+            {
+                SelectedAttackZone = front.First();
+                var boost = GetSameColumn(SelectedAttackZone);
+                selectedBoostZone = boost.HasCard() ? boost : null;
+            }
+        }
+        else if(front.Count() == 0)
+        {
+            if (Vanguard.Card.JudgeState(Card.State.Stand))
+            {
+                SelectedAttackZone = Vanguard;
+                var boost = GetSameColumn(SelectedAttackZone);
+                selectedBoostZone = boost.HasCard() ? boost : null;
+            }
+        }
+
+        if (SelectedAttackZone != null)
+        {
+            SelectedTargetZone = GetSameColumnPower(SelectedAttackZone) >= OpponentFighter.Vanguard.Card.Power ? (ICardCircle)OpponentFighter.Vanguard : (ICardCircle)OpponentFighter.Rearguards.Where(rear => rear.Front).Where(rear => rear.HasCard()).OrderBy(rear => rear.Card.Power).FirstOrDefault();
+            if (SelectedTargetZone == null) SelectedTargetZone = OpponentFighter.Vanguard;
+            await CardManager.Instance.RestCard(SelectedAttackZone);
+        }
+        if (selectedBoostZone != null)
+        {
+            await CardManager.Instance.RestCard(selectedBoostZone);
+            SelectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
+        }
+
+        return (SelectedAttackZone, SelectedTargetZone);
     }
 
     /// <summary>
@@ -233,8 +385,10 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// </summary>
     public async UniTask EndStep()
     {
-        Vanguard.Card.BoostedPower = 0;
-        Rearguards.Where(rear => rear.Card != null).Select(rear => rear.Card.BoostedPower = 0);
+        await UniTask.NextFrame();
+        var a = Circle.Where(circle => circle.Card != null).ToList();
+        Circle.Where(circle => circle.Card != null).ToList().ForEach(circle => circle.Card.BoostedPower = 0);
+        var b = Circle.Where(circle => circle.Card != null).ToList();
     }
 
     /// <summary>
@@ -281,6 +435,17 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// <param name="state">フェイズ名</param>
     public void ReceivedState(string state) { }
 
+    private Rearguard IDToRearguard(int id) => Rearguards.Find(rear => rear.ID == id);
     private ICardCircle StringToCircle(string name) => name == "Vanguard" ? (ICardCircle)Vanguard : (ICardCircle)Rearguards.Find(rear => rear.Name == name);
 
+    private ICardCircle GetSameColumn(ICardCircle cardCircle)
+    {
+        return Circle.Where(circle => cardCircle.IsSameColumn(circle)).First(circle => circle.ID != cardCircle.ID);
+    }
+
+    private int GetSameColumnPower(ICardCircle cardCircle)
+    {
+        ICardCircle circle = GetSameColumn(cardCircle);
+        return (circle.HasCard() && circle.Card.JudgeState(Card.State.Stand) ? circle.Card.Power : 0) + (cardCircle.HasCard() && cardCircle.Card.JudgeState(Card.State.Stand) ? cardCircle.Card.Power : 0);
+    }
 }

@@ -10,5 +10,6 @@ public interface ICardCircle : ISingleCardZone
     bool R { get; }
     bool Front { get; }
     bool Back { get; }
+    int Count { get; }
     bool IsSameColumn(ICardCircle cardCircle);
 }
