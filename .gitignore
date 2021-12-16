@@ -73,3 +73,10 @@ crashlytics-build.properties
 /Assets/Amazing Assets
 /Assets/SineVFX
 /Assets/Resources/rounded-mplus-1c-regular SDF large.asset
+
+# user
+/Backup/
+/Assets/BraveEffect/
+/Assets/EffectExamples/
+/Assets/TextMesh Pro/
+/Assets/TutorialInfo/
