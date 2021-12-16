@@ -76,6 +76,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "Check",
+                    "type": "Button",
+                    "id": "8267c518-db08-4285-96a1-7c95270fb729",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -186,6 +194,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "60dac401-8a52-4b03-be64-4cd26060587f",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Check",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

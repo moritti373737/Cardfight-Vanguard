@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -30,21 +31,21 @@ public interface IFighter
     public ICardCircle SelectedAttackZone { get; set; }
     public ICardCircle SelectedTargetZone { get; set; }
     void CreateDeck();
-    void SetFirstVanguard();
+    UniTask SetFirstVanguard();
     UniTask Mulligan();
     UniTask DrawCard(int count);
     UniTask StandUpVanguard();
-    UniTask StandPhase();
-    UniTask DrawPhase();
-    UniTask RidePhase();
-    UniTask<bool> MainPhase();
+    UniTask StandPhase(CancellationToken cancellationToken);
+    UniTask DrawPhase(CancellationToken cancellationToken);
+    UniTask RidePhase(CancellationToken cancellationToken);
+    UniTask<bool> MainPhase(CancellationToken cancellationToken);
     UniTask<(ICardCircle selectedAttackZone, ICardCircle selectedTargetZone)> AttackStep();
     UniTask<bool> GuardStep();
     UniTask DriveTriggerCheck(int checkCount);
     UniTask DamageTriggerCheck(int critical);
     UniTask EndStep();
-    UniTask EndPhase();
-    UniTask RetireCard(ICardCircle selectedTargetZone);
+    UniTask EndPhase(CancellationToken cancellationToken);
+    UniTask RetireCard(Card card);
     UniTask ReceivedData(List<object> list);
     UniTask ReceivedGeneralData(List<object> list);
     void ReceivedState(string state);

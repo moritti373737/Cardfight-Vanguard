@@ -1,0 +1,36 @@
+{
+  "CardNumber": "TD01/001",
+  "SkillList": [
+    {
+      "cardNumber": "TD01/001",
+      "category": "Activated",
+      "place": "Rearguard",
+      "condition": [
+        {
+          "SourceFighter": "Own",
+          "SourceCard": "Own",
+          "SourceCardOption": "",
+          "TargetFighter": "Own",
+          "TargetCard": "Rearguard",
+          "TargetCardOption": ""
+        }
+      ],
+      "cost": [
+        {
+          "Cost": "CounterBlast",
+          "Count": 2,
+          "Option": ""
+        }
+      ],
+      "skill": [
+        {
+          "TargetFighter": "Your",
+          "TargetCard": "Rearguard",
+          "TargetOption": "",
+          "Skill": "Retire",
+          "SkillOption": 1
+        }
+      ]
+    }
+  ]
+}

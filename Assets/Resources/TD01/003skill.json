@@ -1,0 +1,35 @@
+{
+  "CardNumber": "TD01/003",
+  "SkillList": [
+    {
+      "cardNumber": "TD01/003",
+      "category": "Activated",
+      "place": "Rearguard",
+      "condition": [
+      ],
+      "cost": [
+        {
+          "Cost": "CounterBlast",
+          "Count": 2,
+          "Option": ""
+        }
+      ],
+      "skill": [
+        {
+          "TargetFighter": "Own",
+          "TargetCard": "Own",
+          "TargetOption": "",
+          "Skill": "PowerUp",
+          "SkillOption": 5000
+        },
+        {
+          "TargetFighter": "Own",
+          "TargetCard": "Own",
+          "TargetOption": "",
+          "Skill": "CriticalUp",
+          "SkillOption": 1
+        }
+      ]
+    }
+  ]
+}

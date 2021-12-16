@@ -4,6 +4,8 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
+
+
 public class Damage : MonoBehaviour, IMultiCardZone
 {
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();

@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 public enum FightMode
 {
     PVP,
@@ -32,8 +34,8 @@ public enum Tag
 
 public enum FighterID
 {
-    ONE,
-    TWO,
+    ONE = 0,
+    TWO = 1,
 }
 
 public enum Action
@@ -43,6 +45,7 @@ public enum Action
     ATTACK,
     GUARD,
     CALL,
+    CounterBlast,
 }
 
 public enum Result
@@ -57,15 +60,5 @@ public enum Result
 
 public class EnumManager
 {
-    // Start is called before the first frame update
-    void Start()
-    {
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 }

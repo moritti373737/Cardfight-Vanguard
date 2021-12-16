@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 /// <summary>
 /// ネットワーク環境において相手を待つための処理を行うシングルトン
 /// </summary>
@@ -113,7 +115,7 @@ public class NextController
         return true;
     }
 
-    private static NextController _singleInstance = new NextController();
+    private static readonly NextController _singleInstance = new NextController();
 
     public static NextController Instance { get => _singleInstance; }
 

@@ -6,6 +6,8 @@ using System;
 using Cysharp.Threading.Tasks;
 using System.Linq;
 
+
+
 public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
 {
     /// <summary>
@@ -15,10 +17,6 @@ public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
     //private List<Card> cardList = new List<Card>();
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();
 
-    private List<GameObject> EmptyCardList = new List<GameObject>();
-    private List<GameObject> EmptyCardRemovedList = new List<GameObject>();
-    public GameObject EmptyCardPrefab;
-
     public int Count { get => cardList.Count; }
 
     private void Start()
@@ -27,16 +25,9 @@ public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
     }
     public void Add(Card _card)
     {
-        var emptyCard = Instantiate(EmptyCardPrefab).FixName();
-        //emptyCard.GetComponent<EmptyCard>().card = _card;
-        emptyCard.transform.SetParent(transform);
-        emptyCard.transform.position = transform.position;
-        emptyCard.transform.localPosition = Vector3.zero;
-        emptyCard.transform.localScale = new Vector3(1F, 1F, 1F);
-        emptyCard.transform.localRotation = Quaternion.identity;
 
         var localr = _card.transform.localRotation;
-        _card.transform.SetParent(emptyCard.transform);
+        _card.transform.SetParent(transform);
         //_card.transform.parent = transform;
         _card.transform.position = transform.position;
         _card.transform.localRotation = localr;
@@ -50,32 +41,16 @@ public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
         Debug.Log(_card.transform.localPosition);
         */
         cardList.Add(_card);
-        EmptyCardList.Add(emptyCard);
         SetPosition();
     }
 
     public Card Pull(Card card)
     {
-        GameObject empthObject = card.transform.parent.gameObject;
         cardList.Remove(card);
-        EmptyCardList.Remove(empthObject);
-        EmptyCardRemovedList.Add(empthObject);
         SetPosition();
         return card;
     }
 
-    public void DestroyEmpty()
-    {
-        //foreach (var emptyCard in EmptyCardRemovedList)
-        //{
-        //    print(emptyCard.transform.childCount);
-        //    print(emptyCard.transform.Find("SelectBox"));
-        //        //yield return false;
-        //    Destroy(emptyCard);
-        //}
-        EmptyCardRemovedList.ForEach(emptyCard => Destroy(emptyCard));
-        EmptyCardRemovedList.Clear();
-    }
 
     //public Card Pull(int _position)
     //{
@@ -89,43 +64,43 @@ public class Hand : MonoBehaviour, ICardZone, IMultiCardZone
 
     private void SetPosition()
     {
-        if (EmptyCardList.Count == 0) return;
-        float cardSizeX = EmptyCardList[0].transform.localScale.x;
-        int EmptyCardListCount = EmptyCardList.Count;
-        if (EmptyCardListCount % 2 == 0)
+        if (cardList.Count == 0) return;
+        float cardSizeX = cardList[0].transform.localScale.x;
+        int CardListCount = cardList.Count;
+        if (CardListCount % 2 == 0)
         {
-            for (int i = 1; i <= EmptyCardListCount; i++)
+            for (int i = 1; i <= CardListCount; i++)
             {
-                Vector3 pos = EmptyCardList[i - 1].transform.localPosition;
-                if (EmptyCardListCount / 2 - i >= 0)
+                Vector3 pos = cardList[i - 1].transform.localPosition;
+                if (CardListCount / 2 - i >= 0)
                 {
-                    pos.x = -(EmptyCardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
+                    pos.x = -(CardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
                 }
                 else
                 {
-                    pos.x = -(EmptyCardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
+                    pos.x = -(CardListCount / 2 - i) * cardSizeX - cardSizeX / 2;
                 }
-                EmptyCardList[i - 1].transform.localPosition = pos;
+                cardList[i - 1].transform.localPosition = pos;
             }
         }
         else
         {
-            for (int i = 1; i <= EmptyCardListCount; i++)
+            for (int i = 1; i <= CardListCount; i++)
             {
-                Vector3 pos = EmptyCardList[i - 1].transform.localPosition;
-                if ((EmptyCardListCount + 1) / 2 - i > 0)
+                Vector3 pos = cardList[i - 1].transform.localPosition;
+                if ((CardListCount + 1) / 2 - i > 0)
                 {
-                    pos.x = -((EmptyCardListCount + 1) / 2 - i) * cardSizeX;
+                    pos.x = -((CardListCount + 1) / 2 - i) * cardSizeX;
                 }
-                else if ((EmptyCardListCount + 1) / 2 - i < 0)
+                else if ((CardListCount + 1) / 2 - i < 0)
                 {
-                    pos.x = (i - (EmptyCardListCount + 1) / 2) * cardSizeX;
+                    pos.x = (i - (CardListCount + 1) / 2) * cardSizeX;
                 }
                 else
                 {
                     pos.x = 0;
                 }
-                EmptyCardList[i - 1].transform.localPosition = pos;
+                cardList[i - 1].transform.localPosition = pos;
             }
         }
     }

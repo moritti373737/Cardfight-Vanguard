@@ -6,10 +6,12 @@ using Cysharp.Threading.Tasks;
 using System.Linq;
 using UnityEngine.InputSystem;
 using System.Reflection;
+using System.Threading;
+
 public class CPUNetworkFighter : MonoBehaviour, IFighter
 {
     [SerializeField]
-    private PhotonController photonController;
+    private readonly PhotonController photonController;
 
     [field: SerializeField]
     public FighterID ID { get; private set; }
@@ -81,9 +83,9 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     /// ファーストヴァンガードをセットする
     /// </summary>
     /// <returns></returns>
-    public void SetFirstVanguard()
+    public async UniTask SetFirstVanguard()
     {
-        _ = CardManager.Instance.DeckToCircle(Deck, Vanguard, 0);
+        await CardManager.Instance.DeckToCircle(Deck, Vanguard, 0);
     }
 
     /// <summary>
@@ -138,14 +140,14 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     public async UniTask StandUpVanguard()
     {
         var card = Vanguard.Card;
-        card.SetState(Card.State.FaceUp, true);
-        await CardManager.Instance.RotateCard(Vanguard);
+        card.SetState(Card.StateType.FaceUp, true);
+        await CardManager.Instance.RotateCard(Vanguard.Card);
     }
 
     /// <summary>
     /// スタンドフェイズ
     /// </summary>
-    public async UniTask StandPhase()
+    public async UniTask StandPhase(CancellationToken cancellationToken)
     {
         await UniTask.NextFrame();
         //await UniTask.WaitUntil(() => input.GetDown("Enter"));
@@ -156,7 +158,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     /// <summary>
     /// ドローフェイズ
     /// </summary>
-    public async UniTask DrawPhase()
+    public async UniTask DrawPhase(CancellationToken cancellationToken)
     {
         //await UniTask.WaitUntil(() => input.GetDown("Enter"));
         await DrawCard(1);
@@ -165,7 +167,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     /// <summary>
     /// ライドフェイズ
     /// </summary>
-    public async UniTask RidePhase()
+    public async UniTask RidePhase(CancellationToken cancellationToken)
     {
         // ヴァンガードのグレード+1のカードの中でパワーが最大のカード
         Card card = Hand.cardList.Where(card => card.Grade == Vanguard.Card.Grade + 1)
@@ -188,8 +190,9 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     ///// <summary>
     ///// メインフェイズ
     ///// </summary>
-    public async UniTask<bool> MainPhase()
+    public async UniTask<bool> MainPhase(CancellationToken cancellationToken)
     {
+        await UniTask.NextFrame();
         Debug.Log("メイン開始！");
 
         if (Turn == 1) return false;
@@ -221,7 +224,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //    List<Func<UniTask<Result>>> functionsB = new List<Func<UniTask<Result>>>();
     //    List<Func<UniTask<Result>>> functionsV3 = new List<Func<UniTask<Result>>>();
 
-    //    var state = functionsV;
+    //    var State = functionsV;
 
     //    functionsV.Add(async () =>
     //    {
@@ -234,11 +237,11 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //        if (selectedAttackCard == null) return Result.NO;
     //        selectedAttackZone = selectedAttackCard.GetComponentInParent<ICardCircle>();
 
-    //        //if (!selectedAttackZone.Card.JudgeStep(Card.State.Stand)) return Result.NO; // 攻撃可能なカードか判定
+    //        //if (!selectedAttackZone.Card.JudgeStep(Card.StateType.Stand)) return Result.NO; // 攻撃可能なカードか判定
     //        if (!selectedAttackZone.Front) return Result.NO;
-    //        state = functionsV2;
+    //        State = functionsV2;
     //        functions.AddRange(functionsV2);
-    //        var result = await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // 攻撃するカードを選択する
+    //        var result = SelectManager.Instance.NormalSelected(Tag.Circle, ID); // 攻撃するカードを選択する
     //        if (result != null)
     //            return Result.YES;
     //        else
@@ -257,15 +260,15 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //        if (selectedBoostCard != null)
     //        {
     //            selectedBoostZone = selectedBoostCard.GetComponentInParent<Rearguard>();
-    //            if (!selectedBoostZone.Card.JudgeState(Card.State.Stand)) return Result.NO; // ブースト可能なカードか判定
+    //            if (!selectedBoostZone.Card.JudgeState(Card.StateType.Stand)) return Result.NO; // ブースト可能なカードか判定
     //            if (!selectedBoostZone.IsSameColumn(selectedAttackZone)) return Result.NO;
     //            if (selectedBoostZone.Card.Ability != Card.AbilityType.Boost) return Result.NO;
-    //            await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
+    //            SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
     //            //selectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
     //            photonController.SendGeneralData("Boost", new object[2] { selectedBoostZone.Name, selectedAttackZone.Name });
     //            await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
     //            ActionManager.Instance.ActionHistory.Add(new ActionData("Boost", ID, selectedBoostZone.Card, selectedBoostZone, selectedAttackZone));
-    //            state = functionsB;
+    //            State = functionsB;
     //            functions.AddRange(functionsB);
     //            return Result.YES;
     //        }
@@ -275,7 +278,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //        photonController.SendGeneralData("Attack", new object[2] { selectedAttackZone.Name, selectedTargetZone.Name });
     //        await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
     //        ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, selectedAttackZone.Card, selectedAttackZone, selectedTargetZone));
-    //        state = functionsV3;
+    //        State = functionsV3;
     //        functions.AddRange(functionsV3);
     //        return Result.YES;
     //    });
@@ -293,7 +296,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //        photonController.SendGeneralData("Attack", new object[2] { selectedAttackZone.Name, selectedTargetZone.Name });
     //        await UniTask.WaitUntil(() => NextController.Instance.JudgeProcessNext(ActorNumber));
     //        ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, selectedAttackZone.Card, selectedAttackZone, selectedTargetZone));
-    //        state = functionsV3;
+    //        State = functionsV3;
     //        functions.AddRange(functionsV3);
     //        return Result.YES;
     //    });
@@ -325,9 +328,9 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //                i--;
     //                break;
     //            case Result.CANCEL:
-    //                functions.RemoveRange(functions.Count - state.Count, state.Count);
-    //                i -= state.Count;
-    //                state = functionsV;
+    //                functions.RemoveRange(functions.Count - State.Count, State.Count);
+    //                i -= State.Count;
+    //                State = functionsV;
     //                SelectManager.Instance.SingleCancel();
     //                break;
     //            case Result.END:
@@ -352,7 +355,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //    List<Func<UniTask<Result>>> functionsSubmit = new List<Func<UniTask<Result>>>();
     //    List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
 
-    //    var state = functions;
+    //    var State = functions;
 
 
     //    functionsSelect.Add(async () =>
@@ -360,7 +363,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //        int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
     //        if (resultInt == 1)
     //        {
-    //            state = functionsSubmit;
+    //            State = functionsSubmit;
     //            functions.Pop();
     //            functions.AddRange(functionsSubmit);
     //        }
@@ -372,7 +375,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //        selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
     //        if (selectedCard != null)
     //        {
-    //            await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
+    //            SelectManager.Instance.NormalSelected(Tag.Hand, ID);
     //            functions.AddRange(functionsSelect);
     //            return Result.YES;
     //        }
@@ -408,9 +411,9 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     //                i--;
     //                break;
     //            case Result.CANCEL:
-    //                functions.RemoveRange(functions.Count - state.Count, state.Count);
-    //                i -= state.Count;
-    //                state = functions;
+    //                functions.RemoveRange(functions.Count - State.Count, State.Count);
+    //                i -= State.Count;
+    //                State = functions;
     //                SelectManager.Instance.SingleCancel();
     //                break;
     //            case Result.END:
@@ -566,7 +569,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     ///// <summary>
     ///// エンドフェイズ
     ///// </summary>
-    //public async UniTask EndPhase()
+    //public async UniTask EndPhase(CancellationToken cancellationToken)
     //{
     //    await UniTask.NextFrame();
 
@@ -581,7 +584,7 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     ///// </summary>
     ///// <param name="circle">退却させるサークル</param>
 
-    //public async UniTask RetireCard(ICardCircle circle)
+    //public async UniTask RetireCard(Card card)
     //{
     //    await CardManager.Instance.CardToDrop(Drop, circle.Pull());
     //}
@@ -661,6 +664,8 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
     /// <returns></returns>
     public async UniTask ReceivedGeneralData(List<object> args)
     {
+        await UniTask.NextFrame();
+
         int actorNumber = (int)args[0];
         string type = ((string)args[1]);
         object[] options = (object[])args[2];
@@ -712,12 +717,12 @@ public class CPUNetworkFighter : MonoBehaviour, IFighter
         throw new NotImplementedException();
     }
 
-    public UniTask EndPhase()
+    public UniTask EndPhase(CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public UniTask RetireCard(ICardCircle selectedTargetZone)
+    public UniTask RetireCard(Card card)
     {
         throw new NotImplementedException();
     }

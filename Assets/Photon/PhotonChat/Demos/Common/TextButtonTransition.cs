@@ -29,12 +29,12 @@ namespace Photon.Chat.UtilityScripts
 		public Selectable Selectable;
 
         /// <summary>
-        /// The color of the normal of the transition state.
+        /// The color of the normal of the transition State.
         /// </summary>
 		public Color NormalColor= Color.white;
 
         /// <summary>
-        /// The color of the hover of the transition state.
+        /// The color of the hover of the transition State.
         /// </summary>
 		public Color HoverColor = Color.black;
 

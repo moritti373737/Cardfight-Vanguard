@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 141f345f4dc44de4b90ec99c6ee9dc7a, type: 3}
-  m_Name: 001skill
+  m_Name: testskill
   m_EditorClassIdentifier: 
   CardNumber: 001skill
   SkillList:

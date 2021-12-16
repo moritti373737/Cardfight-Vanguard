@@ -7,6 +7,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
+
 public class PhotonConnection : MonoBehaviourPunCallbacks
 {
     public void StartConnection()

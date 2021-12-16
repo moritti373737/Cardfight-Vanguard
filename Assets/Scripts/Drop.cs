@@ -5,6 +5,8 @@ using UniRx;
 using System;
 using System.Linq;
 
+
+
 public class Drop : MonoBehaviour, IMultiCardZone
 {
     public ReactiveCollection<Card> cardList = new ReactiveCollection<Card>();

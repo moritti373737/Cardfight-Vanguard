@@ -4,6 +4,8 @@ using System.Linq;
 using UniRx;
 using UnityEngine;
 
+
+
 public class Guardian : MonoBehaviour, IMultiCardZone
 {
     /// <summary>
@@ -12,23 +14,11 @@ public class Guardian : MonoBehaviour, IMultiCardZone
     //private List<Card> cardList = new List<Card>();
     public List<Card> cardList = new List<Card>();
 
-    private List<GameObject> EmptyCardList = new List<GameObject>();
+    private readonly List<GameObject> EmptyCardList = new List<GameObject>();
     public GameObject EmptyCardPrefab;
     public int Count { get => cardList.Count; }
 
     public int Shield { get => cardList.Sum(card => card.Shield); }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 
     public void Add(Card card)
     {

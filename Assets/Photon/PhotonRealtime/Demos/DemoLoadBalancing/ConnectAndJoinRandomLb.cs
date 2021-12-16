@@ -50,7 +50,7 @@ namespace Photon.Realtime.Demo
                 string state = client.State.ToString();
                 if (uiText != null && !uiText.text.Equals(state))
                 {
-                    uiText.text = "State: " + state;
+                    uiText.text = "StateType: " + state;
                 }
             }
         }

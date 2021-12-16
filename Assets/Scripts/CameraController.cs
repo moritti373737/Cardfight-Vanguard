@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 public class CameraController : MonoBehaviour
 {
     Vector3 diff;
@@ -15,6 +17,6 @@ public class CameraController : MonoBehaviour
 
     void LateUpdate()
     {
-        transform.position = Vector3.Lerp(transform.position, target.transform.position - diff, Time.deltaTime * 15.0f);
+        transform.position = Vector3.Lerp(transform.position, target.transform.position - diff, Time.deltaTime * 30.0f);
     }
 }

@@ -1,25 +1,35 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using UnityEngine;
 
-[CreateAssetMenu(menuName = "MyScriptable/Create SkillData")]
-public class SkillData : ScriptableObject
+//[CreateAssetMenu(menuName = "MyScriptable/Create SkillData")]
+//public class SkillData : ScriptableObject
+//{
+//    public string CardNumber;
+//    public List<Skill> SkillList = new List<Skill>();
+//    private void OnEnable()
+//    {
+//        CardNumber = name;
+//        //var fullpath = UnityEditor.AssetDatabase.GetAssetPath(this).SplitEx('/');
+//        //string pack = fullpath[fullpath.Count - 2];
+//        //string number = fullpath[fullpath.Count - 1].Substring(0, fullpath[fullpath.Count - 1].Length - 11);
+//        //SkillList.ForEach(skill => skill.cardNumber = pack + "/" + number);
+//    }
+//}
+[Serializable]
+public class SkillData
 {
     public string CardNumber;
-    public List<Skill> SkillList = new List<Skill>();
-    private void OnEnable()
-    {
-        CardNumber = name;
-        var fullpath = UnityEditor.AssetDatabase.GetAssetPath(this).SplitEx('/');
-        string pack = fullpath[fullpath.Count - 2];
-        string number = fullpath[fullpath.Count - 1].Substring(0, fullpath[fullpath.Count - 1].Length - 11);
-        SkillList.ForEach(skill => skill.cardNumber = pack + "/" + number);
-    }
+    public List<Skill> SkillList;
+    //private void OnEnable()
+    //{
+    //    //var fullpath = UnityEditor.AssetDatabase.GetAssetPath(this).SplitEx('/');
+    //    //string pack = fullpath[fullpath.Count - 2];
+    //    //string number = fullpath[fullpath.Count - 1].Substring(0, fullpath[fullpath.Count - 1].Length - 11);
+    //    //SkillList.ForEach(skill => skill.cardNumber = pack + "/" + number);
+    //}
 }
 
-[System.Serializable]
+[Serializable]
 public class Skill
 {
     public string cardNumber;             // このスキルを保有するカード（パック名とID）
@@ -41,7 +51,9 @@ public enum CategoryType
 public enum CostType
 {
     None,
-    HandToDrop
+    CounterBlast,
+    HandToDrop,
+    HandToDeck,
 }
 
 public enum FighterType
@@ -72,6 +84,8 @@ public enum ActionType
 public enum SkillType
 {
     PowerUp,
+    CriticalUp,
+    Retire,
 }
 
 public enum FinishType
@@ -80,7 +94,7 @@ public enum FinishType
     TurnEnd,
 }
 
-[System.Serializable]
+[Serializable]
 public class ConditionData
 {
     public FighterType SourceFighter; // 変化前のファイター
@@ -95,18 +109,20 @@ public class ConditionData
 }
 
 
-[System.Serializable]
+[Serializable]
 public class CostData
 {
-    public CostType Type; // コストの種類
+    public CostType Cost; // コストの種類
     public int Count;     // コストを支払う回数
+    public string Option;
 }
 
-[System.Serializable]
+[Serializable]
 public class MainSkillData
 {
     public FighterType TargetFighter; // 効果対象のファイター
     public ConditionType TargetCard;  // 効果対象のカード
-    public SkillType Type;            // 効果内容
-    public string Option;             // 効果のオプション
+    public string TargetOption;
+    public SkillType Skill;            // 効果内容
+    public string SkillOption;             // 効果のオプション
 }

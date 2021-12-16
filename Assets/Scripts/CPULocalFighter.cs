@@ -3,7 +3,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
+
+
 
 public class CPULocalFighter : MonoBehaviour, IFighter
 {
@@ -62,8 +65,10 @@ public class CPULocalFighter : MonoBehaviour, IFighter
         {
             Rearguards.Add(rear.GetComponent<Rearguard>());
         }
-        Circle = new List<ICardCircle>(Rearguards);
-        Circle.Add(Vanguard);
+        Circle = new List<ICardCircle>(Rearguards)
+        {
+            Vanguard
+        };
     }
 
     /// <summary>
@@ -78,9 +83,9 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// ファーストヴァンガードをセットする
     /// </summary>
     /// <returns></returns>
-    public void SetFirstVanguard()
+    public async UniTask SetFirstVanguard()
     {
-        _ = CardManager.Instance.DeckToCircle(Deck, Vanguard, 0);
+        await CardManager.Instance.DeckToCircle(Deck, Vanguard, 0);
     }
 
     /// <summary>
@@ -128,14 +133,14 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     public async UniTask StandUpVanguard()
     {
         var card = Vanguard.Card;
-        card.SetState(Card.State.FaceUp, true);
-        await CardManager.Instance.RotateCard(Vanguard);
+        card.SetState(Card.StateType.FaceUp, true);
+        await CardManager.Instance.RotateCard(Vanguard.Card);
     }
 
     /// <summary>
     /// スタンドフェイズ
     /// </summary>
-    public async UniTask StandPhase()
+    public async UniTask StandPhase(CancellationToken cancellationToken)
     {
         await UniTask.NextFrame();
         await CardManager.Instance.StandCard(Vanguard);
@@ -145,7 +150,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// <summary>
     /// ドローフェイズ
     /// </summary>
-    public async UniTask DrawPhase()
+    public async UniTask DrawPhase(CancellationToken cancellationToken)
     {
         await DrawCard(1);
     }
@@ -153,13 +158,22 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// <summary>
     /// ライドフェイズ
     /// </summary>
-    public async UniTask RidePhase()
+    public async UniTask RidePhase(CancellationToken cancellationToken)
     {
         // ヴァンガードのグレード+1のカードの中でパワーが最大のカード
         Card card = Hand.cardList.Where(card => card.Grade == Vanguard.Card.Grade + 1)
                                  .OrderByDescending(card => card.Power)
                                  .FirstOrDefault();
         if (card == null) return; // Gアシストステップの実装
+
+        if (Vanguard.Card.Grade == 3)
+        {
+            card = Hand.cardList.Where(card => card.Grade == 3)
+                                .Where(card => card.Power > Vanguard.Card.Power)
+                                .OrderByDescending(card => card.Power)
+                                .FirstOrDefault();
+            if (card == null) return;
+        }
 
         Card removedCard = Vanguard.Card; // カードが既に存在する場合はソウルに移動させる
         await CardManager.Instance.HandToCircle(Hand, Vanguard, card);
@@ -173,7 +187,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// <summary>
     /// メインフェイズ
     /// </summary>
-    public async UniTask<bool> MainPhase()
+    public async UniTask<bool> MainPhase(CancellationToken cancellationToken)
     {
         if (Turn == 1) return false;
 
@@ -225,7 +239,10 @@ public class CPULocalFighter : MonoBehaviour, IFighter
 
             List<Card> cardList = Hand.cardList.Where(card => card.Grade == 2)
                                                .OrderByDescending(card => card.Power)
-                                               .Union(Hand.cardList.Where(card => card.Grade == 3).OrderBy(card => card.Power).Skip(1))
+                                               .Union(Hand.cardList.Where(_ => Vanguard.Card.Grade >= 3)
+                                                                   .Where(card => card.Grade == 3)
+                                                                   .OrderBy(card => card.Power)
+                                                                   .Skip(1))
                                                .ToList();
 
             card = cardList.Dequeue();
@@ -292,7 +309,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
 
         IEnumerable<ICardCircle> front = Rearguards.Where(rear => rear.Front)
                                                    .Where(rear => rear.HasCard())
-                                                   .Where(rear => rear.Card.JudgeState(Card.State.Stand))
+                                                   .Where(rear => rear.Card.JudgeState(Card.StateType.Stand))
                                                    .OrderBy(circle => GetSameColumnPower(circle));
                                                    //.Where(rear => GetSameColumnPower(rear) >= OpponentFighter.Vanguard.Card.Power);
 
@@ -304,7 +321,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
         }
         else if (front.Count() == 1)
         {
-            if (Vanguard.Card.JudgeState(Card.State.Stand))
+            if (Vanguard.Card.JudgeState(Card.StateType.Stand))
             {
                 SelectedAttackZone = Vanguard;
                 var boost = GetSameColumn(SelectedAttackZone);
@@ -319,7 +336,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
         }
         else if(front.Count() == 0)
         {
-            if (Vanguard.Card.JudgeState(Card.State.Stand))
+            if (Vanguard.Card.JudgeState(Card.StateType.Stand))
             {
                 SelectedAttackZone = Vanguard;
                 var boost = GetSameColumn(SelectedAttackZone);
@@ -339,6 +356,11 @@ public class CPULocalFighter : MonoBehaviour, IFighter
             SelectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
         }
 
+        if (SelectedAttackZone != null && SelectedTargetZone != null)
+        {
+            AnimationManager.Instance.SelectButtleCard(SelectedAttackZone.transform, SelectedTargetZone.transform);
+        }
+
         return (SelectedAttackZone, SelectedTargetZone);
     }
 
@@ -348,6 +370,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     public async UniTask<bool> GuardStep()
     {
         await UniTask.NextFrame();
+        if (OpponentFighter.SelectedTargetZone.R) return false;
         int n = Damage.cardList.Count;
         int damageCost = n * (n + 1) / 2;
         int guardCost = OpponentFighter.SelectedAttackZone.Card.Power - OpponentFighter.SelectedTargetZone.Card.Power;
@@ -359,7 +382,7 @@ public class CPULocalFighter : MonoBehaviour, IFighter
 
         if (Hand.cardList.Sum(card => card.Shield) < requestSheild) return false;
 
-        IOrderedEnumerable<Card> handCard = Hand.cardList.Where(card => card.Shield != 0).OrderByDescending(card => card.Shield).ThenBy(card => card.Grade);
+        IOrderedEnumerable<Card> handCard = Hand.cardList.Where(card => card.Shield != 0).Where(card => card.Grade <= Vanguard.Card.Grade).OrderByDescending(card => card.Shield).ThenBy(card => card.Grade);
         List<Card> sheildCard = new List<Card>();
         foreach (var card in handCard)
         {
@@ -381,6 +404,8 @@ public class CPULocalFighter : MonoBehaviour, IFighter
         {
             await CardManager.Instance.HandToGuardian(Hand, Guardian, card);
         }
+
+        if (sheildCard.Any()) AnimationManager.Instance.StartSheildEffect(OpponentFighter.SelectedTargetZone.transform);
 
         return false;
     }
@@ -423,7 +448,11 @@ public class CPULocalFighter : MonoBehaviour, IFighter
 
         await TriggerTypeAction(triggerCard);
 
-        Card powerUp = Circle.Where(circle => circle.Front).Where(circle => circle.HasCard()).Where(circle => circle.Card.JudgeState(Card.State.Stand)).OrderBy(circle => circle.Card.Power).FirstOrDefault()?.Card;
+        Card powerUp = Circle.Where(circle => circle.Front)
+                             .Where(circle => circle.HasCard())
+                             .Where(circle => circle.Card.JudgeState(Card.StateType.Stand))
+                             .OrderBy(circle => circle.Card.Power)
+                             .FirstOrDefault()?.Card;
         powerUp ??= Vanguard.Card;
         powerUp.AddPower(triggerCard.TriggerPower);
     }
@@ -458,11 +487,11 @@ public class CPULocalFighter : MonoBehaviour, IFighter
             case Card.TriggerType.Heal:
                 if (Damage.Count < OpponentFighter.Damage.Count) return;
                 if (Damage.Count == 0) return;
-                Card damage = Damage.cardList.OrderBy(damage => damage.JudgeState(Card.State.FaceUp)).ThenBy(damage => damage.Grade).FirstOrDefault();
+                Card damage = Damage.cardList.OrderBy(damage => damage.JudgeState(Card.StateType.FaceUp)).ThenBy(damage => damage.Grade).FirstOrDefault();
                 if (damage != null) await CardManager.Instance.DamageToDrop(Damage, Drop, damage);
                 break;
             case Card.TriggerType.Stand:
-                Rearguard stand = Rearguards.Where(circle => circle.Front).Where(circle => circle.HasCard()).Where(circle => !circle.Card.JudgeState(Card.State.Stand)).OrderByDescending(circle => circle.Card.Power).FirstOrDefault();
+                Rearguard stand = Rearguards.Where(circle => circle.Front).Where(circle => circle.HasCard()).Where(circle => !circle.Card.JudgeState(Card.StateType.Stand)).OrderByDescending(circle => circle.Card.Power).FirstOrDefault();
                 if (stand != null) await CardManager.Instance.StandCard(stand);
                 break;
             case Card.TriggerType.Over:
@@ -479,12 +508,14 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     {
         await UniTask.NextFrame();
         Circle.Where(circle => circle.Card != null).ToList().ForEach(circle => circle.Card.BoostedPower = 0);
+        AnimationManager.Instance.KillSequence();
+        AnimationManager.Instance.EndSheildEffect();
     }
 
     /// <summary>
     /// エンドフェイズ
     /// </summary>
-    public async UniTask EndPhase()
+    public async UniTask EndPhase(CancellationToken cancellationToken)
     {
         await UniTask.NextFrame();
 
@@ -498,9 +529,9 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// </summary>
     /// <param name="circle">退却させるサークル</param>
 
-    public async UniTask RetireCard(ICardCircle circle)
+    public async UniTask RetireCard(Card card)
     {
-        await CardManager.Instance.CardToDrop(Drop, circle.Pull());
+        await CardManager.Instance.CardToDrop(Drop, card);
     }
 
     /// <summary>
@@ -508,14 +539,14 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     /// カードに関する処理が送られている
     /// </summary>
     /// <param name="args">送信元ID、関数名、カードID</param>
-    public async UniTask ReceivedData(List<object> args) { }
+    public async UniTask ReceivedData(List<object> args) { await UniTask.NextFrame(); }
 
     /// <summary>
     /// さまざまな処理（Attackなど）を受信した時の処理
     /// </summary>
     /// <param name="args">送信元ID、処理名、オプション(Array)</param>
     /// <returns></returns>
-    public async UniTask ReceivedGeneralData(List<object> args) { }
+    public async UniTask ReceivedGeneralData(List<object> args) { await UniTask.NextFrame(); }
 
     /// <summary>
     /// Stateデータを受信したときの処理
@@ -535,6 +566,6 @@ public class CPULocalFighter : MonoBehaviour, IFighter
     private int GetSameColumnPower(ICardCircle cardCircle)
     {
         ICardCircle circle = GetSameColumn(cardCircle);
-        return (circle.HasCard() && circle.Card.JudgeState(Card.State.Stand) ? circle.Card.Power : 0) + (cardCircle.HasCard() && cardCircle.Card.JudgeState(Card.State.Stand) ? cardCircle.Card.Power : 0);
+        return (circle.HasCard() && circle.Card.JudgeState(Card.StateType.Stand) ? circle.Card.Power : 0) + (cardCircle.HasCard() && cardCircle.Card.JudgeState(Card.StateType.Stand) ? cardCircle.Card.Power : 0);
     }
 }

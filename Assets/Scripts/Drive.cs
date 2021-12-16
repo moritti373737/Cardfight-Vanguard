@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 public class Drive : MonoBehaviour, ISingleCardZone
 {
     public Card Card { get => transform.FindWithChildTag(Tag.Card)?.GetComponent<Card>(); }

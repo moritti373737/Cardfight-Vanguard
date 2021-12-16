@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine.InputSystem;
 using System.Reflection;
+using System.Threading;
 
 public class LocalFighter : MonoBehaviour, IFighter
 {
@@ -84,9 +85,9 @@ public class LocalFighter : MonoBehaviour, IFighter
     /// ファーストヴァンガードをセットする
     /// </summary>
     /// <returns></returns>
-    public void SetFirstVanguard()
+    public async UniTask SetFirstVanguard()
     {
-        _ = CardManager.Instance.DeckToCircle(Deck, Vanguard, 0);
+        await CardManager.Instance.DeckToCircle(Deck, Vanguard, 0);
     }
 
     /// <summary>
@@ -101,7 +102,7 @@ public class LocalFighter : MonoBehaviour, IFighter
 
             int inputIndex = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
 
-            if (inputIndex == 0) await SelectManager.Instance.NormalSelected(Tag.Hand, ID); // Enter入力時
+            if (inputIndex == 0) SelectManager.Instance.NormalSelected(Tag.Hand, ID); // Enter入力時
             else if (inputIndex == 1 && SelectManager.Instance.SelectedCount == 0) return;  // Submit入力時
             else break;
         }
@@ -138,14 +139,14 @@ public class LocalFighter : MonoBehaviour, IFighter
     public async UniTask StandUpVanguard()
     {
         var card = Vanguard.Card;
-        card.SetState(Card.State.FaceUp, true);
-        await CardManager.Instance.RotateCard(Vanguard);
+        card.SetState(Card.StateType.FaceUp, true);
+        await CardManager.Instance.RotateCard(Vanguard.Card);
     }
 
     /// <summary>
     /// スタンドフェイズ
     /// </summary>
-    public async UniTask StandPhase()
+    public async UniTask StandPhase(CancellationToken cancellationToken)
     {
         await UniTask.NextFrame();
         await UniTask.WaitUntil(() => input.GetDown("Enter"));
@@ -156,34 +157,31 @@ public class LocalFighter : MonoBehaviour, IFighter
     /// <summary>
     /// ドローフェイズ
     /// </summary>
-    public async UniTask DrawPhase()
+    public async UniTask DrawPhase(CancellationToken cancellationToken)
     {
-        await UniTask.WaitUntil(() => input.GetDown("Enter"));
+        await UniTask.WaitUntil(() => input.GetDown("Enter"), cancellationToken: cancellationToken);
         await DrawCard(1);
     }
 
     /// <summary>
     /// ライドフェイズ
     /// </summary>
-    public async UniTask RidePhase()
+    public async UniTask RidePhase(CancellationToken cancellationToken)
     {
         await UniTask.NextFrame();
 
         List<Func<UniTask<Result>>> functions = new List<Func<UniTask<Result>>>();
 
         functions.Add(async () => {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter"), cancellationToken: cancellationToken), UniTask.WaitUntil(() => input.GetDown("Submit"), cancellationToken: cancellationToken));
             return resultInt.ToEnum("YES", "END");
         });
         functions.Add(async () => {
-            Card selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
-            if (selectedCard == null) return Result.NO;
+            Card selectedCard = SelectManager.Instance.GetSelectCard(Tag.Hand, ID);
+            if (selectedCard is null) return Result.NO;
             if (selectedCard.Grade > Vanguard.Card.Grade + 1) return Result.NO; // グレードのチェック
-            var result = await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
-            if (result != null)
-                return Result.YES;
-            else
-                return Result.NO;
+            SelectManager.Instance.NormalSelected(Tag.Hand, ID);
+            return Result.YES;
         });
         functions.Add(async () => {
             int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
@@ -191,7 +189,7 @@ public class LocalFighter : MonoBehaviour, IFighter
         });
         functions.Add(async () => {
             (ICardCircle vanguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Vanguard, ID, Action.MOVE);
-            if (vanguard == null) return Result.NO;
+            if (vanguard is null) return Result.NO;
             Card removedCard = vanguard.Card; // カードが既に存在する場合はソウルに移動させる
             await CardManager.Instance.HandToCircle(Hand, vanguard, card.GetComponent<Card>());
             Debug.Log(removedCard);
@@ -233,7 +231,7 @@ public class LocalFighter : MonoBehaviour, IFighter
     /// <summary>
     /// メインフェイズ
     /// </summary>
-    public async UniTask<bool> MainPhase()
+    public async UniTask<bool> MainPhase(CancellationToken cancellationToken)
     {
         await UniTask.NextFrame();
         Card selectedCard = null;
@@ -243,22 +241,24 @@ public class LocalFighter : MonoBehaviour, IFighter
         List<Func<UniTask<Result>>> functionsV2 = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsC = new List<Func<UniTask<Result>>>();
         List<Func<UniTask<Result>>> functionsM = new List<Func<UniTask<Result>>>();
+        List<Func<UniTask<Result>>> functionsS = new List<Func<UniTask<Result>>>();
 
         var state = functionsV;
 
         functionsV.Add(async () =>
         {
+            Debug.Log("Enter1開始");
             int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Submit")));
+            Debug.Log("Enter1終了");
             return resultInt.ToEnum("YES", "END");
         });
         functionsV.Add(async () =>
         {
-            selectedCard = await SelectManager.Instance.GetSelect(Tag.None, ID);
+            selectedCard = SelectManager.Instance.GetSelectCard(Tag.None, ID);
             //ICardZone selectedZone = await SelectManager.Instance.GetZone(Tag.None, ID);
-            if (selectedCard == null) return Result.NO;
+            if (selectedCard is null) return Result.NO;
             print(selectedCard);
-            Transform action = TextManager.Instance.SetActionList(selectedCard);
-            SelectManager.Instance.SetActionObj(action);
+            SelectManager.Instance.SetActionCard(selectedCard);
             state = functionsV2;
             functions.AddRange(functionsV2);
             return Result.YES;
@@ -266,7 +266,9 @@ public class LocalFighter : MonoBehaviour, IFighter
 
         functionsV2.Add(async () =>
         {
-            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter")), UniTask.WaitUntil(() => input.GetDown("Cancel")));
+            Debug.Log("Enter2開始");
+            int resultInt = await UniTask.WhenAny(UniTask.WaitUntil(() => input.GetDown("Enter"), cancellationToken: cancellationToken), UniTask.WaitUntil(() => input.GetDown("Cancel"), cancellationToken: cancellationToken));
+            Debug.Log("Enter2終了");
             return resultInt.ToEnum("YES", "CANCEL");
         });
         functionsV2.Add(async () =>
@@ -276,20 +278,20 @@ public class LocalFighter : MonoBehaviour, IFighter
 
             if (act == "Call")
             {
-                selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+                selectedCard = SelectManager.Instance.GetSelectCard(Tag.Hand, ID);
                 if (selectedCard != null)
                 {
                     //if (selectedCard.Grade > Vanguard.Card.Grade) return Result.RESTART; // グレードのチェック
-                    await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
+                    SelectManager.Instance.NormalSelected(Tag.Hand, ID);
                     state = functionsC;
                     functions.AddRange(functionsC);
                     return Result.YES;
                 }
 
-                selectedCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
+                selectedCard = SelectManager.Instance.GetSelectCard(Tag.Rearguard, ID);
                 if (selectedCard != null)
                 {
-                    await SelectManager.Instance.NormalSelected(Tag.Rearguard, ID);
+                    SelectManager.Instance.NormalSelected(Tag.Rearguard, ID);
                     state = functionsM;
                     functions.AddRange(functionsM);
                     return Result.YES;
@@ -298,7 +300,10 @@ public class LocalFighter : MonoBehaviour, IFighter
             else if (act == "Skill")
             {
                 print("スキル発動");
+                //state = functionsS;
+                //functions.AddRange(functionsS);
                 await SkillManager.Instance.StartActivate(selectedCard, 0);
+                return Result.YES;
             }
 
             return Result.RESTART;
@@ -317,7 +322,7 @@ public class LocalFighter : MonoBehaviour, IFighter
         functionsC.Add(async () =>
         {
             (ICardCircle rearguard, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
-            if (rearguard == null) return Result.NO;
+            if (rearguard is null) return Result.NO;
             Card removedCard = rearguard.Card; // カードが既に存在する場合は移動させる
             await CardManager.Instance.HandToCircle(Hand, rearguard, card.GetComponent<Card>());
             if (removedCard != null) await CardManager.Instance.CircleToDrop(rearguard, Drop, removedCard);
@@ -333,8 +338,8 @@ public class LocalFighter : MonoBehaviour, IFighter
         functionsM.Add(async () =>
         {
             //Card targetCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID);
-            Rearguard targetZone = (Rearguard)await SelectManager.Instance.GetZone(Tag.Rearguard, ID);
-            if (targetZone == null) return Result.NO;
+            Rearguard targetZone = (Rearguard)SelectManager.Instance.GetZone(Tag.Rearguard, ID);
+            if (targetZone is null) return Result.NO;
             Rearguard selectedRearguard = selectedCard.transform.GetComponentInParent<Rearguard>();
             if (!selectedRearguard.IsSameColumn(targetZone)) return Result.NO;
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Rearguard, ID, Action.MOVE);
@@ -410,19 +415,17 @@ public class LocalFighter : MonoBehaviour, IFighter
         });
         functionsV.Add(async () =>
         {
-            Card selectedAttackCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID); // こちらのサークルを選択したかどうか
-            if (selectedAttackCard == null) return Result.NO;
+            await UniTask.NextFrame();
+            Card selectedAttackCard = SelectManager.Instance.GetSelectCard(Tag.Circle, ID); // こちらのサークルを選択したかどうか
+            if (selectedAttackCard is null) return Result.NO;
             SelectedAttackZone = selectedAttackCard.GetComponentInParent<ICardCircle>();
 
-            //if (!selectedAttackZone.Card.JudgeStep(Card.State.Stand)) return Result.NO; // 攻撃可能なカードか判定
+            //if (!selectedAttackZone.Card.JudgeStep(Card.StateType.Stand)) return Result.NO; // 攻撃可能なカードか判定
             if (!SelectedAttackZone.Front) return Result.NO;
             state = functionsV2;
             functions.AddRange(functionsV2);
-            var result = await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // 攻撃するカードを選択する
-                if (result != null)
-                    return Result.YES;
-                else
-                    return Result.NO;
+            SelectManager.Instance.NormalSelected(Tag.Circle, ID); // 攻撃するカードを選択する
+            return Result.YES;
         });
 
 
@@ -433,14 +436,14 @@ public class LocalFighter : MonoBehaviour, IFighter
         });
         functionsV2.Add(async () =>
         {
-            Card selectedBoostCard = await SelectManager.Instance.GetSelect(Tag.Rearguard, ID); // ブーストする
+            Card selectedBoostCard = SelectManager.Instance.GetSelectCard(Tag.Rearguard, ID); // ブーストする
             if (selectedBoostCard != null)
             {
                 selectedBoostZone = selectedBoostCard.GetComponentInParent<Rearguard>();
-                if (!selectedBoostZone.Card.JudgeState(Card.State.Stand)) return Result.NO; // ブースト可能なカードか判定
+                if (!selectedBoostZone.Card.JudgeState(Card.StateType.Stand)) return Result.NO; // ブースト可能なカードか判定
                 if (!selectedBoostZone.IsSameColumn(SelectedAttackZone)) return Result.NO;
                 if (selectedBoostZone.Card.Ability != Card.AbilityType.Boost) return Result.NO;
-                await SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
+                SelectManager.Instance.NormalSelected(Tag.Circle, ID); // ブーストするカードを選択する
                 SelectedAttackZone.Card.BoostedPower = selectedBoostZone.Card.Power;
                 ActionManager.Instance.ActionHistory.Add(new ActionData("Boost", ID, selectedBoostZone.Card, selectedBoostZone, SelectedAttackZone));
                 state = functionsB;
@@ -448,7 +451,7 @@ public class LocalFighter : MonoBehaviour, IFighter
                 return Result.YES;
             }
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
-            if (circle == null) return Result.NO;
+            if (circle is null) return Result.NO;
             SelectedTargetZone = circle;
             ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, SelectedAttackZone.Card, SelectedAttackZone, SelectedTargetZone));
             state = functionsV3;
@@ -464,7 +467,7 @@ public class LocalFighter : MonoBehaviour, IFighter
         });
         functionsB.Add(async () => {
             (ICardCircle circle, Transform card) = await SelectManager.Instance.NormalConfirm(Tag.Circle, OpponentFighter.ID, Action.ATTACK); // 相手に攻撃する
-            if (circle == null) return Result.NO;
+            if (circle is null) return Result.NO;
             SelectedTargetZone = circle;
             ActionManager.Instance.ActionHistory.Add(new ActionData("Attack", ID, SelectedAttackZone.Card, SelectedAttackZone, SelectedTargetZone));
             state = functionsV3;
@@ -487,7 +490,7 @@ public class LocalFighter : MonoBehaviour, IFighter
         while (i < functions.Count)
         {
             await UniTask.NextFrame();
-            print($"{ i}, { result}, { SelectManager.Instance.SelectedCount}, {functions.Count}");
+            //print($"{ i}, { result}, { SelectManager.Instance.SelectedCount}, {functions.Count}");
             result = await functions[i]();
             switch (result)
             {
@@ -506,6 +509,11 @@ public class LocalFighter : MonoBehaviour, IFighter
                 case Result.END:
                     return (null, null);
             }
+        }
+
+        if (SelectedAttackZone != null && SelectedTargetZone != null)
+        {
+            AnimationManager.Instance.SelectButtleCard(SelectedAttackZone.transform, SelectedTargetZone.transform);
         }
 
         return (SelectedAttackZone, SelectedTargetZone);
@@ -542,10 +550,10 @@ public class LocalFighter : MonoBehaviour, IFighter
 
         functionsSelect.Add(async () =>
         {
-            selectedCard = await SelectManager.Instance.GetSelect(Tag.Hand, ID);
+            selectedCard = SelectManager.Instance.GetSelectCard(Tag.Hand, ID);
             if (selectedCard != null)
             {
-                await SelectManager.Instance.NormalSelected(Tag.Hand, ID);
+                SelectManager.Instance.NormalSelected(Tag.Hand, ID);
                 functions.AddRange(functionsSelect);
                 return Result.YES;
             }
@@ -640,8 +648,8 @@ public class LocalFighter : MonoBehaviour, IFighter
                     return Result.YES;
                 });
                 functions.Add(async () => {
-                    Card selectedCriticalUpCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID);
-                    if (selectedCriticalUpCard == null) return Result.NO;
+                    Card selectedCriticalUpCard = SelectManager.Instance.GetSelectCard(Tag.Circle, ID);
+                    if (selectedCriticalUpCard is null) return Result.NO;
                     selectedCriticalUpCard.AddCritical(1);
                     return Result.YES;
                 });
@@ -666,8 +674,8 @@ public class LocalFighter : MonoBehaviour, IFighter
                     return Result.YES;
                 });
                 functions.Add(async () => {
-                    Card selectedDamageCard = await SelectManager.Instance.GetSelect(Tag.Damage, ID);
-                    if (selectedDamageCard == null) return Result.NO;
+                    Card selectedDamageCard = SelectManager.Instance.GetSelectCard(Tag.Damage, ID);
+                    if (selectedDamageCard is null) return Result.NO;
                     await CardManager.Instance.DamageToDrop(Damage, Drop, selectedDamageCard);
                     return Result.YES;
                 });
@@ -678,8 +686,8 @@ public class LocalFighter : MonoBehaviour, IFighter
                     return Result.YES;
                 });
                 functions.Add(async () => {
-                    Card selectedStandCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID);
-                    if (selectedStandCard == null) return Result.NO;
+                    Card selectedStandCard = SelectManager.Instance.GetSelectCard(Tag.Circle, ID);
+                    if (selectedStandCard is null) return Result.NO;
                     var selectedStandCircle = selectedStandCard.GetComponentInParent<ICardCircle>();
                     if (selectedStandCircle.R == true) await CardManager.Instance.StandCard(selectedStandCircle);
                     return Result.YES;
@@ -697,8 +705,8 @@ public class LocalFighter : MonoBehaviour, IFighter
         });
         //functions.Add(async () => await SelectManager.Instance.GetSelect(Tag.Hand, ID));
         functions.Add(async () => {
-            selectedPowerUpCard = await SelectManager.Instance.GetSelect(Tag.Circle, ID);
-            if (selectedPowerUpCard == null) return Result.NO;
+            selectedPowerUpCard = SelectManager.Instance.GetSelectCard(Tag.Circle, ID);
+            if (selectedPowerUpCard is null) return Result.NO;
             selectedPowerUpCard.AddPower(triggerCard.TriggerPower);
             return Result.YES;
         });
@@ -730,14 +738,17 @@ public class LocalFighter : MonoBehaviour, IFighter
     /// </summary>
     public async UniTask EndStep()
     {
+        await UniTask.NextFrame();
+
         Vanguard.Card.BoostedPower = 0;
         Rearguards.Where(rear => rear.Card != null).Select(rear => rear.Card.BoostedPower = 0);
+        AnimationManager.Instance.KillSequence();
     }
 
     /// <summary>
     /// エンドフェイズ
     /// </summary>
-    public async UniTask EndPhase()
+    public async UniTask EndPhase(CancellationToken cancellationToken)
     {
         await UniTask.NextFrame();
 
@@ -748,13 +759,13 @@ public class LocalFighter : MonoBehaviour, IFighter
     }
 
     /// <summary>
-    /// 指定したサークルのカードを退却させる
+    /// 指定したカードを退却させる
     /// </summary>
-    /// <param name="circle">退却させるサークル</param>
+    /// <param name="card">退却させるカード</param>
 
-    public async UniTask RetireCard(ICardCircle circle)
+    public async UniTask RetireCard(Card card)
     {
-        await CardManager.Instance.CardToDrop(Drop, circle.Pull());
+        await CardManager.Instance.CardToDrop(Drop, card);
     }
 
     /// <summary>
@@ -762,14 +773,14 @@ public class LocalFighter : MonoBehaviour, IFighter
     /// カードに関する処理が送られている
     /// </summary>
     /// <param name="args">送信元ID、関数名、カードID</param>
-    public async UniTask ReceivedData(List<object> args) { }
+    public async UniTask ReceivedData(List<object> args) { await UniTask.NextFrame(); }
 
     /// <summary>
     /// さまざまな処理（Attackなど）を受信した時の処理
     /// </summary>
     /// <param name="args">送信元ID、処理名、オプション(Array)</param>
     /// <returns></returns>
-    public async UniTask ReceivedGeneralData(List<object> args) { }
+    public async UniTask ReceivedGeneralData(List<object> args) { await UniTask.NextFrame(); }
 
     /// <summary>
     /// Stateデータを受信したときの処理

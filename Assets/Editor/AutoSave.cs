@@ -14,7 +14,7 @@ public class AutoSave
 	static AutoSave ()
 	{
 		IsManualSave = true;
-		EditorApplication.playmodeStateChanged += () =>
+		EditorApplication.playModeStateChanged += (state) =>
 		{
 			if ( IsAutoSave && !EditorApplication.isPlaying && EditorApplication.isPlayingOrWillChangePlaymode) {
 
@@ -52,7 +52,7 @@ public class AutoSave
 			}
 		};
 
-		EditorApplication.hierarchyWindowChanged += ()=>
+		EditorApplication.hierarchyChanged += ()=>
 		{
 			if(! EditorApplication.isPlaying)
 				isChangedHierarchy = true;
@@ -131,7 +131,7 @@ public class AutoSave
 	}
 
 
-	[PreferenceItem("Auto Save")] 
+	[PreferenceItem("Auto Save")]
 	static void ExampleOnGUI ()
 	{
 		bool isAutoSave = EditorGUILayout.BeginToggleGroup ("auto save", IsAutoSave);
@@ -165,7 +165,7 @@ public class AutoSave
 	public static void RollBack ()
 	{
 		string expoertPath = "Backup/" + EditorApplication.currentScene;
-		
+
 		byte[] data = File.ReadAllBytes (expoertPath);
 		File.WriteAllBytes (EditorApplication.currentScene, data);
 		AssetDatabase.Refresh (ImportAssetOptions.Default);

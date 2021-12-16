@@ -6,6 +6,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
+
 /// <summary>
 /// プロジェクトで使用する拡張メソッド
 /// </summary>
@@ -161,7 +163,7 @@ public static class AllExtensions
         int selectedIndex = -1;
         while (i < cardCount)
         {
-            if (!ReferenceEquals(parentTransform.transform.GetChild(i).Find("Face/SelectedBox"), null))
+            if (parentTransform.transform.GetChild(i).Find("Face/SelectedBox") is object)
             {
                 selectedIndex = i;
                 return selectedIndex;
@@ -204,6 +206,10 @@ public static class AllExtensions
     public static void LocalMoveX(this Transform transform, float move) => transform.localPosition = new Vector3(transform.localPosition.x + move, transform.localPosition.y, transform.localPosition.z);
     public static void LocalMoveY(this Transform transform, float move) => transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + move, transform.localPosition.z);
     public static void LocalMoveZ(this Transform transform, float move) => transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z + move);
+
+    public static Vector3 GetAddX(this Vector3 vector3, float move) => new Vector3(vector3.x + move, vector3.y, vector3.z);
+    public static Vector3 GetAddY(this Vector3 vector3, float move) => new Vector3(vector3.x, vector3.y + move, vector3.z);
+    public static Vector3 GetAddZ(this Vector3 vector3, float move) => new Vector3(vector3.x, vector3.y, vector3.z + move);
 
     public static bool GetDown(this PlayerInput playerInput, string Command) => playerInput != null && playerInput.actions[Command].triggered;
 }

@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using System.Linq;
+
+
+
 public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
 {
     public GameObject cardPrefab;
@@ -37,28 +39,42 @@ public class DeckGenerater : SingletonMonoBehaviour<DeckGenerater>
             GameObject cardObj = Instantiate(cardPrefab);
             cardObj.name = "Card" + (i + offset);
 
-            Material material = new Material(Shader.Find("Standard"));
-            material.SetTexture("_MainTex", cardSpriteList[spriteNumber]);
+            //Material material = new Material(Shader.Find("Standard"));
+            Material material = cardObj.transform.Find("Face").GetComponent<Renderer>().material;
+            material.SetTexture("_BaseMap", cardSpriteList[spriteNumber]);
 
             // Rendering Mode Ç Fade Ç…ïœçXÇ∑ÇÈÇΩÇﬂÇÃèàóù
             // Ç±Ç±Ç©ÇÁ
-            material.SetFloat("_Mode", (float)2);
-            material.SetOverrideTag("RenderType", "Transparent");
-            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            material.SetInt("_ZWrite", 0);
-            material.DisableKeyword("_ALPHATEST_ON");
-            material.EnableKeyword("_ALPHABLEND_ON");
-            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            material.renderQueue = 3000;
+            //material.SetFloat("_Mode", (float)2);
+            //material.SetOverrideTag("RenderType", "Transparent");
+            //material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            //material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            //material.SetInt("_ZWrite", 0);
+            //material.DisableKeyword("_ALPHATEST_ON");
+            //material.EnableKeyword("_ALPHABLEND_ON");
+            //material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            //material.renderQueue = 3000;
+            // Ç±Ç±Ç‹Ç≈
+
+            // Rendering Mode Ç Opaque Ç…ïœçXÇ∑ÇÈÇΩÇﬂÇÃèàóù
+            // Ç±Ç±Ç©ÇÁ
+            //material.SetFloat("_Mode", (float)0);
+            //material.SetOverrideTag("RenderType", "");
+            //material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+            //material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+            //material.SetInt("_ZWrite", 1);
+            //material.DisableKeyword("_ALPHATEST_ON");
+            //material.DisableKeyword("_ALPHABLEND_ON");
+            //material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            //material.renderQueue = -1;
             // Ç±Ç±Ç‹Ç≈
 
             Card card = cardObj.GetComponent<Card>();
-            card.transform.Find("Face").GetComponent<MeshRenderer>().material = material;
+            //card.transform.Find("Face").GetComponent<MeshRenderer>().material = material;
             //Debug.Log(cardSpriteList[spriteNumber].name.Substring(0, cardSpriteList[spriteNumber].name.Length - 3));
             //Debug.Log(filename[spriteNumber]);
             card.SetStatus(filename[spriteNumber]);
-            card.FighterID = ActorNumber == 1 ? FighterID.ONE : FighterID.TWO;
+            card.FighterID = ActorNumber == 0 ? FighterID.ONE : FighterID.TWO;
 
             SkillManager.Instance.InitSkill(card);
             //card.cardModel.face = cardSpriteList[0];

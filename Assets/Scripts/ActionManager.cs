@@ -8,15 +8,11 @@ public class ActionManager : SingletonMonoBehaviour<ActionManager>
 {
     public ReactiveCollection<ActionData> ActionHistory { get; private set; } = new ReactiveCollection<ActionData>();
 
-    void Start()
-    {
-        //ActionHistory.ObserveCountChanged().Subscribe(count => Debug.Log(count));
-    }
+    //void Start()
+    //{
+    //    //ActionHistory.ObserveCountChanged().Subscribe(count => Debug.Log(count));
+    //}
 
-    void Update()
-    {
-
-    }
     /// <summary>
     /// アプリケーションが終了する前に呼び出されます
     /// </summary>
@@ -31,9 +27,9 @@ public class ActionData
     public string Title { get; set; }
     public FighterID FighterID { get; set; }
     public Card Card { get; set; }
-    public object Source { get; set; }
-    public object Target { get; set; }
-    public ActionData(string title, FighterID fighterID, Card card, object source, object target)
+    public ICardZone Source { get; set; }
+    public ICardZone Target { get; set; }
+    public ActionData(string title, FighterID fighterID, Card card, ICardZone source, ICardZone target)
     {
         Title = title;
         FighterID = fighterID;

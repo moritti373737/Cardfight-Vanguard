@@ -1,7 +1,10 @@
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
+
 
 /// <summary>
 /// アニメーション（移動や透過、パーティクルなど）の処理全般
@@ -16,6 +19,19 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
 
     [SerializeField]
     private GameObject RetireEffectPrefab;
+
+    [SerializeField]
+    private GameObject ArrowEffectPrefab;
+    private GameObject ArrowEffect;
+
+    [SerializeField]
+    private List<GameObject> AttackEffectPrefab;
+
+    [SerializeField]
+    private GameObject SheildEffectPrefab;
+    private GameObject SheildEffect;
+
+    private Sequence sequence = null;
 
     /// <summary>
     /// デッキからカードを引くアニメーション
@@ -137,11 +153,16 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
     /// <param name="card">アニメ対象のカード</param>
     public async UniTask RotateFieldCard(Card card)
     {
+        var parent = card.transform.parent;
+        card.transform.parent = null;
+
         await DOTween.Sequence()
-                     .Join(card.transform.DORotate(new Vector3(0, 0, -180), 0.25F, RotateMode.WorldAxisAdd).SetRelative())
+                     .Join(card.transform.DORotate(new Vector3(0, -180, 0), 0.25F, RotateMode.LocalAxisAdd).SetRelative())
                      .Join(card.transform.DOMoveY(0.05F, 0.1F).SetRelative())
                      .Insert(0.2F, card.transform.DOMoveY(-0.05F, 0.15F).SetRelative())
                      .Play();
+
+        card.transform.SetParent(parent);
     }
 
     /// <summary>
@@ -163,7 +184,6 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
                                     localScale.y / lossyScale.y * defaultScale.y,
                                     localScale.z / lossyScale.z * defaultScale.z
                                 );
-                                Debug.Log(localScale);
                             });
 
         //Quaternion q1 = card.transform.localRotation;
@@ -212,7 +232,6 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
                                     localScale.y / lossyScale.y * defaultScale.y,
                                     localScale.z / lossyScale.z * defaultScale.z
                                 );
-                                Debug.Log(localScale);
                             });
 
 
@@ -266,12 +285,12 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
                      .Play();
     }
 
-    public async UniTask MoveCircle(GameObject circle, Transform targetTransform)
+    public async UniTask MoveSelectBox(GameObject selectBox, Transform targetTransform)
     {
-        circle.transform.parent = null;
+        selectBox.transform.parent = null;
         await DOTween.Sequence()
-                     .Join(circle.transform.DOMove(targetTransform.position, 0.15F))
-                     .Join(circle.transform.DORotate(targetTransform.rotation.eulerAngles, 0.15F))
+                     .Join(selectBox.transform.DOMove(targetTransform.position, 0.15F))
+                     .Join(selectBox.transform.DORotate(new Vector3(selectBox.transform.rotation.eulerAngles.x, targetTransform.rotation.eulerAngles.y, selectBox.transform.rotation.eulerAngles.z), 0.15F))
                      .Play();
     }
 
@@ -291,8 +310,110 @@ public class AnimationManager : SingletonMonoBehaviour<AnimationManager>
         color = card.Back.material.color;
         color.a = 0;
         card.Back.material.color = color;
-        ParticleSystem[] particle = effect.GetComponentsInChildren<ParticleSystem>();
+        //ParticleSystem[] particle = effect.GetComponentsInChildren<ParticleSystem>();
         Destroy(effect, 3);
         await UniTask.Delay(500);
+    }
+
+    public void SelectButtleCard(Transform sourceCircle, Transform targetCircle)
+    {
+        sequence = DOTween.Sequence();
+        ArrowEffect = Instantiate(ArrowEffectPrefab);
+
+        //effect.transform.position = sourceCircle.position;
+        //effect.transform.MoveY(0.05F);
+        ArrowEffect.transform.DOLookAt(targetCircle.position, 0).SetRelative();
+        Vector3 center = (sourceCircle.position + targetCircle.position) * 0.5F;
+
+        Material material = ArrowEffect.GetComponent<Renderer>().material;
+        material.EnableKeyword("_EMISSION");
+
+        sequence.Join(material.DOFade(0, 0))
+                .Join(material.DOFade(1, 0.25F))
+                .Join(ArrowEffect.transform.DOMove(sourceCircle.position.GetAddY(0.05F), 0))
+                .Join(ArrowEffect.transform.DOMove(center.GetAddY(0.1F), 0.5F))
+                .Join(ArrowEffect.transform.DOMove(targetCircle.position.GetAddY(0.05F), 0.5F))
+                .Join(material.DOColor(new Color(12, 0, 10), "_EmissionColor", 0.5F))
+                .Insert(0.25F, material.DOFade(0, 0.25F))
+                .SetLoops(-1)
+                .Play();
+    }
+
+    public void KillSequence()
+    {
+        sequence.Kill();
+        Destroy(ArrowEffect);
+    }
+
+    public async UniTask AttackEffect(Transform sourceCircle, Transform targetCircle, int number)
+    {
+        var effect = Instantiate(AttackEffectPrefab[number]);
+        effect.transform.LookAt(targetCircle);
+        effect.transform.Rotate(0, 0, 60);
+        await UniTask.WaitUntil(() => !effect.GetComponent<ParticleSystem>().isPlaying);
+        Destroy(effect);
+    }
+
+    public async UniTask HitEffect(Transform card)
+    {
+        await card.DOShakePosition(0.5F, strength: 0.1F);
+    }
+
+    public void StartSheildEffect(Transform circle)
+    {
+        SheildEffect = Instantiate(SheildEffectPrefab);
+        SheildEffect.transform.position = (circle.transform.position + Vector3.zero) / 2;
+    }
+
+    public void EndSheildEffect()
+    {
+        if (SheildEffect == null) return;
+        Animator[] animator = SheildEffect.transform.Find("Effect").GetComponentsInChildren<Animator>();
+        foreach (var anim in animator)
+        {
+            anim.SetBool("EndSheild", true);
+        }
+
+        ParticleSystem[] effect = SheildEffect.transform.Find("Indicator").GetComponentsInChildren<ParticleSystem>();
+        foreach (var ef in effect)
+        {
+            ef.Simulate(4.5F);
+            ef.Play();
+        }
+        Debug.Log(SheildEffect.transform.Find("Indicator").GetComponentInChildren<ParticleSystem>().time);
+
+        Destroy(SheildEffect, 1);
+    }
+
+    public void ActivateSkill()
+    {
+        Debug.Log("Skill発動");
+    }
+
+    public async UniTask DeckShuffle(List<Card> cardList, float offset)
+    {
+        List<Transform> transformList = cardList.Select(card => card.transform).ToList();
+        List<Transform> downCard = transformList.GetRange(0, cardList.Count / 2); // 引くカードより上にあるカード
+        List<Transform> pullCard = transformList.GetRange(cardList.Count / 2, cardList.Count / 3); // 引くカード
+
+        Sequence sequence = DOTween.Sequence();
+
+        foreach (var card in downCard)
+        {
+            _ = sequence.Join(card.DOLocalMoveZ(offset * pullCard.Count, 0.25F).SetRelative());
+        }
+
+        foreach (var (card, index) in pullCard.Select((card, index) => (card, index)))
+        {
+            float z = (index - cardList.Count) * offset;
+            Vector3[] path =
+            {
+                new Vector3(card.localPosition.x, card.localPosition.y - 1, z / 2),
+                new Vector3(card.localPosition.x, card.localPosition.y, z),
+            };
+            _ = sequence.Join(card.DOLocalPath(path, 0.25F, pathType: PathType.CatmullRom));
+        }
+
+        await sequence.SetLoops(3).Play();
     }
 }

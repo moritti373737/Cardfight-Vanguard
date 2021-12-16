@@ -15,7 +15,7 @@ namespace Photon.Chat.UtilityScripts
 {
 
 	/// <summary>
-	/// Use this on toggles texts to have some color transition on the text depending on the isOn State.
+	/// Use this on toggles texts to have some color transition on the text depending on the isOn StateType.
 	/// </summary>
 	[RequireComponent(typeof(Text))]
 	public class TextToggleIsOnTransition : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
@@ -29,22 +29,22 @@ namespace Photon.Chat.UtilityScripts
 		Text _text;
 
         /// <summary>
-        /// The color of the normal on transition state.
+        /// The color of the normal on transition State.
         /// </summary>
 		public Color NormalOnColor= Color.white;
 
         /// <summary>
-        /// The color of the normal off transition state.
+        /// The color of the normal off transition State.
         /// </summary>
 		public Color NormalOffColor = Color.black;
 
         /// <summary>
-        /// The color of the hover on transition state.
+        /// The color of the hover on transition State.
         /// </summary>
 		public Color HoverOnColor= Color.black;
 
         /// <summary>
-        /// The color of the hover off transition state.
+        /// The color of the hover off transition State.
         /// </summary>
 		public Color HoverOffColor = Color.black;
 

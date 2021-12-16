@@ -79,7 +79,7 @@ namespace Photon.Chat.Demo
         public Text StateText; // set in inspector
         public Text UserIdText; // set in inspector
 
-        // private static string WelcomeText = "Welcome to chat. Type \\help to list commands.";
+        // private static string WelcomeText = "Welcome to chat. Cost \\help to list commands.";
         private static string HelpText = "\n    -- HELP --\n" +
             "To subscribe to channel(s) (channelnames are case sensitive) :  \n" +
                 "\t<color=#E07B00>\\subscribe</color> <color=green><list of channelnames></color>\n" +
@@ -100,7 +100,7 @@ namespace Photon.Chat.Demo
                 "\t\\<color=#E07B00>msg</color> <color=green><username></color> <color=green><message></color>\n" +
                 "\n" +
                 "To change status:\n" +
-                "\t\\<color=#E07B00>state</color> <color=green><stateIndex></color> <color=green><message></color>\n" +
+                "\t\\<color=#E07B00>State</color> <color=green><stateIndex></color> <color=green><message></color>\n" +
                 "<color=green>0</color> = Offline " +
                 "<color=green>1</color> = Invisible " +
                 "<color=green>2</color> = Online " +
@@ -257,13 +257,13 @@ namespace Photon.Chat.Demo
                 {
                     this.PostHelpToCurrentChannel();
                 }
-                if (tokens[0].Equals("\\state"))
+                if (tokens[0].Equals("\\State"))
                 {
                     int newState = 0;
 
 
                     List<string> messages = new List<string>();
-                    messages.Add ("i am state " + newState);
+                    messages.Add ("i am State " + newState);
                     string[] subtokens = tokens[1].Split(new char[] {' ', ','});
 
                     if (subtokens.Length > 0)
@@ -276,7 +276,7 @@ namespace Photon.Chat.Demo
                         messages.Add(subtokens[1]);
                     }
 
-                    this.chatClient.SetOnlineStatus(newState,messages.ToArray()); // this is how you set your own state and (any) message
+                    this.chatClient.SetOnlineStatus(newState,messages.ToArray()); // this is how you set your own State and (any) message
                 }
                 else if ((tokens[0].Equals("\\subscribe") || tokens[0].Equals("\\s")) && !string.IsNullOrEmpty(tokens[1]))
                 {
@@ -398,7 +398,7 @@ namespace Photon.Chat.Demo
             }
 
 
-            this.chatClient.SetOnlineStatus(ChatUserStatus.Online); // You can set your online state (without a mesage).
+            this.chatClient.SetOnlineStatus(ChatUserStatus.Online); // You can set your online State (without a mesage).
         }
 
         public void OnDisconnected()

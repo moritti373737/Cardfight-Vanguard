@@ -5,6 +5,8 @@ using UnityEngine;
 using UniRx;
 using System.Linq;
 
+
+
 public class Card : MonoBehaviour
 {
     public int ID { get => int.Parse(transform.name.Substring(4)); } // カード固有のID
@@ -70,14 +72,14 @@ public class Card : MonoBehaviour
     public Transform Transform { get => transform; }
 
     [Flags]
-    public enum State
+    public enum StateType
     {
         Stand = 1 << 0,     //2進数だと0001　(10進数だと1) スタンド状態か
         FaceUp = 1 << 1,    //2進数だと0010　(10進数だと2) 表向きかどうか
         Hoimi = 1 << 2,     //2進数だと0100　(10進数だと4)
         Mera = 1 << 3       //2進数だと1000　(10進数だと8)
     }
-    public State state { get; set; }
+    public StateType State { get; set; }
 
     public enum AbilityType
     {
@@ -100,28 +102,28 @@ public class Card : MonoBehaviour
 
     void Start()
     {
-        state = State.Stand;
+        State = StateType.Stand;
         transform.ObserveEveryValueChanged(x => x.parent)
                  .Skip(1)
                  .Where(parent => parent != null)
                  .Where(parent => parent.ExistTag(Tag.Circle))
-                 .Where(_ => JudgeState(State.FaceUp))
-                 .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
+                 .Where(_ => JudgeState(StateType.FaceUp))
+                 .Subscribe(_ => TextManager.Instance.SetStatusText(this))
                  .AddTo(this);
-        this.ObserveEveryValueChanged(x => x.state)
+        this.ObserveEveryValueChanged(x => x.State)
             .Skip(1)
             .Where(_ => transform.parent != null)
             .Where(_ => transform.parent.ExistTag(Tag.Circle))
-            .Where(_ => JudgeState(State.FaceUp))
-            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
+            .Where(_ => JudgeState(StateType.FaceUp))
+            .Subscribe(_ => TextManager.Instance.SetStatusText(this))
             .AddTo(this);
         this.ObserveEveryValueChanged(x => x.Power)
             .Skip(1)
-            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
+            .Subscribe(_ => TextManager.Instance.SetStatusText(this))
             .AddTo(this);
         this.ObserveEveryValueChanged(x => x.Critical)
             .Skip(1)
-            .Subscribe(_ => TextManager.Instance.SetStatusText(transform.GetComponentInParent<ICardCircle>()))
+            .Subscribe(_ => TextManager.Instance.SetStatusText(this))
             .AddTo(this);
 
         //List<CardData> cardData = Resources.LoadAll<CardData>("TD01").ToList();
@@ -145,26 +147,27 @@ public class Card : MonoBehaviour
         Ability = cardData.Ability;
         Trigger = cardData.Trigger;
         TriggerPower = cardData.TriggerPower;
-        Skill = cardData.Skill;
         Flavor = cardData.Flavor;
         Number = cardData.Number;
         Rarity = cardData.Rarity;
+
+        Skill = SkillDataJson.Instance.LoadSkillData(Number);
     }
 
     public void TurnOver()
     {
         transform.Rotate(0, 180, 0);
-        //state = state ^ State.FaceUp;
+        //State = State ^ StateType.FaceUp;
     }
 
     public Texture GetTexture() => transform.Find("Face").GetComponent<Renderer>().material.mainTexture;
 
-    public void SetState(State newState, bool t)
+    public void SetState(StateType newState, bool t)
     {
-        if (t) state |= newState;
-        else state &= ~newState;
+        if (t) State |= newState;
+        else State &= ~newState;
     }
-    public bool JudgeState(State judgeState) => state == (state | judgeState);
+    public bool JudgeState(StateType judgeState) => State == (State | judgeState);
     public void AddPower(int power) => OffsetPower += power;
     public void AddCritical(int critical) => OffsetCritical += critical;
 

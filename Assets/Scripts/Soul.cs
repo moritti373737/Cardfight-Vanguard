@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+
+
 public class Soul : MonoBehaviour, IMultiCardZone
 {
     public List<Card> cardList = new List<Card>();

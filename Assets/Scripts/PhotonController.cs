@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
+
 /// <summary>
 /// Photonによるデータの送受信を行う
 /// </summary>

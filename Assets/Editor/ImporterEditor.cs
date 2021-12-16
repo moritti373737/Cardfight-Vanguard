@@ -71,7 +71,7 @@ public class ImpoterEditor : Editor
                 else if (text[0] == "オーバートリガー") cardData.Trigger = Card.TriggerType.Over;
                 cardData.TriggerPower = int.Parse(text[1]);
             }
-            cardData.Skill = Resources.Load<SkillData>(cardText[14].SplitEx(',')[1] + "skill");
+            //cardData.Skill = Resources.Load<SkillData>(cardText[14].SplitEx(',')[1] + "skill");
             cardData.Flavor = cardText[13].SplitEx(',')[1];
             cardData.Number = cardText[14].SplitEx(',')[1];
             cardData.Rarity = cardText[15].SplitEx(',')[1];

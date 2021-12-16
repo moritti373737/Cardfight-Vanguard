@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,17 +9,23 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
+
+
 public class GameMaster : SingletonMonoBehaviour<GameMaster>
 {
     public FightMode fightMode;
 
     public bool local = true;
 
-    [SerializeField]
-    private PhotonController photonController;
+    public string phase;
+
+    public int phaseCount = 1;
 
     [field: SerializeField]
     private int Turn { get; set; } = 1;
+
+    [SerializeField]
+    private PhotonController photonController;
 
     [SerializeField]
     private PlayerInput input;
@@ -38,7 +45,7 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
     [field: SerializeField]
     private IFighter DefenceFighter { get; set; }
 
-    public readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
+    public CancellationTokenSource tokenSource = new CancellationTokenSource();
 
     public void ResetScene()
     {
@@ -94,14 +101,14 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
                 case FightMode.EVE:
                     fighter1 = fighter1Obj.GetComponent<CPULocalFighter>();
                     fighter2 = fighter2Obj.GetComponent<CPULocalFighter>();
-                    fighter1.OpponentFighter = fighter2;
-                    fighter2.OpponentFighter = fighter1;
                     fighter1.enabled = true;
                     fighter2.enabled = true;
                     break;
                 default:
                     break;
             }
+            fighter1.OpponentFighter = fighter2;
+            fighter2.OpponentFighter = fighter1;
         }
         else
         {
@@ -179,15 +186,82 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
         await InitPhase();
         print("init終了");
 
+        //while (true)
+        //{
+        //    await StandPhase();
+        //    await DrawPhase(tokenSource.Token);
+        //    await RidePhase(tokenSource.Token);
+        //    await MainPhase();
+        //    await ButtlePhase(tokenSource.Token);
+        //    await EndPhase();
+        //}
+
+        //bool result = await DrawPhase(tokenSource.Token).SuppressCancellationThrow();
+        //if (result) Debug.Log("キャンセルされた");
+        //else Debug.Log("キャンセルされてない");
+        //await RidePhase(tokenSource.Token).SuppressCancellationThrow();
+        this.ObserveEveryValueChanged(x => x.phase).Subscribe(phase =>
+        {
+            if (local) TextManager.Instance.SetPhaseText(phase);
+            else photonController.SendState(phase);
+        });
+        WaitForCanceledAsync(tokenSource.Token).Forget();
+        bool result = false;
+        int save = 0;
         while (true)
         {
-            await StandPhase();
-            await DrawPhase();
-            await RidePhase();
-            await MainPhase();
-            await ButtlePhase(tokenSource.Token);
-            await EndPhase();
+            await UniTask.NextFrame();
+
+            switch (phaseCount)
+            {
+                case -1:
+                    //Debug.Log("一時停止中");
+                    continue;
+                case 0:
+                    Debug.Log($"{save} から再開する");
+                    phaseCount = save;
+                    result = false;
+                    continue;
+                case 1:
+                    result = await StandPhase(tokenSource.Token).SuppressCancellationThrow();
+                    break;
+                case 2:
+                    result = await DrawPhase(tokenSource.Token).SuppressCancellationThrow();
+                    break;
+                case 3:
+                    result = await RidePhase(tokenSource.Token).SuppressCancellationThrow();
+                    break;
+                case 4:
+                    result = await MainPhase(tokenSource.Token).SuppressCancellationThrow();
+                    break;
+                case 5:
+                    result = await ButtlePhase(tokenSource.Token).SuppressCancellationThrow();
+                    break;
+                case 6:
+                    result = await EndPhase(tokenSource.Token).SuppressCancellationThrow();
+                    break;
+                default:
+                    phaseCount = 1;
+                    continue;
+            }
+
+            if (result)
+            {
+                Debug.Log(phaseCount + "キャンセルした");
+                tokenSource.Dispose();
+                tokenSource = new CancellationTokenSource();
+                save = phaseCount;
+                phaseCount = -1;
+            }
+            else phaseCount++;
         }
+
+    }
+
+    private async UniTaskVoid WaitForCanceledAsync(CancellationToken token)
+    {
+        await token.WaitUntilCanceled();
+        Debug.Log("Canceled!");
     }
 
     void Update()
@@ -202,7 +276,7 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
 
     async UniTask InitPhase()
     {
-        TextManager.Instance.SetPhaseText("準備");
+        phase = "準備";
 
         fighter1.CreateDeck();
         fighter2.CreateDeck();
@@ -227,19 +301,23 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
         Debug.Log(AttackFighter.ActorNumber);
         Debug.Log(DefenceFighter.ActorNumber);
 
-        AttackFighter.SetFirstVanguard();
-        DefenceFighter.SetFirstVanguard();
-        AttackFighter.Deck.Shuffle();
-        DefenceFighter.Deck.Shuffle();
+        await AttackFighter.SetFirstVanguard();
+        await DefenceFighter.SetFirstVanguard();
+        await AttackFighter.Deck.Shuffle();
+        await DefenceFighter.Deck.Shuffle();
 
         if (local) await UniTask.WhenAll(fighter1.DrawCard(5), fighter2.DrawCard(5));
         else await fighter1.DrawCard(5);
 
+        AttackFighter.DamageTriggerCheck(2).Forget();
+
         await fighter1.Mulligan();
+        await fighter1.Deck.Shuffle();
         if (local)
         {
             await UniTask.NextFrame();
             await fighter2.Mulligan();
+            await fighter2.Deck.Shuffle();
         }
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
@@ -249,47 +327,42 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
         await UniTask.NextFrame();
     }
 
-    async UniTask StandPhase()
+    async UniTask StandPhase(CancellationToken cancellationToken)
     {
-        if(local) TextManager.Instance.SetPhaseText("スタンドフェイズ");
-        else photonController.SendState("スタンドフェイズ");
+        phase = "スタンドフェイズ";
 
-        if (local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.StandPhase();
+        if (local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.StandPhase(cancellationToken);
     }
 
 
-    async UniTask DrawPhase()
+    async UniTask DrawPhase(CancellationToken cancellationToken)
     {
-        if (local) TextManager.Instance.SetPhaseText("ドローフェイズ");
-        else photonController.SendState("ドローフェイズ");
-
-        if(local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.DrawPhase();
-
+        phase = "ドローフェイズ";
         await UniTask.NextFrame();
 
-        photonController.SendSyncNext(MyNumber);
-        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
-    }
-
-    async UniTask RidePhase()
-    {
-        if (local) TextManager.Instance.SetPhaseText("ライドフェイズ");
-        else photonController.SendState("ライドフェイズ");
-
-        if (local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.RidePhase();
+        if (local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.DrawPhase(cancellationToken);
 
         photonController.SendSyncNext(MyNumber);
         await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
     }
 
-    async UniTask MainPhase()
+    async UniTask RidePhase(CancellationToken cancellationToken)
     {
-        if (local) TextManager.Instance.SetPhaseText("メインフェイズ");
-        else photonController.SendState("メインフェイズ");
+        phase = "ライドフェイズ";
+
+        if (local || AttackFighter.ActorNumber == MyNumber) await AttackFighter.RidePhase(cancellationToken);
+
+        photonController.SendSyncNext(MyNumber);
+        await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
+    }
+
+    async UniTask MainPhase(CancellationToken cancellationToken)
+    {
+        phase = "メインフェイズ";
 
         if (local || AttackFighter.ActorNumber == MyNumber)
         {
-            while (await AttackFighter.MainPhase())
+            while (await AttackFighter.MainPhase(cancellationToken))
             {
                 await UniTask.NextFrame();
             }
@@ -306,19 +379,18 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
 
         {
             await UniTask.NextFrame();
-            if (local) TextManager.Instance.SetPhaseText("バトルフェイズ");
-            else photonController.SendState("バトルフェイズ");
+            phase = "バトルフェイズ";
 
             AttackFighter.SelectedAttackZone = null;
             AttackFighter.SelectedTargetZone = null;
 
             if (local || AttackFighter.ActorNumber == MyNumber)
                 await AttackFighter.AttackStep();
-            if (AttackFighter.SelectedAttackZone == null || AttackFighter.SelectedTargetZone == null) break;
+            if (AttackFighter.SelectedAttackZone is null || AttackFighter.SelectedTargetZone is null) break;
             photonController.SendSyncNext(MyNumber);
-            int cancel = await UniTask.WhenAny(UniTask.WaitUntil(() => cancellationToken.IsCancellationRequested), UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext()));
-            if (cancel == 0) return; // キャンセルして終了する
-            print("キャンセルしない");
+            //int cancel = await UniTask.WhenAny(UniTask.WaitUntil(() => cancellationToken.IsCancellationRequested), UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext()));
+            //if (cancel == 0) return; // キャンセルして終了する
+            //print("キャンセルしない");
 
             if (local || DefenceFighter.ActorNumber == MyNumber)
                 await DefenceFighter.GuardStep();
@@ -326,16 +398,18 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
             photonController.SendSyncNext(MyNumber);
             await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
 
+
             if ((local || AttackFighter.ActorNumber == MyNumber) && AttackFighter.SelectedAttackZone.V)
             {
-                if (local) TextManager.Instance.SetPhaseText("ドライブトリガーチェック");
-                else photonController.SendState("ドライブトリガーチェック");
+                phase = "ドライブトリガーチェック";
                 int checkCount = AttackFighter.SelectedAttackZone.Card.Ability == Card.AbilityType.TwinDrive ? 2 : 1;
                 await AttackFighter.DriveTriggerCheck(checkCount);
             }
 
             photonController.SendSyncNext(MyNumber);
             await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
+
+            //await AnimationManager.Instance.AttackEffect(AttackFighter.SelectedAttackZone.transform, AttackFighter.SelectedTargetZone.transform, 0);
 
             //print(selectedAttackZone.Card.Power);
             //print(selectedTargetZone.Card.Power);
@@ -345,8 +419,9 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
             {
                 if (AttackFighter.SelectedTargetZone.V)
                 {
-                    if (local) TextManager.Instance.SetPhaseText("ダメージトリガーチェック");
-                    else photonController.SendState("ダメージトリガーチェック");
+                    phase = "ダメージトリガーチェック";
+
+                    await AnimationManager.Instance.HitEffect(AttackFighter.SelectedTargetZone.Card.transform);
 
                     if (local || DefenceFighter.ActorNumber == MyNumber)
                         await DefenceFighter.DamageTriggerCheck(AttackFighter.SelectedAttackZone.Card.Critical);
@@ -354,7 +429,7 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
                 else
                 {
                     if (local || DefenceFighter.ActorNumber == MyNumber)
-                        await DefenceFighter.RetireCard(AttackFighter.SelectedTargetZone);
+                        await DefenceFighter.RetireCard(AttackFighter.SelectedTargetZone.Card);
                 }
             }
 
@@ -367,29 +442,39 @@ public class GameMaster : SingletonMonoBehaviour<GameMaster>
             {
                 await CardManager.Instance.GuardianToDrop(DefenceFighter.Guardian, DefenceFighter.Drop, card);
             }
-            if (local || DefenceFighter.ActorNumber == MyNumber)
+            //if (local || DefenceFighter.ActorNumber == MyNumber)
                 await AttackFighter.EndStep();
+                await DefenceFighter.EndStep();
 
             photonController.SendSyncNext(MyNumber);
             await UniTask.WaitUntil(() => NextController.Instance.JudgeAllSyncNext());
         }
     }
-    async UniTask EndPhase()
+    async UniTask EndPhase(CancellationToken cancellationToken)
     {
-        if (local) TextManager.Instance.SetPhaseText("エンドフェイズ");
-        else photonController.SendState("エンドフェイズ");
+        phase = "エンドフェイズ";
 
-        Turn++;
-        await AttackFighter.EndPhase();
-        await DefenceFighter.EndPhase();
+        await AttackFighter.EndPhase(cancellationToken);
+        await DefenceFighter.EndPhase(cancellationToken);
 
         (AttackFighter, DefenceFighter) = (DefenceFighter, AttackFighter);
+        Turn++;
     }
 
     async UniTask End(IFighter fighter)
     {
-        await UniTask.Delay(500);
+        await UniTask.Delay(100);
         Debug.Log($"<color=red>{fighter} の負け</color>");
         Time.timeScale = 0;
     }
+
+    public void PausePhase()
+    {
+        if (!tokenSource.IsCancellationRequested) tokenSource.Cancel();
+    }
+
+
+    public void RestartPhase() => phaseCount = 0;
+
+    public void DebugShuffle() => fighter1.Deck.Shuffle().Forget();
 }

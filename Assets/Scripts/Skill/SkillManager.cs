@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// カードのスキル全般を管理する
@@ -10,14 +11,32 @@ using UnityEngine;
 public class SkillManager : SingletonMonoBehaviour<SkillManager>
 {
     [SerializeField]
+    private PlayerInput input;
+
+    IFighter fighter1;
+    IFighter fighter2;
+
     private CostManager costManager;
 
-    [SerializeField]
+    private ConditionManager conditionManager;
+
     private ActivateSkill activateSkill;
+
+    private readonly List<Card> cardList = new List<Card>();
 
     public ReactiveCollection<Skill> AutomaticSkill = new ReactiveCollection<Skill>();
     public List<(int CardID, Skill Skill)> ActivatedSkill = new List<(int, Skill)>();
-    public ReactiveCollection<Skill> ContinuousSkill = new ReactiveCollection<Skill>();
+    public List<(int CardID, Skill Skill)> ContinuousSkill = new List<(int, Skill)>();
+
+    public void Start()
+    {
+        ActionManager.Instance.ActionHistory.ObserveAdd().Subscribe(async x => await StartContinuous(x.Value));
+        fighter1 = GameObject.Find("Fighter1").GetComponents<IFighter>().First(fighter => fighter.enabled);
+        fighter2 = GameObject.Find("Fighter2").GetComponents<IFighter>().First(fighter => fighter.enabled);
+        conditionManager = new ConditionManager(fighter1, fighter2);
+        costManager = new CostManager(input);
+        activateSkill = new ActivateSkill(input, fighter1, fighter2);
+    }
 
     /// <summary>
     /// ファイトに使用するカードのスキルを収集する
@@ -25,11 +44,15 @@ public class SkillManager : SingletonMonoBehaviour<SkillManager>
     /// <param name="card"></param>
     public void InitSkill(Card card)
     {
-        if (card.Skill == null) return;
-        Skill skill = card.Skill.SkillList[0];
-        if (skill.category == CategoryType.Automatic) AutomaticSkill.Add(skill);
-        else if (skill.category == CategoryType.Activated) ActivatedSkill.Add((card.ID, skill));
-        else if (skill.category == CategoryType.Continuous) ContinuousSkill.Add(skill);
+        cardList.Add(card);
+        if (card.Skill is null) return;
+        foreach (var skill in card.Skill.SkillList)
+        {
+            if (skill.category == CategoryType.Automatic) AutomaticSkill.Add(skill);
+            else if (skill.category == CategoryType.Activated) ActivatedSkill.Add((card.ID, skill));
+            else if (skill.category == CategoryType.Continuous) ContinuousSkill.Add((card.ID, skill));
+
+        }
         //print(ActivatedSkill.Count);
         //ActivatedSkill.ToList().ForEach(a => print(a.CardID));
     }
@@ -46,7 +69,7 @@ public class SkillManager : SingletonMonoBehaviour<SkillManager>
         {
             CategoryType.Automatic => AutomaticSkill.ToList(),
             CategoryType.Activated => ActivatedSkill.Where(skill => skill.CardID == cardID).Select(skill => skill.Skill).ToList(),
-            CategoryType.Continuous => ContinuousSkill.ToList(),
+            CategoryType.Continuous => ContinuousSkill.Where(skill => skill.CardID == cardID).Select(skill => skill.Skill).ToList(),
             _ => null,
         };
     }
@@ -65,11 +88,35 @@ public class SkillManager : SingletonMonoBehaviour<SkillManager>
 
         if (!await costManager.PayCost(card, skill.cost)) return false;
 
-        activateSkill.Activate(card, skill.skill);
+        await activateSkill.Activate(card, skill.skill);
 
-        Debug.Log($"{card.Name} (id = {card.ID}) のスキル発動！ {skill.place} で {skill.cost[0].Type} を {skill.cost[0].Count} 枚行うことで →");
-        Debug.Log($"  → {skill.finish} まで {skill.skill[0].TargetCard} に {skill.skill[0].Option} だけ {skill.skill[0].Type} の効果を与える");
+        Debug.Log($"{card.Name} (id = {card.ID}) のスキル発動！ {skill.place} で {skill.cost[0].Cost} を {skill.cost[0].Count} 枚行うことで →");
+        Debug.Log($"  → {skill.finish} まで {skill.skill[0].TargetCard} に {skill.skill[0].SkillOption} だけ {skill.skill[0].Skill} の効果を与える");
 
         return true;
+    }
+
+    public async UniTask StartContinuous(ActionData actionData)
+    {
+        Debug.Log($"{actionData.Card} が {actionData.Source} から、{actionData.Target} に移動した！");
+
+        Card actionCard = actionData.Card;
+
+        //List<Skill> skillList = SearchSkill(CategoryType.Continuous, actionData.Card.ID);
+        List<Skill> skillList = ContinuousSkill.Select(skill => skill.Skill).ToList();
+
+        if (!skillList.Any()) return;
+
+        foreach ((int cardID, Skill skill) in ContinuousSkill)
+        {
+            if (!actionCard.Parent.transform.tag.Contains(skill.place.ToString())) continue;
+
+            if (!conditionManager.CheckCondition(actionData, cardList[cardID], skill)) continue;
+
+            if (!await costManager.PayCost(cardList[cardID], skill.cost)) break;
+
+            await activateSkill.Activate(cardList[cardID], skill.skill);
+        }
+
     }
 }
